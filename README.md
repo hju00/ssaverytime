@@ -1,93 +1,114 @@
-# Final_java_gwangju_04_박형주_심동근
+# ssaveryTime Database
 
+## ERD (Entity-Relationship Diagram)
 
+![ERD](img/erd_diagram.png)
 
-## Getting started
+## Database Schema
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+### `USER`
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+사용자 정보를 저장하는 테이블
 
-## Add your files
+| Column | Type | Description |
+|---|---|---|
+| `USER_ID` | INT | 사용자 고유 ID (PK) |
+| `USERNAME` | VARCHAR(255) | 사용자 아이디 (UNIQUE) |
+| `PASSWORD` | VARCHAR(255) | 사용자 비밀번호 |
+| `NAME` | VARCHAR(100) | 사용자 이름 |
+| `ROLE` | ENUM('USER', 'ADMIN') | 사용자 역할 (기본값: 'USER') |
+| `SEASON` | INT | 사용자 기수 |
+| `BAEKJOON` | VARCHAR(100) | 백준 아이디 |
+| `VALID` | ENUM('1', '0') | 계정 활성화 여부 |
+| `CREATED_AT` | DATETIME | 계정 생성일 |
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+### `BOARD`
 
-```
-cd existing_repo
-git remote add origin https://lab.ssafy.com/hju00forwork/final_java_gwangju_04_hju_sdg.git
-git branch -M master
-git push -uf origin master
-```
+게시글 정보를 저장하는 테이블
 
-## Integrate with your tools
+| Column | Type | Description |
+|---|---|---|
+| `BOARD_ID` | INT | 게시글 고유 ID (PK) |
+| `USER_ID` | INT | 작성자 ID (FK) |
+| `TITLE` | VARCHAR(255) | 게시글 제목 |
+| `BODY` | TEXT | 게시글 내용 |
+| `VISIBLE` | ENUM('1', '0') | 게시글 공개 여부 (기본값: '1') |
+| `WARNING_CNT` | INT | 경고 횟수 (기본값: 0) |
+| `CREATED_AT` | DATETIME | 게시글 작성일 |
 
-- [ ] [Set up project integrations](https://lab.ssafy.com/hju00forwork/final_java_gwangju_04_hju_sdg/-/settings/integrations)
+### `COMMENT`
 
-## Collaborate with your team
+댓글 정보를 저장하는 테이블
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+| Column | Type | Description |
+|---|---|---|
+| `COMMENT_ID` | INT | 댓글 고유 ID (PK) |
+| `BOARD_ID` | INT | 게시글 ID (FK) |
+| `USER_ID` | INT | 작성자 ID (FK) |
+| `BODY` | VARCHAR(500) | 댓글 내용 |
+| `VISIBLE` | ENUM('1', '0') | 댓글 공개 여부 (기본값: '1') |
+| `WARNING_CNT` | INT | 경고 횟수 (기본값: 0) |
+| `CREATED_AT` | DATETIME | 댓글 작성일 |
 
-## Test and Deploy
+### `LIKES`
 
-Use the built-in continuous integration in GitLab.
+게시글 좋아요 정보를 저장하는 테이블
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+| Column | Type | Description |
+|---|---|---|
+| `LIKES_ID` | INT | 좋아요 고유 ID (PK) |
+| `BOARD_ID` | INT | 게시글 ID (FK) |
+| `USER_ID` | INT | 사용자 ID (FK) |
 
-***
+### `SCRAP`
 
-# Editing this README
+게시글 스크랩 정보를 저장하는 테이블
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+| Column | Type | Description |
+|---|---|---|
+| `SCRAP_ID` | INT | 스크랩 고유 ID (PK) |
+| `USER_ID` | INT | 사용자 ID (FK) |
+| `BOARD_ID` | INT | 게시글 ID (FK) |
 
-## Suggestions for a good README
+### `AI_TOKEN`
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+AI 토큰 정보를 저장하는 테이블
 
-## Name
-Choose a self-explaining name for your project.
+| Column | Type | Description |
+|---|---|---|
+| `TOKEN_ID` | INT | 토큰 고유 ID (PK) |
+| `REST` | INT | 남은 토큰 수 (기본값: 0) |
+| `LAST_UPDATE` | DATETIME | 마지막 업데이트 시간 |
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+### `RESTAURANT`
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+식당 정보를 저장하는 테이블
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+| Column | Type | Description |
+|---|---|---|
+| `RESTAURANT_ID` | INT | 식당 고유 ID (PK) |
+| `NAME` | VARCHAR(255) | 식당 이름 |
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+### `MENU`
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+메뉴 정보를 저장하는 테이블
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+| Column | Type | Description |
+|---|---|---|
+| `MENU_ID` | INT | 메뉴 고유 ID (PK) |
+| `RESTAURANT_ID` | INT | 식당 ID (FK) |
+| `MENU` | VARCHAR(255) | 메뉴 이름 |
+| `DATE` | DATETIME | 날짜 |
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+### `STAR`
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+별점 정보를 저장하는 테이블
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+| Column | Type | Description |
+|---|---|---|
+| `STAR_ID` | INT | 별점 고유 ID (PK) |
+| `USER_ID` | INT | 사용자 ID (FK) |
+| `RESTAURANT_ID` | INT | 식당 ID (FK) |
+| `CATEGORY` | ENUM('TASTE', 'AMOUNT') | 별점 카테고리 |
+| `SCORE` | INT | 점수 |
+| `DATE` | DATETIME | 별점 등록일 |
