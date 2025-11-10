@@ -32,6 +32,7 @@
 | `USER_ID` | INT | 작성자 ID (FK) |
 | `TITLE` | VARCHAR(255) | 게시글 제목 |
 | `BODY` | TEXT | 게시글 내용 |
+| `SUMMARY` | TEXT | 게시글 AI 요약 내용 |
 | `VISIBLE` | ENUM('1', '0') | 게시글 공개 여부 (기본값: '1') |
 | `WARNING_CNT` | INT | 경고 횟수 (기본값: 0) |
 | `CREATED_AT` | DATETIME | 게시글 작성일 |
