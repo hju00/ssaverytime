@@ -32,6 +32,7 @@ CREATE TABLE BOARD (
     USER_ID    INT    NOT NULL,
     TITLE    VARCHAR(255)    NOT NULL,
     BODY    TEXT    NULL,
+    SUMMARY    TEXT    NULL DEFAULT NULL,
     VISIBLE    ENUM('1', '0')    NOT NULL DEFAULT '1',
     WARNING_CNT    INT    NOT NULL DEFAULT 0,
     CREATED_AT    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -121,7 +122,7 @@ INSERT INTO RESTAURANT (NAME) VALUES
 ('속이찬새참');
 
 -- BOARD (BOARD_ID: 1 ~ 5, USER_ID: 1, 5, 3, 2, 1 사용)
-INSERT INTO BOARD (USER_ID, TITLE, BODY, VISIBLE, WARNING_CNT) VALUES
+INSERT INTO BOARD (USER_ID, TITLE, BODY, SUMMARY, VISIBLE, WARNING_CNT) VALUES
 (1, '백반집 점심 후기', '오늘 백반집 가봤는데 가성비 최고예요.', '1', 0),
 (5, '이번 시즌 알고리즘 질문', '다들 백준 문제 푸시나요?', '1', 0),
 (3, '솔직히 실버들은 발언 허락 받고 해야한다 생각합니다.', '광주캠퍼스 노트북 쓰기 좋은 카페 아시는 분?', '1', 0),
