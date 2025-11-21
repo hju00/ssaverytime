@@ -4,7 +4,7 @@
 
 ![ERD](img/erd_diagram.png)
 
-## Database Schema
+## Database Schema.
 
 ### `USER`
 
