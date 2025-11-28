@@ -1,4 +1,4 @@
-package com.ssaverytime.ssaverytime_server.security;
+package com.ssaverytime.server.security;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

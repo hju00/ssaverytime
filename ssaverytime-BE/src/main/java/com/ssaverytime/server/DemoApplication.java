@@ -1,4 +1,4 @@
-package com.ssaverytime.ssaverytime_server;
+package com.ssaverytime.server;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

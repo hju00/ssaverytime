@@ -38,9 +38,9 @@
       <!-- Posts List -->
       <div class="space-y-3">
         <RouterLink
-          v-for="post in visiblePosts"
-          :key="post.id"
-          :to="`/post/${post.id}`"
+          v-for="post in posts"
+          :key="post.boardId"
+          :to="`/post/${post.boardId}`"
           custom
           v-slot="{ navigate }"
         >
@@ -52,28 +52,33 @@
               <!-- Title -->
               <div class="flex justify-between items-start gap-2">
                 <h2 class="font-bold text-lg text-foreground line-clamp-1">{{ post.title }}</h2>
-                <span class="text-xs text-muted-foreground whitespace-nowrap shrink-0">{{ formatDate(post.time) }}</span>
+                <span class="text-xs text-muted-foreground whitespace-nowrap shrink-0">{{ formatDate(post.createdAt) }}</span>
               </div>
 
               <!-- Preview -->
-              <p class="text-sm text-muted-foreground line-clamp-2">{{ post.preview }}</p>
+              <p class="text-sm text-muted-foreground line-clamp-2">{{ post.summary }}</p>
 
               <!-- Metadata Row -->
               <div class="flex items-center justify-between pt-2 border-t border-border/50">
                 <div class="flex items-center gap-2">
-                  <span class="text-xs font-medium text-foreground">{{ post.author }}</span>
-                  <img :src="`https://static.solved.ac/tier_small/${post.tierNumber}.svg`" alt="Tier Icon" class="w-4 h-4 inline-block" />
+                  <span class="text-xs font-medium text-foreground">{{ post.userName }}</span>
+                  <img 
+                    v-if="post.tierNumber > 0"
+                    :src="`https://static.solved.ac/tier_small/${post.tierNumber}.svg`" 
+                    alt="Tier Icon" 
+                    class="w-4 h-4 inline-block" 
+                  />
                 </div>
 
                 <!-- Engagement Icons -->
                 <div class="flex items-center gap-3 text-xs text-muted-foreground">
-                  <div class="flex items-center gap-1">
-                    <HeartIcon class="w-4 h-4" />
-                    <span>{{ post.likes }}</span>
+                  <div class="flex items-center gap-1" :class="{'text-red-500': post.liked}">
+                    <HeartIcon class="w-4 h-4" :fill="post.liked ? 'currentColor' : 'none'" />
+                    <span>{{ post.likeCount }}</span>
                   </div>
                   <div class="flex items-center gap-1">
                     <MessageCircleIcon class="w-4 h-4" />
-                    <span>{{ post.commentsCount }}</span>
+                    <span>{{ post.commentCount }}</span>
                   </div>
                 </div>
               </div>
@@ -81,11 +86,11 @@
           </Card>
         </RouterLink>
         
-        <p v-if="filteredPosts.length === 0" class="text-center text-muted-foreground text-sm py-8">{{ $t('board.no_meals_logged') }}</p>
+        <p v-if="posts.length === 0 && !isLoading" class="text-center text-muted-foreground text-sm py-8">{{ $t('board.no_meals_logged') }}</p>
         
-        <!-- Infinite Scroll Sentinel -->
-        <div ref="loadMoreTrigger" class="py-4 text-center" v-if="visibleLimit < filteredPosts.length">
-          <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+        <!-- Loading / Infinite Scroll Trigger -->
+        <div ref="loadMoreTrigger" class="py-4 text-center">
+          <div v-if="isLoading" class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
         </div>
       </div>
     </div>
@@ -93,11 +98,11 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { getBoardList } from '@/api/board'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import {
   Select,
   SelectContent,
@@ -112,127 +117,132 @@ import {
   Plus as PlusIcon
 } from 'lucide-vue-next'
 
+// State
+const posts = ref([])
 const sortBy = ref('latest')
 const searchQuery = ref('')
-const visibleLimit = ref(10)
+const page = ref(1)
+const size = ref(10) // Items per page
+const isLoading = ref(false)
+const hasMore = ref(true)
 const loadMoreTrigger = ref(null)
-const itemsPerLoad = 5
 
-const tierColors = {
-  gold: 'bg-yellow-100 text-yellow-800',
-  silver: 'bg-gray-300 text-gray-800',
-  bronze: 'bg-orange-100 text-orange-800',
-  diamond: 'bg-blue-100 text-blue-800',
+// Helper: Convert Tier String to ID
+const getTierNumber = (tierStr) => {
+  if (!tierStr) return 0;
+  const tiers = ['BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND', 'RUBY', 'MASTER'];
+  const levels = {'I': 5, 'II': 4, 'III': 3, 'IV': 2, 'V': 1};
+  
+  const parts = tierStr.split(' ');
+  if (parts.length < 2) return 0; // e.g. "MASTER" handling separate if needed
+  
+  const tierIndex = tiers.indexOf(parts[0]);
+  const level = levels[parts[1]] || 0;
+  
+  if (tierIndex === -1) return 0;
+  
+  // Formula: (Tier Index * 5) + Level
+  // Bronze V = 1, Bronze I = 5
+  // Silver V = 6 ...
+  // Need to invert level logic? solved.ac: V=1, IV=2... I=5 in each tier block?
+  // Actually: Bronze V = 1, Bronze I = 5. 
+  // My logic: (0 * 5) + 1 = 1. Correct.
+  
+  // Wait, standard mapping:
+  // Bronze V (1) ... Bronze I (5)
+  // Silver V (6) ...
+  // My level map: I=5, V=1.
+  // (TierIndex * 5) + (6 - LevelNum)?
+  // Let's stick to simple manual map or:
+  // Level V -> 1, IV -> 2, III -> 3, II -> 4, I -> 5
+  // So Bronze V = 0*5 + 1 = 1. Bronze I = 0*5 + 5 = 5.
+  // Silver V = 1*5 + 1 = 6.
+  
+  const levelNum = {'V': 1, 'IV': 2, 'III': 3, 'II': 4, 'I': 5}[parts[1]] || 0;
+  return (tierIndex * 5) + levelNum;
 }
 
-// Generate more mock data for infinite scroll demonstration
-const generateMockPosts = () => {
-  const basePosts = [
-    { title: '싸피에서 공부하기 좋은 장소 추천!', preview: '싸피 캠퍼스 내에서 공부하기 좋은 장소들을 탐험하고...', author: '공부벌레', tierNumber: 11, likes: 24, commentsCount: 8 },
-    { title: '알고리즘을 잘하는 법??', preview: '재능의 영역입니다. 포기하세요 ㅋ', author: '알고리즘 왕', tierNumber: 31, likes: 156, commentsCount: 42 },
-    { title: '근처 카페 추천 리스트', preview: '캠퍼스에서 도보 거리에 있는 최고의 카페 목록입니다.', author: '커피중독자', tierNumber: 6, likes: 45, commentsCount: 12 },
-    { title: '인턴십 경험 공유합니다', preview: '최근 IT 회사에서 여름 인턴십을 마쳤습니다.', author: '취뽀성공', tierNumber: 11, likes: 89, commentsCount: 28 },
-    { title: 'Spring Boot 질문있습니다.', preview: 'JPA 사용할 때 N+1 문제 해결하는 가장 좋은 방법이 뭔가요?', author: '자바꿈나무', tierNumber: 1, likes: 5, commentsCount: 3 },
-    { title: '오늘 점심 메뉴 뭔가요?', preview: 'A코너랑 B코너 중에 뭐가 더 맛있을까요?', author: '배고픈싸피인', tierNumber: 8, likes: 12, commentsCount: 15 },
-  ]
+// Fetch Data
+const fetchPosts = async (reset = false) => {
+  if (isLoading.value) return;
+  if (!hasMore.value && !reset) return;
 
-  const result = []
-  for (let i = 0; i < 30; i++) {
-    const base = basePosts[i % basePosts.length]
-    result.push({
-      id: i + 1,
-      title: `${base.title} ${Math.floor(i / 6) > 0 ? `#${Math.floor(i / 6) + 1}` : ''}`,
-      preview: base.preview,
-      author: base.author,
-      tierNumber: base.tierNumber,
-      time: new Date(Date.now() - i * 3600000 * 2).toISOString(), // Decreasing time
-      likes: base.likes + (i * 2),
-      commentsCount: base.commentsCount + i,
-    })
-  }
-  return result
-}
+  isLoading.value = true;
 
-const posts = ref(generateMockPosts())
-
-// Reset infinite scroll when search or sort changes
-watch([searchQuery, sortBy], () => {
-  visibleLimit.value = 10
-  window.scrollTo(0, 0)
-})
-
-const filteredPosts = computed(() => {
-  // 1. Filter first (search)
-  let currentPosts = [...posts.value]
-  if (searchQuery.value) {
-    currentPosts = currentPosts.filter(post =>
-      post.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      post.preview.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      post.author.toLowerCase().includes(searchQuery.value.toLowerCase())
-    )
+  if (reset) {
+    page.value = 1;
+    posts.value = [];
+    hasMore.value = true;
   }
 
-  // 2. Sort
-  currentPosts.sort((a, b) => {
-    if (sortBy.value === 'latest') {
-        return new Date(b.time) - new Date(a.time)
-    } else if (sortBy.value === 'likes') {
-      return b.likes - a.likes
-    } else if (sortBy.value === 'comments') {
-      return b.commentsCount - a.commentsCount
+  try {
+    const response = await getBoardList({
+      keyword: searchQuery.value,
+      sort: sortBy.value,
+      page: page.value,
+      size: size.value
+    });
+
+    const newPosts = response.data.map(p => ({
+      ...p,
+      tierNumber: getTierNumber(p.userTier),
+      // Backend DTO uses camelCase: boardId, title, summary, etc.
+    }));
+
+    if (newPosts.length < size.value) {
+      hasMore.value = false;
     }
-    return 0
-  })
 
-  return currentPosts
-})
+    if (reset) {
+      posts.value = newPosts;
+    } else {
+      posts.value = [...posts.value, ...newPosts];
+    }
+    
+    page.value++;
 
-const visiblePosts = computed(() => {
-  return filteredPosts.value.slice(0, visibleLimit.value)
-})
+  } catch (error) {
+    console.error("Failed to fetch posts:", error);
+  } finally {
+    isLoading.value = false;
+  }
+}
 
-let observer = null
+// Watchers
+watch([searchQuery, sortBy], () => {
+  fetchPosts(true); // Reset and fetch
+});
+
+// Infinite Scroll Observer
+let observer = null;
 
 onMounted(() => {
+  fetchPosts(true);
+
   observer = new IntersectionObserver((entries) => {
-    if (entries[0].isIntersecting) {
-      // Simulate network delay for better UX feeling
-      setTimeout(() => {
-        visibleLimit.value += itemsPerLoad
-      }, 500)
+    if (entries[0].isIntersecting && hasMore.value && !isLoading.value) {
+      fetchPosts(false);
     }
-  }, {
-    root: null,
-    threshold: 0.1
-  })
+  }, { threshold: 0.1 });
 
   if (loadMoreTrigger.value) {
-    observer.observe(loadMoreTrigger.value)
+    observer.observe(loadMoreTrigger.value);
   }
-})
-
-// Re-observe when the trigger element might be re-rendered (e.g. after filter changes)
-watch(loadMoreTrigger, (newVal) => {
-  if (newVal && observer) {
-    observer.disconnect()
-    observer.observe(newVal)
-  }
-})
+});
 
 onUnmounted(() => {
-  if (observer) {
-    observer.disconnect()
-  }
-})
+  if (observer) observer.disconnect();
+});
 
 const formatDate = (dateString) => {
-  const date = new Date(dateString)
+  if (!dateString) return '';
+  const date = new Date(dateString);
   return new Intl.DateTimeFormat('ko-KR', {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit'
-  }).format(date)
+  }).format(date);
 }
 </script>
 

@@ -1,4 +1,4 @@
-package com.ssaverytime.ssaverytime_server.config;
+package com.ssaverytime.server.config;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.ssaverytime.ssaverytime_server.security.CustomAuthenticationSuccessHandler;
+import com.ssaverytime.server.security.CustomAuthenticationSuccessHandler;
 import java.util.List;
 
 @Configuration
