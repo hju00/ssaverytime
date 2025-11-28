@@ -26,6 +26,13 @@
           <UserIcon class="w-5 h-5" />
           <span>{{ $t('sidebar.profile') }}</span>
         </RouterLink>
+
+        <div class="my-4 border-t border-border"></div>
+
+        <RouterLink to="/login" class="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors">
+          <LogInIcon class="w-5 h-5" />
+          <span>{{ $t('home.login') }}</span>
+        </RouterLink>
       </nav>
 
       <div class="mt-auto pt-4 border-t border-border">
@@ -42,7 +49,7 @@
 
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
-import { Home as HomeIcon, Clipboard as ClipboardIcon, Forklift as ForkliftIcon, FileText as FileTextIcon, User as UserIcon } from 'lucide-vue-next'
+import { Home as HomeIcon, Clipboard as ClipboardIcon, Forklift as ForkliftIcon, FileText as FileTextIcon, User as UserIcon, LogIn as LogInIcon } from 'lucide-vue-next'
 </script>
 
 <style>
