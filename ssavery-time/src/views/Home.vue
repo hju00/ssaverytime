@@ -26,14 +26,14 @@
 
           <TabsContent value="login" class="space-y-4 mt-6">
             <div class="space-y-2">
-              <Label for="login-username" class="text-sm font-medium">
-                {{ $t('home.login_username_label') }}
+              <Label for="login-id" class="text-sm font-medium">
+                {{ $t('home.login_id_label') }}
               </Label>
               <Input
-                id="login-username"
-                name="username"
-                :placeholder="$t('home.login_username_placeholder')"
-                v-model="loginData.username"
+                id="login-id"
+                name="id"
+                :placeholder="$t('home.login_id_placeholder')"
+                v-model="loginData.id"
                 class="rounded-lg border-input bg-background h-11"
               />
             </div>
@@ -62,14 +62,14 @@
 
           <TabsContent value="signup" class="space-y-4 mt-6">
             <div class="space-y-2">
-              <Label for="signup-username" class="text-sm font-medium">
-                {{ $t('home.signup_username_label') }}
+              <Label for="signup-id" class="text-sm font-medium">
+                {{ $t('home.signup_id_label') }}
               </Label>
               <Input
-                id="signup-username"
-                name="username"
-                :placeholder="$t('home.signup_username_placeholder')"
-                v-model="signupData.username"
+                id="signup-id"
+                name="id"
+                :placeholder="$t('home.signup_id_placeholder')"
+                v-model="signupData.id"
                 class="rounded-lg border-input bg-background h-11"
               />
             </div>
@@ -197,9 +197,9 @@ import { LogIn as LogInIcon, UserPlus as UserPlusIcon } from 'lucide-vue-next'
 
 const activeTab = ref('login')
 
-const loginData = ref({ username: '', password: '' })
+const loginData = ref({ id: '', password: '' })
 const signupData = ref({
-  username: '',
+  id: '',
   password: '',
   confirmPassword: '',
   nickname: '',
