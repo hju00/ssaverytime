@@ -1,0 +1,14 @@
+stages:
+  - mirror
+
+mirror_to_github:
+  stage: mirror
+  image: bitnami/git:latest
+  script:
+    # GitHub 주소 설정 (본인 ID와 레포 주소로 변경 필요)
+    - git config --global user.email "hju00forwork@gmail.com"
+    - git config --global user.name "hju00"
+    - git remote add github https://hju00:$GITHUB_TOKEN@github.com/hju00/ssaverytime.git
+    - git push -f github HEAD:master
+  only:
+    - master

@@ -1,0 +1,79 @@
+{
+  "sidebar": {
+    "home": "Home (Auth)",
+    "board": "Board",
+    "diet": "Diet",
+    "post": "Post",
+    "profile": "Profile",
+    "copyright": "© 2025 SsaveryTime"
+  },
+  "home": {
+    "title": "SsaveryTime",
+    "description": "SSAFY Community Service",
+    "login": "Login",
+    "signup": "Signup",
+    "login_username_label": "Username",
+    "login_username_placeholder": "Enter your username",
+    "login_password_label": "Password",
+    "login_password_placeholder": "Enter your password",
+    "signup_username_label": "Username",
+    "signup_username_placeholder": "Choose a username",
+    "signup_password_label": "Password",
+    "signup_password_placeholder": "Create a password",
+    "signup_confirm_password_label": "Confirm Password",
+    "signup_confirm_password_placeholder": "Confirm your password",
+    "signup_nickname_label": "Nickname",
+    "signup_nickname_placeholder": "Display name",
+    "signup_campus_label": "Select Campus",
+    "signup_campus_placeholder": "Choose your campus",
+    "signup_baekjoon_label": "Baekjoon ID",
+    "signup_baekjoon_placeholder": "Your Baekjoon ID",
+    "verify_button": "Verify",
+    "create_account_button": "Create Account"
+  },
+  "board": {
+    "title": "Free Board",
+    "write_post": "Write Post",
+    "search_placeholder": "Search posts...",
+    "hot_posts": "Hot Posts",
+    "all_posts": "All Posts",
+    "no_meals_logged": "No meals logged yet"
+  },
+  "diet": {
+    "title": "My Diet",
+    "description": "Track your daily nutrition intake",
+    "daily_intake_vs_goal": "Daily Intake vs Goal",
+    "total_calories": "Total Calories",
+    "ai_analysis_prefix": "AI Analysis:",
+    "ai_analysis_message": "Good protein balance today! Consider increasing your vegetable intake for better micronutrients.",
+    "today_meals": "Today's Meals",
+    "import_ssafy_lunch": "Import SSAFY Lunch",
+    "add_manually": "Add Manually",
+    "modal_title": "Import SSAFY Lunch",
+    "modal_description": "Select meals from the cafeteria to add them to your diet",
+    "cancel_button": "Cancel",
+    "add_selected_button": "Add Selected"
+  },
+  "post": {
+    "back_to_board": "Back to Board",
+    "like": "Like",
+    "scrap": "Scrap",
+    "comments": "Comments",
+    "write_comment_placeholder": "Write a comment...",
+    "write_anonymously": "Write Anonymously",
+    "post_button": "Post",
+    "reply_button": "Reply"
+  },
+  "profile": {
+    "baekjoon_tier": "Baekjoon Tier",
+    "algorithm_rank": "Algorithm Rank",
+    "progress_to_next_tier": "Progress to next tier",
+    "points_until_next_tier": "points until next tier",
+    "my_posts": "My Posts",
+    "my_comments": "My Comments",
+    "scrapped_posts": "Scrapped Posts",
+    "edit_profile": "Edit Profile",
+    "recently_scrapped": "Recently Scrapped",
+    "by_prefix": "by"
+  }
+}

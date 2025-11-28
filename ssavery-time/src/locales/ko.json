@@ -1,0 +1,79 @@
+{
+  "sidebar": {
+    "home": "홈 (인증)",
+    "board": "게시판",
+    "diet": "식단",
+    "post": "게시물",
+    "profile": "프로필",
+    "copyright": "© 2025 싸브리타임"
+  },
+  "home": {
+    "title": "싸브리타임",
+    "description": "싸피 커뮤니티 서비스",
+    "login": "로그인",
+    "signup": "회원가입",
+    "login_username_label": "사용자 이름",
+    "login_username_placeholder": "사용자 이름을 입력하세요",
+    "login_password_label": "비밀번호",
+    "login_password_placeholder": "비밀번호를 입력하세요",
+    "signup_username_label": "사용자 이름",
+    "signup_username_placeholder": "사용자 이름을 선택하세요",
+    "signup_password_label": "비밀번호",
+    "signup_password_placeholder": "비밀번호를 만드세요",
+    "signup_confirm_password_label": "비밀번호 확인",
+    "signup_confirm_password_placeholder": "비밀번호를 확인하세요",
+    "signup_nickname_label": "닉네임",
+    "signup_nickname_placeholder": "표시될 닉네임",
+    "signup_campus_label": "캠퍼스 선택",
+    "signup_campus_placeholder": "캠퍼스를 선택하세요",
+    "signup_baekjoon_label": "백준 ID",
+    "signup_baekjoon_placeholder": "백준 ID를 입력하세요",
+    "verify_button": "인증",
+    "create_account_button": "계정 생성"
+  },
+  "board": {
+    "title": "자유 게시판",
+    "write_post": "글 작성",
+    "search_placeholder": "게시물 검색...",
+    "hot_posts": "인기 게시물",
+    "all_posts": "전체 게시물",
+    "no_meals_logged": "아직 작성된 글이 없습니다"
+  },
+  "diet": {
+    "title": "나의 식단",
+    "description": "일일 영양 섭취량 추적",
+    "daily_intake_vs_goal": "일일 섭취량 vs 목표",
+    "total_calories": "총 칼로리",
+    "ai_analysis_prefix": "AI 분석:",
+    "ai_analysis_message": "오늘 단백질 밸런스가 좋습니다! 미량 영양소 섭취를 위해 야채 섭취를 늘리는 것을 고려해보세요.",
+    "today_meals": "오늘의 식사",
+    "import_ssafy_lunch": "싸피 점심 불러오기",
+    "add_manually": "수동 추가",
+    "modal_title": "싸피 점심 불러오기",
+    "modal_description": "식단에 추가할 식당 메뉴를 선택하세요",
+    "cancel_button": "취소",
+    "add_selected_button": "선택 추가"
+  },
+  "post": {
+    "back_to_board": "게시판으로 돌아가기",
+    "like": "좋아요",
+    "scrap": "스크랩",
+    "comments": "댓글",
+    "write_comment_placeholder": "댓글을 작성하세요...",
+    "write_anonymously": "익명",
+    "post_button": "등록",
+    "reply_button": "답글"
+  },
+  "profile": {
+    "baekjoon_tier": "백준 티어",
+    "algorithm_rank": "알고리즘 랭크",
+    "progress_to_next_tier": "다음 티어까지 진행률",
+    "points_until_next_tier": "점 남았습니다",
+    "my_posts": "내 게시물",
+    "my_comments": "내 댓글",
+    "scrapped_posts": "스크랩한 게시물",
+    "edit_profile": "프로필 수정",
+    "recently_scrapped": "최근 스크랩",
+    "by_prefix": "작성자"
+  }
+}
