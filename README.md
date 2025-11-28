@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ssaveryTime Database
 
 ## ERD (Entity-Relationship Diagram)
@@ -201,3 +202,7 @@ AI 토큰 정보를 저장하는 테이블
 | 3 | 2 | TASTE | 3 |
 | 1 | 3 | TASTE | 5 |
 | 5 | 5 | AMOUNT | 4 |
+=======
+# ssaverytime
+ssafy 관통 프로젝트
+>>>>>>> 2d8dfec691640d329fda078e9b2515b2171a2420
