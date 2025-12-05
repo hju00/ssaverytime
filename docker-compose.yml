@@ -27,7 +27,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
 
   frontend:
-    build: ./ssavery-time
+    build: ./ssaverytime-FE
     container_name: ssaverytime-frontend
     ports:
       - "5173:5173"
