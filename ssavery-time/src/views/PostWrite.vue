@@ -3,8 +3,11 @@
     <div class="max-w-3xl mx-auto space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>{{ $t('board.write_post') || '게시글 작성' }}</CardTitle>
-          <CardDescription>새로운 게시글을 작성합니다.</CardDescription>
+          <CardTitle>{{ user.name }}</CardTitle>
+          <CardDescription class="flex items-center">
+            <img :src="`https://static.solved.ac/tier_small/${user.tierNumber}.svg`" alt="Tier Icon" class="w-4 h-4 mr-1" />
+            {{ user.tier }}
+          </CardDescription>
         </CardHeader>
         <CardContent class="space-y-4">
           <div class="space-y-2">
@@ -26,7 +29,15 @@
             />
           </div>
 
-          <!-- 공개 여부 등 추가 옵션이 필요하면 여기에 배치 -->
+          <!-- 익명 옵션 -->
+          <div class="flex items-center space-x-2 pt-2">
+            <Checkbox 
+              id="anonymous" 
+              :checked="form.visible === '0'" 
+              @update:checked="(checked) => form.visible = checked ? '0' : '1'" 
+            />
+            <Label for="anonymous" class="cursor-pointer">익명</Label>
+          </div>
         </CardContent>
         <CardFooter class="flex justify-end gap-2">
           <Button variant="outline" @click="goBack">취소</Button>
@@ -48,14 +59,31 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Checkbox } from '@/components/ui/checkbox'
 
 const router = useRouter()
+
+// TODO: 나중에 JWT 토큰에서 사용자 정보를 파싱하는 로직으로 대체 필요
+const getUserInfo = () => {
+  // const token = localStorage.getItem('accessToken')
+  // if (!token) return null
+  // return parseJwt(token)
+  
+  return {
+    name: '유저왕(JWT)',
+    tier: 'PLATINUM I',
+    tierNumber: 16
+  }
+}
+
+// 사용자 정보 초기화
+const user = ref(getUserInfo())
 
 const isSubmitting = ref(false)
 const form = reactive({
   title: '',
   body: '',
-  visible: '1' // 기본 공개
+  visible: '1' // 기본 공개 ('1': 실명, '0': 익명)
 })
 
 const goBack = () => {
