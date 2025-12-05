@@ -1,8 +1,11 @@
--- 데이터베이스 생성 및 선택
-CREATE DATABASE IF NOT EXISTS ssaveryTime
-    DEFAULT CHARACTER SET utf8mb4
-    COLLATE utf8mb4_general_ci;
-USE ssaveryTime;
+-- 클라이언트 문자셋 설정
+SET NAMES 'utf8mb4';
+
+-- 데이터베이스 생성 및 선택 (Docker Compose에서 이미 생성됨)
+-- CREATE DATABASE IF NOT EXISTS ssaverytime
+--     DEFAULT CHARACTER SET utf8mb4
+--     COLLATE utf8mb4_general_ci;
+-- USE ssaverytime;
 
 -- 외래키 체크 비활성화 (테이블 삭제/생성 시 순서 문제 방지)
 SET FOREIGN_KEY_CHECKS = 0;

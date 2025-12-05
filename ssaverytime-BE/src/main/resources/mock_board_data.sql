@@ -1,7 +1,7 @@
 -- 게시판 무한 스크롤 테스트를 위한 대량 더미 데이터 (50개)
 -- database_setup.sql 실행 후 이 파일을 실행하세요.
 
-USE ssaveryTime;
+USE ssaverytime;
 
 INSERT INTO BOARD (USER_ID, TITLE, BODY, SUMMARY) VALUES
 (1, '알고리즘 스터디 모집합니다 (광주)', '아침 8시부터 1시간 동안 진행할 알고리즘 스터디원 모집합니다. 언어는 Java입니다.', '아침 8시부터 1시간 동안 진행할 알고리즘 스터디원 모집합니다.'),
