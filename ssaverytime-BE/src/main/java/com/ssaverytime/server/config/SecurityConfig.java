@@ -70,7 +70,9 @@ public class SecurityConfig {
 		CorsConfiguration config = new CorsConfiguration();
 
 		config.setAllowCredentials(true); // 쿠키 전송 허용
-		config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173")); // 프론트 주소
+		
+		// 개발 환경 편의를 위해 모든 출처 허용 (배포 시 보안을 위해 구체적인 도메인으로 제한 필요)
+		config.addAllowedOriginPattern("*"); 
 
 		config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 		config.setAllowedHeaders(List.of("*")); // 모든 헤더 허용

@@ -4,6 +4,7 @@ import Auth from '../views/Auth.vue'
 import Board from '../views/Board.vue'
 import Diet from '../views/Diet.vue'
 import Post from '../views/Post.vue'
+import PostWrite from '../views/PostWrite.vue'
 import Profile from '../views/Profile.vue'
 
 const routes = [
@@ -26,6 +27,11 @@ const routes = [
     path: '/board',
     name: 'Board',
     component: Board
+  },
+  {
+    path: '/board/write',
+    name: 'PostWrite',
+    component: PostWrite
   },
   {
     path: '/diet',

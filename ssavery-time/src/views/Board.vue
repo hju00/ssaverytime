@@ -5,7 +5,7 @@
       <div class="flex flex-col gap-4">
         <div class="flex items-center justify-between">
           <h1 class="text-3xl font-bold text-foreground">{{ $t('board.title') }}</h1>
-          <Button class="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg">
+          <Button @click="navigateToWrite" class="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg">
             <PlusIcon class="w-4 h-4" />
             <span class="hidden sm:inline">{{ $t('board.write_post') }}</span>
           </Button>
@@ -99,6 +99,7 @@
 
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { getBoardList } from '@/api/board'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -116,6 +117,13 @@ import {
   Search as SearchIcon, 
   Plus as PlusIcon
 } from 'lucide-vue-next'
+
+const router = useRouter()
+
+const navigateToWrite = () => {
+  console.log('Write Post button clicked');
+  router.push('/board/write');
+}
 
 // State
 const posts = ref([])
