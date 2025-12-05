@@ -13,9 +13,9 @@
             b.CREATED_AT,
             b.VISIBLE,
             u.USER_ID AS userSeq,
-            u.BOJ_ID AS bojId,
-            u.NAME AS userName,
-            u.BAEKJOON AS userTier,
+            CASE WHEN b.VISIBLE = '0' THEN 'anonymous' ELSE u.BOJ_ID END AS bojId,
+            CASE WHEN b.VISIBLE = '0' THEN '익명' ELSE u.NAME END AS userName,
+            CASE WHEN b.VISIBLE = '0' THEN 'Unrated' ELSE u.BAEKJOON END AS userTier,
             (SELECT COUNT(*) FROM LIKES l WHERE l.BOARD_ID = b.BOARD_ID) AS likeCount,
             (SELECT COUNT(*) FROM COMMENT c WHERE c.BOARD_ID = b.BOARD_ID AND c.VISIBLE = '1') AS commentCount,
             <choose>
@@ -30,7 +30,7 @@
             </choose>
         FROM BOARD b
         JOIN USER u ON b.USER_ID = u.USER_ID
-        WHERE b.VISIBLE = '1'
+        WHERE b.VISIBLE IN ('1', '0')
         <if test="keyword != null and keyword != ''">
             AND (b.TITLE LIKE CONCAT('%', #{keyword}, '%') OR b.BODY LIKE CONCAT('%', #{keyword}, '%'))
         </if>
@@ -59,9 +59,9 @@
             b.CREATED_AT,
             b.VISIBLE,
             u.USER_ID AS userSeq,
-            u.BOJ_ID AS bojId,
-            u.NAME AS userName,
-            u.BAEKJOON AS userTier,
+            CASE WHEN b.VISIBLE = '0' THEN 'anonymous' ELSE u.BOJ_ID END AS bojId,
+            CASE WHEN b.VISIBLE = '0' THEN '익명' ELSE u.NAME END AS userName,
+            CASE WHEN b.VISIBLE = '0' THEN 'Unrated' ELSE u.BAEKJOON END AS userTier,
             (SELECT COUNT(*) FROM LIKES l WHERE l.BOARD_ID = b.BOARD_ID) AS likeCount,
             (SELECT COUNT(*) FROM COMMENT c WHERE c.BOARD_ID = b.BOARD_ID AND c.VISIBLE = '1') AS commentCount,
             <choose>
@@ -81,8 +81,8 @@
 
     <!-- 게시글 작성 -->
     <insert id="insertBoard" parameterType="com.ssaverytime.server.model.board.BoardRequestDto" useGeneratedKeys="true" keyProperty="boardId">
-        INSERT INTO BOARD (USER_ID, TITLE, BODY, SUMMARY)
-        VALUES (#{userSeq}, #{title}, #{body}, #{summary})
+        INSERT INTO BOARD (USER_ID, TITLE, BODY, SUMMARY, VISIBLE)
+        VALUES (#{userSeq}, #{title}, #{body}, #{summary}, #{visible})
     </insert>
 
     <!-- 게시글 수정 -->

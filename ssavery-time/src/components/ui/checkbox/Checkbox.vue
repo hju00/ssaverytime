@@ -16,7 +16,7 @@ const props = defineProps({
   required: { type: Boolean, required: false },
   class: { type: null, required: false },
 });
-const emits = defineEmits(["update:modelValue"]);
+const emits = defineEmits(["update:modelValue", "update:checked"]);
 
 const delegatedProps = reactiveOmit(props, "class");
 

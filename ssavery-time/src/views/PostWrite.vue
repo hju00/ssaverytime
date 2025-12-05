@@ -31,10 +31,12 @@
 
           <!-- 익명 옵션 -->
           <div class="flex items-center space-x-2 pt-2">
-            <Checkbox 
+            <input 
+              type="checkbox" 
               id="anonymous" 
+              class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer accent-primary"
               :checked="form.visible === '0'" 
-              @update:checked="(checked) => form.visible = checked ? '0' : '1'" 
+              @change="(e) => form.visible = e.target.checked ? '0' : '1'" 
             />
             <Label for="anonymous" class="cursor-pointer">익명</Label>
           </div>
@@ -59,7 +61,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Checkbox } from '@/components/ui/checkbox'
 
 const router = useRouter()
 
