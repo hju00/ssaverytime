@@ -1,5 +1,6 @@
 package com.ssaverytime.server.mapper;
 
+import com.ssaverytime.server.model.board.BoardRequestDto;
 import com.ssaverytime.server.model.board.BoardResponseDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -20,10 +21,10 @@ public interface BoardMapper {
     BoardResponseDto selectBoardDetail(@Param("boardId") int boardId, @Param("currentUserSeq") Integer currentUserSeq);
 
     // 게시글 작성
-    int insertBoard(BoardResponseDto boardResponseDto);
+    int insertBoard(BoardRequestDto boardRequestDto);
 
     // 게시글 수정
-    int updateBoard(BoardResponseDto boardResponseDto);
+    int updateBoard(BoardRequestDto boardRequestDto);
 
     // 게시글 삭제 (실제 삭제 대신 숨김 처리 시 update 사용 가능, 여기선 삭제로 가정하거나 숨김으로 구현)
     int deleteBoard(int boardId);

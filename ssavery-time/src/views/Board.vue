@@ -72,8 +72,8 @@
 
                 <!-- Engagement Icons -->
                 <div class="flex items-center gap-3 text-xs text-muted-foreground">
-                  <div class="flex items-center gap-1" :class="{'text-red-500': post.liked}">
-                    <HeartIcon class="w-4 h-4" :fill="post.liked ? 'currentColor' : 'none'" />
+                  <div class="flex items-center gap-1" :class="{'text-red-500': post.isLiked}">
+                    <HeartIcon class="w-4 h-4" :fill="post.isLiked ? 'currentColor' : 'none'" />
                     <span>{{ post.likeCount }}</span>
                   </div>
                   <div class="flex items-center gap-1">

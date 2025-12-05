@@ -1,5 +1,6 @@
 package com.ssaverytime.server.service;
 
+import com.ssaverytime.server.model.board.BoardRequestDto;
 import com.ssaverytime.server.model.board.BoardResponseDto;
 import java.util.List;
 
@@ -11,10 +12,10 @@ public interface BoardService {
     BoardResponseDto getBoardDetail(int boardId, Integer userSeq);
     
     // 글 작성
-    int writeBoard(BoardResponseDto boardResponseDto);
+    int writeBoard(BoardRequestDto boardRequestDto);
     
     // 글 수정
-    int modifyBoard(BoardResponseDto boardResponseDto);
+    int modifyBoard(BoardRequestDto boardRequestDto);
     
     // 글 삭제 (숨김 처리)
     int removeBoard(int boardId, int userSeq);

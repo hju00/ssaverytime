@@ -1,5 +1,6 @@
 package com.ssaverytime.server.controller;
 
+import com.ssaverytime.server.model.board.BoardRequestDto;
 import com.ssaverytime.server.model.board.BoardResponseDto;
 import com.ssaverytime.server.service.BoardService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,11 +51,11 @@ public class BoardController {
 
     // 글 작성
     @PostMapping
-    public ResponseEntity<String> writeBoard(@RequestBody BoardResponseDto boardResponseDto) {
+    public ResponseEntity<String> writeBoard(@RequestBody BoardRequestDto boardRequestDto) {
         // TODO: 로그인한 사용자 정보 세팅
-        boardResponseDto.setUserSeq(1);
+        boardRequestDto.setUserSeq(1);
 
-        int result = boardService.writeBoard(boardResponseDto);
+        int result = boardService.writeBoard(boardRequestDto);
         if (result > 0) {
             return new ResponseEntity<>("success", HttpStatus.CREATED);
         }
@@ -63,11 +64,11 @@ public class BoardController {
 
     // 글 수정
     @PutMapping
-    public ResponseEntity<String> modifyBoard(@RequestBody BoardResponseDto boardResponseDto) {
+    public ResponseEntity<String> modifyBoard(@RequestBody BoardRequestDto boardRequestDto) {
         // 본인 확인 로직 필요
-        boardResponseDto.setUserSeq(1); // 테스트용
+        boardRequestDto.setUserSeq(1); // 테스트용
 
-        int result = boardService.modifyBoard(boardResponseDto);
+        int result = boardService.modifyBoard(boardRequestDto);
         if (result > 0) {
             return new ResponseEntity<>("success", HttpStatus.OK);
         }

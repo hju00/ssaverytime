@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: ssaverytime-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ssafy
+      MYSQL_DATABASE: ssaverytime
+      MYSQL_USER: ssafy
+      MYSQL_PASSWORD: ssafy
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+
+  backend:
+    build: ./ssaverytime-BE
+    container_name: ssaverytime-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/ssaverytime?serverTimezone=UTC&useUniCode=yes&characterEncoding=UTF-8
+      - SPRING_DATASOURCE_USERNAME=ssafy
+      - SPRING_DATASOURCE_PASSWORD=ssafy
+
+  frontend:
+    build: ./ssavery-time
+    container_name: ssaverytime-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  db-data:

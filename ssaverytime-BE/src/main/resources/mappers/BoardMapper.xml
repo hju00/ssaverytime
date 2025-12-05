@@ -80,13 +80,13 @@
     </select>
 
     <!-- 게시글 작성 -->
-    <insert id="insertBoard" parameterType="com.ssaverytime.server.model.board.BoardResponseDto" useGeneratedKeys="true" keyProperty="boardId">
+    <insert id="insertBoard" parameterType="com.ssaverytime.server.model.board.BoardRequestDto" useGeneratedKeys="true" keyProperty="boardId">
         INSERT INTO BOARD (USER_ID, TITLE, BODY, SUMMARY)
         VALUES (#{userSeq}, #{title}, #{body}, #{summary})
     </insert>
 
     <!-- 게시글 수정 -->
-    <update id="updateBoard" parameterType="com.ssaverytime.server.model.board.BoardResponseDto">
+    <update id="updateBoard" parameterType="com.ssaverytime.server.model.board.BoardRequestDto">
         UPDATE BOARD
         SET TITLE = #{title},
             BODY = #{body},

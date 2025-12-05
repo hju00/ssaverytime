@@ -1,6 +1,7 @@
 package com.ssaverytime.server.service;
 
 import com.ssaverytime.server.mapper.BoardMapper;
+import com.ssaverytime.server.model.board.BoardRequestDto;
 import com.ssaverytime.server.model.board.BoardResponseDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,24 +27,24 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public int writeBoard(BoardResponseDto boardResponseDto) {
+    public int writeBoard(BoardRequestDto boardRequestDto) {
         // Summary 생성 로직 (본문 앞부분 잘라서 저장)
-        if (boardResponseDto.getBody() != null && boardResponseDto.getBody().length() > 100) {
-            boardResponseDto.setSummary(boardResponseDto.getBody().substring(0, 100) + "...");
+        if (boardRequestDto.getBody() != null && boardRequestDto.getBody().length() > 100) {
+            boardRequestDto.setSummary(boardRequestDto.getBody().substring(0, 100) + "...");
         } else {
-            boardResponseDto.setSummary(boardResponseDto.getBody());
+            boardRequestDto.setSummary(boardRequestDto.getBody());
         }
-        return boardMapper.insertBoard(boardResponseDto);
+        return boardMapper.insertBoard(boardRequestDto);
     }
 
     @Override
-    public int modifyBoard(BoardResponseDto boardResponseDto) {
-        if (boardResponseDto.getBody() != null && boardResponseDto.getBody().length() > 100) {
-            boardResponseDto.setSummary(boardResponseDto.getBody().substring(0, 100) + "...");
+    public int modifyBoard(BoardRequestDto boardRequestDto) {
+        if (boardRequestDto.getBody() != null && boardRequestDto.getBody().length() > 100) {
+            boardRequestDto.setSummary(boardRequestDto.getBody().substring(0, 100) + "...");
         } else {
-            boardResponseDto.setSummary(boardResponseDto.getBody());
+            boardRequestDto.setSummary(boardRequestDto.getBody());
         }
-        return boardMapper.updateBoard(boardResponseDto);
+        return boardMapper.updateBoard(boardRequestDto);
     }
 
     @Override

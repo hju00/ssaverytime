@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-// 백엔드 API 주소 (로컬 환경 가정)
-const BASE_URL = 'http://localhost:8080/api'
+// 백엔드 API 주소 (Vite Proxy 사용)
+const BASE_URL = '/api'
 
 const http = axios.create({
   baseURL: BASE_URL,

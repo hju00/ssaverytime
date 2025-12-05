@@ -2,28 +2,13 @@ package com.ssaverytime.server.model.board;
 
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
 @Data
 public class BoardRequestDto {
-    private int boardId;
-    
-    // 작성자 정보
-    private int userSeq;     // USER table PK (USER_ID)
-    private String bojId;    // USER table BOJ_ID (로그인 ID)
-    private String userName; // USER table NAME
-    private String userTier; // USER table BAEKJOON (티어 정보)
+    private int boardId;      // 수정 시 필요, 작성 시 자동 생성(무시됨)
+    private int userSeq;      // 컨트롤러에서 주입
     
     private String title;
     private String body;
     private String summary;
-    private String visible; // '1' or '0'
-    private int warningCnt;
-    private LocalDateTime createdAt;
-    
-    // 집계 및 상태 정보 (DB 조회 시 계산)
-    private int likeCount;
-    private int commentCount;
-    private boolean isLiked;
-    private boolean isScrapped;
+    private String visible;   // '1' (공개) or '0' (비공개)
 }
