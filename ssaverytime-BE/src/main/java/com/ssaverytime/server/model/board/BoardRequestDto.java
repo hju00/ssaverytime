@@ -13,6 +13,5 @@ public class BoardRequestDto {
     private String visible;   // '1' (공개) or '0' (익명)
     
     // 익명 게시글용 스냅샷 정보
-    private String authorName;
     private String authorTier;
 }

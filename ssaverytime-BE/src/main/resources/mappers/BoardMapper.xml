@@ -11,13 +11,14 @@
             b.TITLE,
             b.SUMMARY,
             b.CREATED_AT,
+            b.UPDATED_AT,
             b.VISIBLE,
             b.USER_ID AS userSeq,
             CASE WHEN b.USER_ID IS NULL THEN 'anonymous' ELSE u.BOJ_ID END AS bojId,
-            CASE WHEN b.USER_ID IS NULL THEN b.AUTHOR_NAME ELSE u.NAME END AS userName,
+            CASE WHEN b.USER_ID IS NULL THEN '익명' ELSE u.NAME END AS userName,
             CASE WHEN b.USER_ID IS NULL THEN b.AUTHOR_TIER ELSE IFNULL(u.BAEKJOON, 'Unrated') END AS userTier,
             (SELECT COUNT(*) FROM LIKES l WHERE l.BOARD_ID = b.BOARD_ID) AS likeCount,
-            (SELECT COUNT(*) FROM COMMENT c WHERE c.BOARD_ID = b.BOARD_ID AND c.VISIBLE = '1') AS commentCount,
+            (SELECT COUNT(*) FROM COMMENT c WHERE c.BOARD_ID = b.BOARD_ID AND c.VISIBLE = '1' AND c.VALID = '1') AS commentCount,
             <choose>
                 <when test="currentUserSeq != null">
                     (SELECT COUNT(*) > 0 FROM LIKES l WHERE l.BOARD_ID = b.BOARD_ID AND l.USER_ID = #{currentUserSeq}) AS isLiked,
@@ -30,7 +31,7 @@
             </choose>
         FROM BOARD b
         LEFT JOIN USER u ON b.USER_ID = u.USER_ID
-        WHERE b.VISIBLE IN ('1', '0')
+        WHERE b.VISIBLE IN ('1', '0') AND b.VALID = '1'
         <if test="keyword != null and keyword != ''">
             AND (b.TITLE LIKE CONCAT('%', #{keyword}, '%') OR b.BODY LIKE CONCAT('%', #{keyword}, '%'))
         </if>
@@ -57,13 +58,14 @@
             b.BODY,
             b.SUMMARY,
             b.CREATED_AT,
+            b.UPDATED_AT,
             b.VISIBLE,
             b.USER_ID AS userSeq,
             CASE WHEN b.USER_ID IS NULL THEN 'anonymous' ELSE u.BOJ_ID END AS bojId,
-            CASE WHEN b.USER_ID IS NULL THEN b.AUTHOR_NAME ELSE u.NAME END AS userName,
+            CASE WHEN b.USER_ID IS NULL THEN '익명' ELSE u.NAME END AS userName,
             CASE WHEN b.USER_ID IS NULL THEN b.AUTHOR_TIER ELSE IFNULL(u.BAEKJOON, 'Unrated') END AS userTier,
             (SELECT COUNT(*) FROM LIKES l WHERE l.BOARD_ID = b.BOARD_ID) AS likeCount,
-            (SELECT COUNT(*) FROM COMMENT c WHERE c.BOARD_ID = b.BOARD_ID AND c.VISIBLE = '1') AS commentCount,
+            (SELECT COUNT(*) FROM COMMENT c WHERE c.BOARD_ID = b.BOARD_ID AND c.VISIBLE = '1' AND c.VALID = '1') AS commentCount,
             <choose>
                 <when test="currentUserSeq != null">
                     (SELECT COUNT(*) > 0 FROM LIKES l WHERE l.BOARD_ID = b.BOARD_ID AND l.USER_ID = #{currentUserSeq}) AS isLiked,
@@ -76,13 +78,13 @@
             </choose>
         FROM BOARD b
         LEFT JOIN USER u ON b.USER_ID = u.USER_ID
-        WHERE b.BOARD_ID = #{boardId}
+        WHERE b.BOARD_ID = #{boardId} AND b.VALID = '1'
     </select>
 
     <!-- 게시글 작성 -->
     <insert id="insertBoard" parameterType="com.ssaverytime.server.model.board.BoardRequestDto" useGeneratedKeys="true" keyProperty="boardId">
-        INSERT INTO BOARD (USER_ID, TITLE, BODY, SUMMARY, VISIBLE, AUTHOR_NAME, AUTHOR_TIER)
-        VALUES (#{userSeq}, #{title}, #{body}, #{summary}, #{visible}, #{authorName}, #{authorTier})
+        INSERT INTO BOARD (USER_ID, TITLE, BODY, SUMMARY, VISIBLE, AUTHOR_TIER)
+        VALUES (#{userSeq}, #{title}, #{body}, #{summary}, #{visible}, #{authorTier})
     </insert>
 
     <!-- 게시글 수정 -->
@@ -90,14 +92,15 @@
         UPDATE BOARD
         SET TITLE = #{title},
             BODY = #{body},
-            SUMMARY = #{summary}
-        WHERE BOARD_ID = #{boardId} AND USER_ID = #{userSeq}
+            SUMMARY = #{summary},
+            UPDATED_AT = NOW()
+        WHERE BOARD_ID = #{boardId}
     </update>
 
-    <!-- 게시글 삭제 (완전 삭제) -->
-    <delete id="deleteBoard">
-        DELETE FROM BOARD WHERE BOARD_ID = #{boardId}
-    </delete>
+    <!-- 게시글 삭제 (Soft Delete) -->
+    <update id="deleteBoard">
+        UPDATE BOARD SET VALID = '0' WHERE BOARD_ID = #{boardId}
+    </update>
 
     <!-- 게시글 숨김 처리 (관리자 또는 본인 삭제 시 사용 가능) -->
     <update id="updateBoardVisibility">
