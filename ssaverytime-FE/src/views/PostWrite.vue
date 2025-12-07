@@ -34,11 +34,14 @@
             <input 
               type="checkbox" 
               id="anonymous" 
-              class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer accent-primary"
+              class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer accent-primary disabled:cursor-not-allowed disabled:opacity-50"
+              :disabled="isEditMode"
               :checked="form.visible === '0'" 
               @change="(e) => form.visible = e.target.checked ? '0' : '1'" 
             />
-            <Label for="anonymous" class="cursor-pointer">익명</Label>
+            <Label for="anonymous" class="cursor-pointer" :class="{ 'cursor-not-allowed opacity-50': isEditMode }">
+              익명 {{ isEditMode ? '(수정 불가)' : '' }}
+            </Label>
           </div>
         </CardContent>
         <CardFooter class="flex justify-end gap-2">
@@ -53,9 +56,9 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
-import { writeBoard } from '@/api/board'
+import { ref, reactive, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { writeBoard, getBoardDetail, updateBoard } from '@/api/board'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -63,13 +66,10 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 
 const router = useRouter()
+const route = useRoute()
 
 // TODO: 나중에 JWT 토큰에서 사용자 정보를 파싱하는 로직으로 대체 필요
 const getUserInfo = () => {
-  // const token = localStorage.getItem('accessToken')
-  // if (!token) return null
-  // return parseJwt(token)
-  
   return {
     name: '유저왕(JWT)',
     tier: 'PLATINUM I',
@@ -81,10 +81,31 @@ const getUserInfo = () => {
 const user = ref(getUserInfo())
 
 const isSubmitting = ref(false)
+const isEditMode = ref(false)
 const form = reactive({
+  boardId: null,
   title: '',
   body: '',
   visible: '1' // 기본 공개 ('1': 실명, '0': 익명)
+})
+
+onMounted(async () => {
+  const boardId = route.query.id
+  if (boardId) {
+    isEditMode.value = true
+    form.boardId = boardId
+    try {
+      const response = await getBoardDetail(boardId)
+      const data = response.data
+      form.title = data.title
+      form.body = data.body
+      form.visible = data.visible
+    } catch (error) {
+      console.error('Failed to load post data:', error)
+      alert('게시글 정보를 불러오는데 실패했습니다.')
+      router.push('/board')
+    }
+  }
 })
 
 const goBack = () => {
@@ -103,20 +124,30 @@ const submitPost = async () => {
 
   isSubmitting.value = true
   try {
-    // DTO 구조에 맞게 데이터 전송
-    // BoardRequestDto: { title, body, visible, ... }
-    await writeBoard({
-      title: form.title,
-      body: form.body,
-      visible: form.visible
-    })
+    if (isEditMode.value) {
+      // TODO: 현재 백엔드는 수정 시 작성자 본인 확인을 위해 토큰 대신 하드코딩된 ID(1)를 사용 중입니다.
+      // 로그인이 구현되면 이 부분은 토큰을 통해 자동으로 처리되어야 합니다.
+      await updateBoard({
+        boardId: form.boardId,
+        title: form.title,
+        body: form.body,
+        visible: form.visible
+      })
+      alert('게시글이 수정되었습니다.')
+    } else {
+      await writeBoard({
+        title: form.title,
+        body: form.body,
+        visible: form.visible
+      })
+    }
     
     // 성공 시 목록으로 이동
     router.push('/board')
     
   } catch (error) {
-    console.error('Failed to write post:', error)
-    alert('게시글 작성에 실패했습니다.')
+    console.error('Failed to save post:', error)
+    alert('게시글 저장에 실패했습니다.')
   } finally {
     isSubmitting.value = false
   }
