@@ -19,6 +19,7 @@ public class BoardResponseDto {
     private String visible; // '1' or '0'
     private int warningCnt;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     
     // 집계 및 상태 정보 (DB 조회 시 계산)
     private int likeCount;

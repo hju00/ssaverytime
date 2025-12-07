@@ -63,7 +63,6 @@ public class BoardServiceImpl implements BoardService {
             String userTier = userMapper.getUserTier(realUserSeq);
             if (userTier == null) userTier = "Unrated";
             
-            boardRequestDto.setAuthorName("익명");
             boardRequestDto.setAuthorTier(userTier);
             boardRequestDto.setUserSeq(null); // DB에 NULL 저장
             
@@ -93,9 +92,9 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     public int removeBoard(int boardId, int userSeq) {
-        // 실제 삭제가 아닌 숨김 처리로 구현 (데이터 보존)
+        // 실제 삭제가 아닌 숨김 처리로 구현 (데이터 보존) -> Soft Delete (VALID='0')
         // 본인 확인 로직은 Controller나 Security 레벨에서 수행된다고 가정
-        return boardMapper.updateBoardVisibility(boardId, "0");
+        return boardMapper.deleteBoard(boardId);
     }
 
     @Transactional
