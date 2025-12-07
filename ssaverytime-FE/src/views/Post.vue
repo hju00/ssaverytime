@@ -14,7 +14,18 @@
       <!-- Post Header -->
       <Card class="border-border">
         <CardHeader class="space-y-4">
-          <h1 class="text-2xl font-bold text-foreground leading-tight">{{ post.title }}</h1>
+          <div class="flex justify-between items-start gap-4">
+          <h1 class="text-2xl font-bold text-foreground leading-tight flex-1">{{ post.title }}</h1>
+          <!-- TODO: 로그인 구현 후 'true ||' 제거하여 권한 체크 활성화 필요 -->
+          <div v-if="true || post.isAuthor" class="flex items-center gap-1 shrink-0">
+             <Button variant="ghost" size="sm" class="h-8 w-8 p-0" @click="editPost">
+                <EditIcon class="w-4 h-4 text-muted-foreground hover:text-foreground" />
+             </Button>
+             <Button variant="ghost" size="sm" class="h-8 w-8 p-0" @click="deletePostAction">
+                <Trash2Icon class="w-4 h-4 text-muted-foreground hover:text-destructive" />
+             </Button>
+          </div>
+      </div>
 
           <!-- Author Info -->
           <div class="flex items-center gap-3 pt-2 border-t border-border/50">
@@ -111,8 +122,8 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import { getBoardDetail, toggleLike, toggleScrap } from '@/api/board'
+import { useRouter, useRoute } from 'vue-router'
+import { getBoardDetail, toggleLike, toggleScrap, deleteBoard } from '@/api/board'
 import { getTierNumber } from '@/lib/utils'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -125,8 +136,10 @@ import {
   Reply as ReplyIcon,
   Trash2 as Trash2Icon,
   ChevronLeft as ChevronLeftIcon,
+  Edit as EditIcon
 } from 'lucide-vue-next'
 
+const router = useRouter()
 const route = useRoute()
 const post = ref(null)
 const loading = ref(false)
@@ -166,6 +179,24 @@ const fetchPost = async () => {
     post.value = null;
   } finally {
     loading.value = false;
+  }
+}
+
+const editPost = () => {
+  if (!post.value) return;
+  router.push(`/board/write?id=${post.value.boardId}`);
+}
+
+const deletePostAction = async () => {
+  if (!post.value) return;
+  if (!confirm('정말로 게시글을 삭제하시겠습니까?')) return;
+  
+  try {
+    await deleteBoard(post.value.boardId);
+    router.replace('/board');
+  } catch (error) {
+    console.error("Failed to delete post:", error);
+    alert("게시글 삭제에 실패했습니다.");
   }
 }
 
