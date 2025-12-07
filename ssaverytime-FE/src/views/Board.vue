@@ -101,6 +101,7 @@
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getBoardList } from '@/api/board'
+import { getTierNumber } from '@/lib/utils'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -134,41 +135,6 @@ const size = ref(10) // Items per page
 const isLoading = ref(false)
 const hasMore = ref(true)
 const loadMoreTrigger = ref(null)
-
-// Helper: Convert Tier String to ID
-const getTierNumber = (tierStr) => {
-  if (!tierStr) return 0;
-  const tiers = ['BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND', 'RUBY', 'MASTER'];
-  const levels = {'I': 5, 'II': 4, 'III': 3, 'IV': 2, 'V': 1};
-  
-  const parts = tierStr.split(' ');
-  if (parts.length < 2) return 0; // e.g. "MASTER" handling separate if needed
-  
-  const tierIndex = tiers.indexOf(parts[0]);
-  const level = levels[parts[1]] || 0;
-  
-  if (tierIndex === -1) return 0;
-  
-  // Formula: (Tier Index * 5) + Level
-  // Bronze V = 1, Bronze I = 5
-  // Silver V = 6 ...
-  // Need to invert level logic? solved.ac: V=1, IV=2... I=5 in each tier block?
-  // Actually: Bronze V = 1, Bronze I = 5. 
-  // My logic: (0 * 5) + 1 = 1. Correct.
-  
-  // Wait, standard mapping:
-  // Bronze V (1) ... Bronze I (5)
-  // Silver V (6) ...
-  // My level map: I=5, V=1.
-  // (TierIndex * 5) + (6 - LevelNum)?
-  // Let's stick to simple manual map or:
-  // Level V -> 1, IV -> 2, III -> 3, II -> 4, I -> 5
-  // So Bronze V = 0*5 + 1 = 1. Bronze I = 0*5 + 5 = 5.
-  // Silver V = 1*5 + 1 = 6.
-  
-  const levelNum = {'V': 1, 'IV': 2, 'III': 3, 'II': 4, 'I': 5}[parts[1]] || 0;
-  return (tierIndex * 5) + levelNum;
-}
 
 // Fetch Data
 const fetchPosts = async (reset = false) => {
