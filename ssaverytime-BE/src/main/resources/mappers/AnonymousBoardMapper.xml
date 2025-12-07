@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssaverytime.server.mapper.AnonymousBoardMapper">
+
+    <insert id="insertAnonymousAuthorship">
+        INSERT INTO ANONYMOUS_BOARD_AUTHORSHIP (BOARD_ID, AUTHOR_HASH)
+        VALUES (#{boardId}, #{authorHash})
+    </insert>
+
+    <select id="checkAnonymousAuthorship" resultType="int">
+        SELECT COUNT(*)
+        FROM ANONYMOUS_BOARD_AUTHORSHIP
+        WHERE BOARD_ID = #{boardId} AND AUTHOR_HASH = #{authorHash}
+    </select>
+
+</mapper>

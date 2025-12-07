@@ -12,10 +12,10 @@
             b.SUMMARY,
             b.CREATED_AT,
             b.VISIBLE,
-            u.USER_ID AS userSeq,
-            CASE WHEN b.VISIBLE = '0' THEN 'anonymous' ELSE u.BOJ_ID END AS bojId,
-            CASE WHEN b.VISIBLE = '0' THEN '익명' ELSE u.NAME END AS userName,
-            IFNULL(u.BAEKJOON, 'Unrated') AS userTier,
+            b.USER_ID AS userSeq,
+            CASE WHEN b.USER_ID IS NULL THEN 'anonymous' ELSE u.BOJ_ID END AS bojId,
+            CASE WHEN b.USER_ID IS NULL THEN b.AUTHOR_NAME ELSE u.NAME END AS userName,
+            CASE WHEN b.USER_ID IS NULL THEN b.AUTHOR_TIER ELSE IFNULL(u.BAEKJOON, 'Unrated') END AS userTier,
             (SELECT COUNT(*) FROM LIKES l WHERE l.BOARD_ID = b.BOARD_ID) AS likeCount,
             (SELECT COUNT(*) FROM COMMENT c WHERE c.BOARD_ID = b.BOARD_ID AND c.VISIBLE = '1') AS commentCount,
             <choose>
@@ -29,7 +29,7 @@
                 </otherwise>
             </choose>
         FROM BOARD b
-        JOIN USER u ON b.USER_ID = u.USER_ID
+        LEFT JOIN USER u ON b.USER_ID = u.USER_ID
         WHERE b.VISIBLE IN ('1', '0')
         <if test="keyword != null and keyword != ''">
             AND (b.TITLE LIKE CONCAT('%', #{keyword}, '%') OR b.BODY LIKE CONCAT('%', #{keyword}, '%'))
@@ -58,10 +58,10 @@
             b.SUMMARY,
             b.CREATED_AT,
             b.VISIBLE,
-            u.USER_ID AS userSeq,
-            CASE WHEN b.VISIBLE = '0' THEN 'anonymous' ELSE u.BOJ_ID END AS bojId,
-            CASE WHEN b.VISIBLE = '0' THEN '익명' ELSE u.NAME END AS userName,
-            IFNULL(u.BAEKJOON, 'Unrated') AS userTier,
+            b.USER_ID AS userSeq,
+            CASE WHEN b.USER_ID IS NULL THEN 'anonymous' ELSE u.BOJ_ID END AS bojId,
+            CASE WHEN b.USER_ID IS NULL THEN b.AUTHOR_NAME ELSE u.NAME END AS userName,
+            CASE WHEN b.USER_ID IS NULL THEN b.AUTHOR_TIER ELSE IFNULL(u.BAEKJOON, 'Unrated') END AS userTier,
             (SELECT COUNT(*) FROM LIKES l WHERE l.BOARD_ID = b.BOARD_ID) AS likeCount,
             (SELECT COUNT(*) FROM COMMENT c WHERE c.BOARD_ID = b.BOARD_ID AND c.VISIBLE = '1') AS commentCount,
             <choose>
@@ -75,14 +75,14 @@
                 </otherwise>
             </choose>
         FROM BOARD b
-        JOIN USER u ON b.USER_ID = u.USER_ID
+        LEFT JOIN USER u ON b.USER_ID = u.USER_ID
         WHERE b.BOARD_ID = #{boardId}
     </select>
 
     <!-- 게시글 작성 -->
     <insert id="insertBoard" parameterType="com.ssaverytime.server.model.board.BoardRequestDto" useGeneratedKeys="true" keyProperty="boardId">
-        INSERT INTO BOARD (USER_ID, TITLE, BODY, SUMMARY, VISIBLE)
-        VALUES (#{userSeq}, #{title}, #{body}, #{summary}, #{visible})
+        INSERT INTO BOARD (USER_ID, TITLE, BODY, SUMMARY, VISIBLE, AUTHOR_NAME, AUTHOR_TIER)
+        VALUES (#{userSeq}, #{title}, #{body}, #{summary}, #{visible}, #{authorName}, #{authorTier})
     </insert>
 
     <!-- 게시글 수정 -->

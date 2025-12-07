@@ -25,4 +25,5 @@ public class BoardResponseDto {
     private int commentCount;
     private boolean isLiked;
     private boolean isScrapped;
+    private boolean isAuthor;
 }

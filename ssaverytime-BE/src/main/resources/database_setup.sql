@@ -16,6 +16,7 @@ DROP TABLE IF EXISTS SCRAP;
 DROP TABLE IF EXISTS AI_TOKEN;
 DROP TABLE IF EXISTS MENU;
 DROP TABLE IF EXISTS STAR;
+DROP TABLE IF EXISTS ANONYMOUS_BOARD_AUTHORSHIP;
 DROP TABLE IF EXISTS BOARD;
 DROP TABLE IF EXISTS USER;
 DROP TABLE IF EXISTS RESTAURANT;
@@ -42,15 +43,26 @@ CREATE TABLE RESTAURANT (
 
 CREATE TABLE BOARD (
     BOARD_ID    INT    NOT NULL AUTO_INCREMENT,
-    USER_ID    INT    NOT NULL,
+    USER_ID    INT    NULL,
     TITLE    VARCHAR(255)    NOT NULL,
     BODY    TEXT    NULL,
     SUMMARY    TEXT    NULL DEFAULT NULL,
+    AUTHOR_NAME VARCHAR(50) NULL,
+    AUTHOR_TIER VARCHAR(50) NULL,
     VISIBLE    ENUM('1', '0')    NOT NULL DEFAULT '1',
     WARNING_CNT    INT    NOT NULL DEFAULT 0,
     CREATED_AT    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (BOARD_ID),
     CONSTRAINT FK_USER_TO_BOARD FOREIGN KEY (USER_ID) REFERENCES USER (USER_ID) ON DELETE CASCADE
+);
+
+CREATE TABLE ANONYMOUS_BOARD_AUTHORSHIP (
+    AA_ID    INT    NOT NULL AUTO_INCREMENT,
+    BOARD_ID    INT    NOT NULL,
+    AUTHOR_HASH    VARCHAR(256)    NOT NULL,
+    CREATED_AT    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (AA_ID),
+    CONSTRAINT FK_BOARD_TO_AA FOREIGN KEY (BOARD_ID) REFERENCES BOARD (BOARD_ID) ON DELETE CASCADE
 );
 
 CREATE TABLE COMMENT (
@@ -137,12 +149,12 @@ INSERT INTO RESTAURANT (RESTAURANT_ID, NAME) VALUES
 (5, '속이찬새참');
 
 -- 3) BOARD (수정됨: 컬럼 7개, 값 7개 맞춤)
-INSERT INTO BOARD (BOARD_ID, USER_ID, TITLE, BODY, SUMMARY, VISIBLE, WARNING_CNT) VALUES
-(1, 1, '백반집 점심 후기', '오늘 백반집 가봤는데 가성비 최고예요.', '백반집 가성비 최고', '1', 0),
-(2, 5, '이번 시즌 알고리즘 질문', '다들 백준 문제 푸시나요?', '백준 문제 푸시나요?', '1', 0),
-(3, 3, '솔직히 실버들은 발언 허락 받고 해야한다 생각합니다.', '광주캠퍼스 노트북 쓰기 좋은 카페 아시는 분?', '카페 추천 좀', '1', 0),
-(4, 2, '운영 공지: 서비스 업데이트 안내', '새로운 기능이 추가될 예정입니다.', '기능 추가 예정', '1', 0),
-(5, 1, '숨김 테스트 게시글', '이 글은 관리자가 숨길 수 있습니다.', '관리자용', '0', 0);
+INSERT INTO BOARD (BOARD_ID, USER_ID, TITLE, BODY, SUMMARY, VISIBLE, WARNING_CNT, AUTHOR_NAME, AUTHOR_TIER) VALUES
+(1, 1, '백반집 점심 후기', '오늘 백반집 가봤는데 가성비 최고예요.', '백반집 가성비 최고', '1', 0, NULL, NULL),
+(2, 5, '이번 시즌 알고리즘 질문', '다들 백준 문제 푸시나요?', '백준 문제 푸시나요?', '1', 0, NULL, NULL),
+(3, 3, '솔직히 실버들은 발언 허락 받고 해야한다 생각합니다.', '광주캠퍼스 노트북 쓰기 좋은 카페 아시는 분?', '카페 추천 좀', '1', 0, NULL, NULL),
+(4, 2, '운영 공지: 서비스 업데이트 안내', '새로운 기능이 추가될 예정입니다.', '기능 추가 예정', '1', 0, NULL, NULL),
+(5, NULL, '숨김 테스트 게시글', '이 글은 관리자가 숨길 수 있습니다.', '관리자용', '0', 0, '익명', 'GOLD V');
 
 -- 4) COMMENT
 INSERT INTO COMMENT (COMMENT_ID, BOARD_ID, USER_ID, BODY, VISIBLE, WARNING_CNT) VALUES
