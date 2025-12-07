@@ -150,12 +150,14 @@ const anonymous = ref(false)
 
 const formatDate = (dateString) => {
   if (!dateString) return '';
-  const date = new Date(dateString);
+  // 백엔드에서 UTC로 오는 시간을 로컬 시간으로 변환하기 위해 'Z' 추가
+  const date = new Date(dateString.endsWith('Z') ? dateString : dateString + 'Z');
   return new Intl.DateTimeFormat('ko-KR', {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
+    hour12: false
   }).format(date);
 }
 
