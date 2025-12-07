@@ -210,8 +210,7 @@ onUnmounted(() => {
 
 const formatDate = (dateString) => {
   if (!dateString) return '';
-  // 백엔드에서 UTC로 오는 시간을 로컬 시간으로 변환하기 위해 'Z' 추가
-  const date = new Date(dateString.endsWith('Z') ? dateString : dateString + 'Z');
+  const date = new Date(dateString);
   return new Intl.DateTimeFormat('ko-KR', {
     month: 'short',
     day: 'numeric',
