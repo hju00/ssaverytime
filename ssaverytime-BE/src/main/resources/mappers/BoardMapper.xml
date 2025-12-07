@@ -15,7 +15,7 @@
             u.USER_ID AS userSeq,
             CASE WHEN b.VISIBLE = '0' THEN 'anonymous' ELSE u.BOJ_ID END AS bojId,
             CASE WHEN b.VISIBLE = '0' THEN '익명' ELSE u.NAME END AS userName,
-            CASE WHEN b.VISIBLE = '0' THEN 'Unrated' ELSE u.BAEKJOON END AS userTier,
+            IFNULL(u.BAEKJOON, 'Unrated') AS userTier,
             (SELECT COUNT(*) FROM LIKES l WHERE l.BOARD_ID = b.BOARD_ID) AS likeCount,
             (SELECT COUNT(*) FROM COMMENT c WHERE c.BOARD_ID = b.BOARD_ID AND c.VISIBLE = '1') AS commentCount,
             <choose>
@@ -61,7 +61,7 @@
             u.USER_ID AS userSeq,
             CASE WHEN b.VISIBLE = '0' THEN 'anonymous' ELSE u.BOJ_ID END AS bojId,
             CASE WHEN b.VISIBLE = '0' THEN '익명' ELSE u.NAME END AS userName,
-            CASE WHEN b.VISIBLE = '0' THEN 'Unrated' ELSE u.BAEKJOON END AS userTier,
+            IFNULL(u.BAEKJOON, 'Unrated') AS userTier,
             (SELECT COUNT(*) FROM LIKES l WHERE l.BOARD_ID = b.BOARD_ID) AS likeCount,
             (SELECT COUNT(*) FROM COMMENT c WHERE c.BOARD_ID = b.BOARD_ID AND c.VISIBLE = '1') AS commentCount,
             <choose>
