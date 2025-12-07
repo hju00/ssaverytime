@@ -15,6 +15,12 @@ public class BoardServiceImpl implements BoardService {
     @Autowired
     private BoardMapper boardMapper;
 
+    @Autowired
+    private com.ssaverytime.server.mapper.AnonymousBoardMapper anonymousBoardMapper;
+    
+    @Autowired
+    private com.ssaverytime.server.mapper.UserMapper userMapper;
+
     @Override
     public List<BoardResponseDto> getBoardList(String keyword, String sort, int page, int size, Integer userSeq) {
         int offset = (page - 1) * size;
@@ -23,18 +29,56 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     public BoardResponseDto getBoardDetail(int boardId, Integer userSeq) {
-        return boardMapper.selectBoardDetail(boardId, userSeq);
+        BoardResponseDto board = boardMapper.selectBoardDetail(boardId, userSeq);
+        
+        if (board != null && userSeq != null) {
+            if ("0".equals(board.getVisible())) {
+                // 익명 게시글: 해시값 비교
+                String currentHash = com.ssaverytime.server.util.SecurityUtil.generateAuthorHash(boardId, userSeq);
+                int count = anonymousBoardMapper.checkAnonymousAuthorship(boardId, currentHash);
+                board.setAuthor(count > 0);
+            } else {
+                // 일반 게시글: UserSeq 직접 비교
+                board.setAuthor(board.getUserSeq() == userSeq);
+            }
+        }
+        
+        return board;
     }
 
     @Override
+    @Transactional
     public int writeBoard(BoardRequestDto boardRequestDto) {
-        // Summary 생성 로직 (본문 앞부분 잘라서 저장)
+        // Summary 생성 로직
         if (boardRequestDto.getBody() != null && boardRequestDto.getBody().length() > 100) {
             boardRequestDto.setSummary(boardRequestDto.getBody().substring(0, 100) + "...");
         } else {
             boardRequestDto.setSummary(boardRequestDto.getBody());
         }
-        return boardMapper.insertBoard(boardRequestDto);
+        
+        Integer realUserSeq = boardRequestDto.getUserSeq();
+        
+        if ("0".equals(boardRequestDto.getVisible())) {
+            // 익명 게시글 처리 (스냅샷 저장)
+            String userTier = userMapper.getUserTier(realUserSeq);
+            if (userTier == null) userTier = "Unrated";
+            
+            boardRequestDto.setAuthorName("익명");
+            boardRequestDto.setAuthorTier(userTier);
+            boardRequestDto.setUserSeq(null); // DB에 NULL 저장
+            
+            int result = boardMapper.insertBoard(boardRequestDto);
+            
+            if (result > 0) {
+                // 소유권 해시 저장 (게시글 ID + 실제 UserID)
+                String hash = com.ssaverytime.server.util.SecurityUtil.generateAuthorHash(boardRequestDto.getBoardId(), realUserSeq);
+                anonymousBoardMapper.insertAnonymousAuthorship(boardRequestDto.getBoardId(), hash);
+            }
+            return result;
+        } else {
+            // 일반 게시글 처리
+            return boardMapper.insertBoard(boardRequestDto);
+        }
     }
 
     @Override
