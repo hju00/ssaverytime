@@ -34,11 +34,14 @@
             <input 
               type="checkbox" 
               id="anonymous" 
-              class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer accent-primary"
+              class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer accent-primary disabled:cursor-not-allowed disabled:opacity-50"
+              :disabled="isEditMode"
               :checked="form.visible === '0'" 
               @change="(e) => form.visible = e.target.checked ? '0' : '1'" 
             />
-            <Label for="anonymous" class="cursor-pointer">익명</Label>
+            <Label for="anonymous" class="cursor-pointer" :class="{ 'cursor-not-allowed opacity-50': isEditMode }">
+              익명 {{ isEditMode ? '(수정 불가)' : '' }}
+            </Label>
           </div>
         </CardContent>
         <CardFooter class="flex justify-end gap-2">
