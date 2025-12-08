@@ -1,4 +1,4 @@
-package com.ssaverytime.server.model.dto.auth;
+package com.ssaverytime.server.domain.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,8 +8,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class RegistRequestDto {
-    private String boj_id;
+    private String bojId;
     private String password;
     private String name;
-    private int season;
+    private Integer season;
 }

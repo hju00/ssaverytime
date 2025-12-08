@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssaverytime.server.mapper.UserMapper">
+
+    <!-- BOJ_ID로 사용자 중복 여부 확인 -->
+    <select id="countByBojId" parameterType="string" resultType="int">
+        SELECT COUNT(*)
+        FROM USER
+        WHERE BOJ_ID = #{bojId}
+    </select>
+
+    <!-- 회원 정보 저장 -->
+    <insert id="insertUser" parameterType="com.ssaverytime.server.domain.model.User">
+        INSERT INTO USER
+        (BOJ_ID, PASSWORD, NAME, ROLE, SEASON, BAEKJOON, VALID, CREATED_AT)
+        VALUES
+        (
+        #{bojId},
+        #{password},
+        #{name},
+        #{role},
+        #{season},
+        #{baekjoon},
+        '1',
+        NOW()
+        )
+    </insert>
+
+    <!-- 로그인용 조회 -->
+    <select id="findByBojId"
+            parameterType="string"
+            resultType="com.ssaverytime.server.domain.model.User">
+        SELECT
+        USER_ID      AS userId,
+        BOJ_ID       AS bojId,
+        PASSWORD     AS password,
+        NAME         AS name,
+        ROLE         AS role,
+        SEASON       AS season,
+        BAEKJOON     AS baekjoon
+        FROM USER
+        WHERE BOJ_ID = #{bojId}
+        AND VALID = VALID
+    </select>
+
+</mapper>

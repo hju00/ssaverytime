@@ -1,7 +1,7 @@
 package com.ssaverytime.server.mapper;
 
-import com.ssaverytime.server.model.dto.board.BoardRequestDto;
-import com.ssaverytime.server.model.dto.board.BoardResponseDto;
+import com.ssaverytime.server.domain.dto.board.BoardRequestDto;
+import com.ssaverytime.server.domain.dto.board.BoardResponseDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

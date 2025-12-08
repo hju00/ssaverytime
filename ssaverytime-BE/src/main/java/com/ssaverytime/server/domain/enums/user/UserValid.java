@@ -1,4 +1,4 @@
-package com.ssaverytime.server.model.enums.user;
+package com.ssaverytime.server.domain.enums.user;
 
 public enum UserValid {
     VALID,
