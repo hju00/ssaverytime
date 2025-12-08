@@ -1,78 +1,201 @@
--- 게시판 무한 스크롤 테스트를 위한 대량 더미 데이터 (50개)
--- database_setup.sql 실행 후 이 파일을 실행하세요.
-
+-- 클라이언트 문자셋 설정
 SET NAMES 'utf8mb4';
 
-USE ssaverytime;
+-- 데이터베이스 생성 및 선택 (Docker Compose에서 이미 생성됨)
+-- CREATE DATABASE IF NOT EXISTS ssaverytime
+--     DEFAULT CHARACTER SET utf8mb4
+--     COLLATE utf8mb4_general_ci;
+-- USE ssaverytime;
 
--- 1. 익명 게시글 (5개) - 원래 User 1, 3, 5 등이 작성했으나 익명 처리
--- BOARD_ID: 6 ~ 10 (database_setup.sql에서 1~5 사용함)
-INSERT INTO BOARD (USER_ID, TITLE, BODY, SUMMARY, VISIBLE, AUTHOR_NAME, AUTHOR_TIER) VALUES
-(NULL, '알고리즘 스터디 모집합니다 (광주)', '아침 8시부터 1시간 동안 진행할 알고리즘 스터디원 모집합니다. 언어는 Java입니다.', '아침 8시부터 1시간 동안 진행할 알고리즘 스터디원 모집합니다.', '0', '익명', 'GOLD V'),
-(NULL, '오늘 점심 A코너 드신 분?', '맛 어떤가요? B코너랑 고민중입니다.', '맛 어떤가요? B코너랑 고민중입니다.', '0', '익명', 'SILVER III'),
-(NULL, 'Spring Boot JPA N+1 문제 해결법', 'Fetch Join 사용해서 해결했는데, EntityGraph랑 차이점이 뭔가요?', 'Fetch Join 사용해서 해결했는데, EntityGraph랑 차이점이 뭔가요.', '0', '익명', 'BRONZE I'),
-(NULL, '싸피 인근 카페 추천 리스트 정리', '1. 스타벅스 2. 투썸 3. 개인카페... 공부하기 좋은 곳 위주입니다.', '1. 스타벅스 2. 투썸 3. 개인카페... 공부하기 좋은 곳 위주입니다.', '0', '익명', 'GOLD V'),
-(NULL, '백준 골드 달성했습니다!!', '드디어 골드네요. 실버 탈출해서 너무 기쁩니다.', '드디어 골드네요. 실버 탈출해서 너무 기쁩니다.', '0', '익명', 'SILVER III');
+-- 외래키 체크 비활성화 (테이블 삭제/생성 시 순서 문제 방지)
+SET FOREIGN_KEY_CHECKS = 0;
 
--- 2. 일반 게시글 (45개)
--- BOARD_ID: 11 ~ 55
-INSERT INTO BOARD (USER_ID, TITLE, BODY, SUMMARY, VISIBLE, AUTHOR_NAME, AUTHOR_TIER) VALUES
-(5, 'Vue.js 3 setup script 질문있어요', 'defineProps 사용법이 헷갈리는데 예제 보여주실 분 계신가요?', 'defineProps 사용법이 헷갈리는데 예제 보여주실 분 계신가요?', '1', NULL, NULL),
-(1, '노트북 거치대 나눔합니다', '안 쓰는 거치대 하나 있어서 나눔해요. 교육장 3반으로 오세요.', '안 쓰는 거치대 하나 있어서 나눔해요. 교육장 3반으로 오세요.', '1', NULL, NULL),
-(3, '취업 면접 후기 공유합니다', '어제 OO기업 면접 보고 왔는데 CS 질문 위주로 많이 물어보네요.', '어제 OO기업 면접 보고 왔는데 CS 질문 위주로 많이 물어보네요.', '1', NULL, NULL),
-(5, '주말에 공부하실 분 구해요', '혼자 하려니 자꾸 눕게 되네요. 같이 줌 켜놓고 하실 분?', '혼자 하려니 자꾸 눕게 되네요. 같이 줌 켜놓고 하실 분?', '1', NULL, NULL),
-(1, '다익스트라 알고리즘이 이해가 안가요', '우선순위 큐 쓰는 부분이 헷갈리는데 설명해주실 천사분...', '우선순위 큐 쓰는 부분이 헷갈리는데 설명해주실 천사분...', '1', NULL, NULL),
-(3, '오늘 날씨 진짜 좋네요', '이런 날엔 산책이라도 다녀오세요 다들!', '이런 날엔 산책이라도 다녀오세요 다들!', '1', NULL, NULL),
-(5, '프로젝트 주제 추천 부탁드립니다', '웹 기술 활용해서 만들만한 재미있는 주제 없을까요?', '웹 기술 활용해서 만들만한 재미있는 주제 없을까요?', '1', NULL, NULL),
-(1, 'React vs Vue 뭐 배울까요?', '취업 시장에서는 React가 많다는데 Vue가 더 쉽다고 해서 고민입니다.', '취업 시장에서는 React가 많다는데 Vue가 더 쉽다고 해서 고민입니다.', '1', NULL, NULL),
-(3, '싸피 웰컴킷 언박싱', '후드집업 사이즈 딱 맞고 좋네요. 텀블러도 예뻐요.', '후드집업 사이즈 딱 맞고 좋네요. 텀블러도 예뻐요.', '1', NULL, NULL),
-(5, 'MySQL 인덱스 질문', '복합 인덱스 순서가 중요한 이유가 뭔가요?', '복합 인덱스 순서가 중요한 이유가 뭔가요?', '1', NULL, NULL),
-(1, '이번 주말에 해커톤 나가시는 분?', '저도 나가는데 혹시 팀 못 구하신 분 계시면 연락주세요.', '저도 나가는데 혹시 팀 못 구하신 분 계시면 연락주세요.', '1', NULL, NULL),
-(3, '운동 동아리 있나요?', '축구 좋아하는데 같이 차실 분 구합니다.', '축구 좋아하는데 같이 차실 분 구합니다.', '1', NULL, NULL),
-(5, '자소서 쓰는데 너무 막막하네요', '지원동기 항목이 제일 어려운 것 같아요 ㅠㅠ', '지원동기 항목이 제일 어려운 것 같아요 ㅠㅠ', '1', NULL, NULL),
-(1, '맥북 m1 vs m2 고민입니다', '개발용으로 m1 air 중고도 괜찮을까요?', '개발용으로 m1 air 중고도 괜찮을까요?', '1', NULL, NULL),
-(3, 'IntelliJ 단축키 꿀팁 공유', 'sout, psvm 말고 자주 쓰는 유용한 단축키 알려주세요.', 'sout, psvm 말고 자주 쓰는 유용한 단축키 알려주세요.', '1', NULL, NULL),
-(5, 'REST API 설계할 때 질문', 'PUT이랑 PATCH의 정확한 차이가 뭔가요? 전체 수정 부분 수정?', 'PUT이랑 PATCH의 정확한 차이가 뭔가요? 전체 수정 부분 수정?', '1', NULL, NULL),
-(1, '오늘 저녁 치킨 드실 분', '기숙사 휴게실에서 같이 시켜드실 파티원 구함 (1/4)', '기숙사 휴게실에서 같이 시켜드실 파티원 구함 (1/4)', '1', NULL, NULL),
-(3, 'CS 스터디원 충원합니다', '운영체제, 네트워크 위주로 공부합니다. 주 1회 발표.', '운영체제, 네트워크 위주로 공부합니다. 주 1회 발표.', '1', NULL, NULL),
-(5, '삼성 청년 SW 아카데미 너무 좋네요', '비전공자인데 정말 많이 배우고 있습니다. 강사님들 최고!', '비전공자인데 정말 많이 배우고 있습니다. 강사님들 최고!', '1', NULL, NULL),
-(1, '코딩 테스트 꿀팁 있나요?', '시간 관리가 너무 어려워요. 문제 읽는데만 10분 걸립니다.', '시간 관리가 너무 어려워요. 문제 읽는데만 10분 걸립니다.', '1', NULL, NULL),
-(3, 'Git merge conflict 해결 도와주세요', '충돌 났는데 코드가 다 날아갈까봐 무서워서 못 건드리고 있어요.', '충돌 났는데 코드가 다 날아갈까봐 무서워서 못 건드리고 있어요.', '1', NULL, NULL),
-(5, 'Docker 처음 써보는데 신세계네요', '환경 설정 때문에 고생했는데 컨테이너로 띄우니 너무 편해요.', '환경 설정 때문에 고생했는데 컨테이너로 띄우니 너무 편해요.', '1', NULL, NULL),
-(1, 'Redis 캐시 적용해보신 분?', '세션 저장소로 쓰고 싶은데 설정이 어렵네요.', '세션 저장소로 쓰고 싶은데 설정이 어렵네요.', '1', NULL, NULL),
-(3, '요즘 읽고 있는 개발 서적', '클린 코드 읽고 있는데 반성하게 되네요...', '클린 코드 읽고 있는데 반성하게 되네요...', '1', NULL, NULL),
-(5, '주말에 서울 올라가시나요 다들?', '버스 표 예매하려는데 자리가 없네요 ㅠㅠ', '버스 표 예매하려는데 자리가 없네요 ㅠㅠ', '1', NULL, NULL),
-(1, '알고리즘 플래티넘 찍으신 분 팁 좀...', '골드 1에서 정체기입니다. 어떤 문제를 풀어야 할까요?', '골드 1에서 정체기입니다. 어떤 문제를 풀어야 할까요?', '1', NULL, NULL),
-(3, 'CSS flexbox 너무 헷갈려요', 'justify-content랑 align-items가 매번 헷갈립니다.', 'justify-content랑 align-items가 매번 헷갈립니다.', '1', NULL, NULL),
-(5, 'JWT 토큰 만료 시간 얼마로 하시나요?', 'Access Token 30분, Refresh Token 2주 정도면 적당한가요?', 'Access Token 30분, Refresh Token 2주 정도면 적당한가요?', '1', NULL, NULL),
-(1, '배포 파이프라인 구축 질문', 'Jenkins vs Github Actions 뭐가 더 편한가요?', 'Jenkins vs Github Actions 뭐가 더 편한가요?', '1', NULL, NULL),
-(3, '오늘 급식 진짜 맛있네요', '영양사님 감사합니다 ㅠㅠ', '영양사님 감사합니다 ㅠㅠ', '1', NULL, NULL),
-(5, '파이썬이랑 자바 중에 고민입니다', '코테용 언어로 뭘 더 추천하시나요?', '코테용 언어로 뭘 더 추천하시나요?', '1', NULL, NULL),
-(1, '노션 포트폴리오 템플릿 공유', '제가 만든 템플릿 공유합니다. 필요하신 분 쓰세요.', '제가 만든 템플릿 공유합니다. 필요하신 분 쓰세요.', '1', NULL, NULL),
-(3, '개발자 키보드 추천해주세요', '리얼포스 사고 싶은데 너무 비싸네요. 저렴한 무접점 있을까요?', '리얼포스 사고 싶은데 너무 비싸네요. 저렴한 무접점 있을까요?', '1', NULL, NULL),
-(5, '모니터 암 쓰시는 분?', '거북목 때문에 하나 장만하려는데 추천 부탁드려요.', '거북목 때문에 하나 장만하려는데 추천 부탁드려요.', '1', NULL, NULL),
-(1, 'SQL 쿼리 튜닝 강의 추천', '인프런이나 유데미에서 좋은 강의 있으면 추천해주세요.', '인프런이나 유데미에서 좋은 강의 있으면 추천해주세요.', '1', NULL, NULL),
-(3, 'AWS 비용 폭탄 맞았어요', 'EC2 켜두고 깜빡했는데 과금이... 다들 조심하세요.', 'EC2 켜두고 깜빡했는데 과금이... 다들 조심하세요.', '1', NULL, NULL),
-(5, '리액트 상태관리 라이브러리', 'Redux, Recoil, Zustand 중에 요즘 대세가 뭔가요?', 'Redux, Recoil, Zustand 중에 요즘 대세가 뭔가요?', '1', NULL, NULL),
-(1, '타입스크립트 꼭 써야 하나요?', '자바스크립트로도 충분한 것 같은데 도입 비용이 걱정입니다.', '자바스크립트로도 충분한 것 같은데 도입 비용이 걱정입니다.', '1', NULL, NULL),
-(3, '객체지향의 사실과 오해 읽어보세요', '책 내용 정말 좋습니다. 강추!', '책 내용 정말 좋습니다. 강추!', '1', NULL, NULL),
-(5, '테스트 코드 작성 팁', '단위 테스트랑 통합 테스트 비중을 어떻게 가져가는게 좋을까요?', '단위 테스트랑 통합 테스트 비중을 어떻게 가져가는게 좋을까요?', '1', NULL, NULL),
-(1, 'MSA 구조 설계 질문', '서비스 분리 기준을 도메인별로 나누는게 맞나요?', '서비스 분리 기준을 도메인별로 나누는게 맞나요?', '1', NULL, NULL),
-(3, 'GraphQL 써보신 분?', 'REST API보다 좋은 점이 체감 되시나요?', 'REST API보다 좋은 점이 체감 되시나요?', '1', NULL, NULL),
-(5, '개발자 번아웃 극복 방법', '요즘 의욕이 없는데 어떻게 극복하시나요?', '요즘 의욕이 없는데 어떻게 극복하시나요?', '1', NULL, NULL),
-(1, '마지막 게시글입니다!', '무한 스크롤 테스트 끝!', '무한 스크롤 테스트 끝!', '1', NULL, NULL);
+DROP TABLE IF EXISTS COMMENT;
+DROP TABLE IF EXISTS LIKES;
+DROP TABLE IF EXISTS SCRAP;
+DROP TABLE IF EXISTS AI_TOKEN;
+DROP TABLE IF EXISTS MENU;
+DROP TABLE IF EXISTS STAR;
+DROP TABLE IF EXISTS ANONYMOUS_BOARD_AUTHORSHIP;
+DROP TABLE IF EXISTS BOARD;
+DROP TABLE IF EXISTS USER;
+DROP TABLE IF EXISTS RESTAURANT;
 
--- 3. 익명 게시글 소유권 해시 저장
--- 해시 생성: SHA2(CONCAT(BOARD_ID, ':', USER_ID), 256)
--- BOARD 6: User 1
--- BOARD 7: User 3
--- BOARD 8: User 5
--- BOARD 9: User 1
--- BOARD 10: User 3
+-- 1. 테이블 생성
+CREATE TABLE USER (
+    USER_ID    INT    NOT NULL AUTO_INCREMENT,
+    BOJ_ID    VARCHAR(255)    NOT NULL UNIQUE,
+    PASSWORD    VARCHAR(255)    NOT NULL,
+    NAME    VARCHAR(100)    NOT NULL,
+    ROLE    ENUM('USER', 'ADMIN')    NOT NULL DEFAULT 'USER',
+    SEASON    INT    NULL,
+    BAEKJOON    VARCHAR(100) NULL,
+    VALID ENUM('1', '0') NOT NULL,
+    CREATED_AT    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (USER_ID)
+);
 
-INSERT INTO ANONYMOUS_BOARD_AUTHORSHIP (BOARD_ID, AUTHOR_HASH) VALUES
-(6, SHA2(CONCAT('6', ':', '1'), 256)),
-(7, SHA2(CONCAT('7', ':', '3'), 256)),
-(8, SHA2(CONCAT('8', ':', '5'), 256)),
-(9, SHA2(CONCAT('9', ':', '1'), 256)),
-(10, SHA2(CONCAT('10', ':', '3'), 256));
+CREATE TABLE RESTAURANT (
+    RESTAURANT_ID    INT    NOT NULL AUTO_INCREMENT,
+    NAME    VARCHAR(255)    NOT NULL,
+    PRIMARY KEY (RESTAURANT_ID)
+);
+
+CREATE TABLE BOARD (
+    BOARD_ID    INT    NOT NULL AUTO_INCREMENT,
+    USER_ID    INT    NULL,
+    TITLE    VARCHAR(255)    NOT NULL,
+    BODY    TEXT    NULL,
+    SUMMARY    TEXT    NULL DEFAULT NULL,
+    AUTHOR_NAME VARCHAR(50) NULL,
+    AUTHOR_TIER VARCHAR(50) NULL,
+    VISIBLE    ENUM('1', '0')    NOT NULL DEFAULT '1',
+    WARNING_CNT    INT    NOT NULL DEFAULT 0,
+    CREATED_AT    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (BOARD_ID),
+    CONSTRAINT FK_USER_TO_BOARD FOREIGN KEY (USER_ID) REFERENCES USER (USER_ID) ON DELETE CASCADE
+);
+
+CREATE TABLE ANONYMOUS_BOARD_AUTHORSHIP (
+    AA_ID    INT    NOT NULL AUTO_INCREMENT,
+    BOARD_ID    INT    NOT NULL,
+    AUTHOR_HASH    VARCHAR(256)    NOT NULL,
+    CREATED_AT    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (AA_ID),
+    CONSTRAINT FK_BOARD_TO_AA FOREIGN KEY (BOARD_ID) REFERENCES BOARD (BOARD_ID) ON DELETE CASCADE
+);
+
+CREATE TABLE COMMENT (
+    COMMENT_ID    INT    NOT NULL AUTO_INCREMENT,
+    BOARD_ID    INT    NOT NULL,
+    USER_ID    INT    NOT NULL,
+    BODY    VARCHAR(500)    NOT NULL,
+    VISIBLE    ENUM('1', '0')    NOT NULL DEFAULT '1',
+    WARNING_CNT    INT    NOT NULL DEFAULT 0,
+    CREATED_AT    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (COMMENT_ID),
+    CONSTRAINT FK_BOARD_TO_COMMENT FOREIGN KEY (BOARD_ID) REFERENCES BOARD (BOARD_ID) ON DELETE CASCADE,
+    CONSTRAINT FK_USER_TO_COMMENT FOREIGN KEY (USER_ID) REFERENCES USER (USER_ID) ON DELETE CASCADE
+);
+
+CREATE TABLE LIKES (
+    LIKES_ID    INT    NOT NULL AUTO_INCREMENT,
+    BOARD_ID    INT    NOT NULL,
+    USER_ID    INT    NOT NULL,
+    PRIMARY KEY (LIKES_ID),
+    UNIQUE KEY UK_LIKES_BOARD_USER (BOARD_ID, USER_ID),
+    CONSTRAINT FK_BOARD_TO_LIKES FOREIGN KEY (BOARD_ID) REFERENCES BOARD (BOARD_ID) ON DELETE CASCADE,
+    CONSTRAINT FK_USER_TO_LIKES FOREIGN KEY (USER_ID) REFERENCES USER (USER_ID) ON DELETE CASCADE
+);
+
+CREATE TABLE SCRAP (
+    SCRAP_ID    INT    NOT NULL AUTO_INCREMENT,
+    USER_ID    INT    NOT NULL,
+    BOARD_ID    INT    NOT NULL,
+    PRIMARY KEY (SCRAP_ID),
+    UNIQUE KEY UK_SCRAP_USER_BOARD (USER_ID, BOARD_ID),
+    CONSTRAINT FK_USER_TO_SCRAP FOREIGN KEY (USER_ID) REFERENCES USER (USER_ID) ON DELETE CASCADE,
+    CONSTRAINT FK_BOARD_TO_SCRAP FOREIGN KEY (BOARD_ID) REFERENCES BOARD (BOARD_ID) ON DELETE CASCADE
+);
+
+CREATE TABLE AI_TOKEN (
+    TOKEN_ID    INT    NOT NULL AUTO_INCREMENT,
+    REST    INT    NOT NULL DEFAULT 0,
+    LAST_UPDATE    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (TOKEN_ID)
+);
+
+CREATE TABLE MENU (
+    MENU_ID    INT    NOT NULL AUTO_INCREMENT,
+    RESTAURANT_ID    INT    NOT NULL,
+    MENU    VARCHAR(255)    NOT NULL,
+    DATE    DATETIME    NULL,
+    PRIMARY KEY (MENU_ID),
+    CONSTRAINT FK_RESTAURANT_TO_MENU FOREIGN KEY (RESTAURANT_ID) REFERENCES RESTAURANT (RESTAURANT_ID) ON DELETE CASCADE
+);
+
+CREATE TABLE STAR (
+    STAR_ID    INT    NOT NULL AUTO_INCREMENT,
+    USER_ID    INT    NOT NULL,
+    RESTAURANT_ID    INT    NOT NULL,
+    CATEGORY    ENUM('TASTE', 'AMOUNT')    NOT NULL,
+    SCORE     INT     NOT NULL,
+    DATE    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (STAR_ID),
+    CONSTRAINT FK_USER_TO_STAR FOREIGN KEY (USER_ID) REFERENCES USER (USER_ID) ON DELETE CASCADE,
+    CONSTRAINT FK_RESTAURANT_TO_STAR FOREIGN KEY (RESTAURANT_ID) REFERENCES RESTAURANT (RESTAURANT_ID) ON DELETE CASCADE
+);
+
+-- 외래키 체크 다시 활성화
+SET FOREIGN_KEY_CHECKS = 1;
+
+
+-- 3. 더미 데이터 삽입
+
+-- 1) USER
+INSERT INTO USER (USER_ID, BOJ_ID, PASSWORD, NAME, ROLE, SEASON, BAEKJOON, VALID) VALUES
+(1, 'kinguser', 'hashed_pw_01', '유저왕', 'USER', 14, 'GOLD V', '1'),
+(2, 'admin_guy', 'hashed_pw_admin', '최고관리자', 'ADMIN', NULL, NULL, '1'),
+(3, 'season_2_user', 'hashed_pw_03', '계절이', 'USER', 13, 'SILVER III', '1'),
+(4, 'temp_disabled', 'hashed_pw_04', '잠시휴식', 'USER', 15, 'PATINUM V', '0'),
+(5, 'active_member', 'hashed_pw_05', '활동회원', 'USER', 15, 'BRONZE I', '1');
+
+-- 2) RESTAURANT
+INSERT INTO RESTAURANT (RESTAURANT_ID, NAME) VALUES
+(1, '육수고집'),
+(2, '소담상'),
+(3, '더고메'),
+(4, '차이나호'),
+(5, '속이찬새참');
+
+-- 3) BOARD (수정됨: 컬럼 7개, 값 7개 맞춤)
+INSERT INTO BOARD (BOARD_ID, USER_ID, TITLE, BODY, SUMMARY, VISIBLE, WARNING_CNT, AUTHOR_NAME, AUTHOR_TIER) VALUES
+(1, 1, '백반집 점심 후기', '오늘 백반집 가봤는데 가성비 최고예요.', '백반집 가성비 최고', '1', 0, NULL, NULL),
+(2, 5, '이번 시즌 알고리즘 질문', '다들 백준 문제 푸시나요?', '백준 문제 푸시나요?', '1', 0, NULL, NULL),
+(3, 3, '솔직히 실버들은 발언 허락 받고 해야한다 생각합니다.', '광주캠퍼스 노트북 쓰기 좋은 카페 아시는 분?', '카페 추천 좀', '1', 0, NULL, NULL),
+(4, 2, '운영 공지: 서비스 업데이트 안내', '새로운 기능이 추가될 예정입니다.', '기능 추가 예정', '1', 0, NULL, NULL),
+(5, NULL, '숨김 테스트 게시글', '이 글은 관리자가 숨길 수 있습니다.', '관리자용', '0', 0, '익명', 'GOLD V');
+
+-- 4) COMMENT
+INSERT INTO COMMENT (COMMENT_ID, BOARD_ID, USER_ID, BODY, VISIBLE, WARNING_CNT) VALUES
+(1, 1, 3, '메뉴가 궁금해요!', '1', 0),
+(2, 2, 5, '저는 요즘 DP 문제 풀고 있습니다.', '1', 0),
+(3, 3, 1, '프리미엄 로스터리 추천합니다.', '1', 0),
+(4, 4, 5, '업데이트 기대하겠습니다!', '1', 0),
+(5, 1, 4, '혼밥하기 괜찮은가요?', '1', 0);
+
+-- 5) LIKES
+INSERT INTO LIKES (LIKES_ID, BOARD_ID, USER_ID) VALUES
+(1, 1, 5),
+(2, 2, 1),
+(3, 2, 3),
+(4, 3, 5),
+(5, 4, 1);
+
+-- 6) SCRAP
+INSERT INTO SCRAP (SCRAP_ID, USER_ID, BOARD_ID) VALUES
+(1, 5, 1),
+(2, 1, 3),
+(3, 3, 4),
+(4, 5, 4),
+(5, 2, 2);
+
+-- 7) AI_TOKEN
+INSERT INTO AI_TOKEN (TOKEN_ID, REST, LAST_UPDATE) VALUES
+(1, 10, DATE_SUB(NOW(), INTERVAL 3 HOUR));
+
+-- 8) MENU
+INSERT INTO MENU (MENU_ID, RESTAURANT_ID, MENU, DATE) VALUES
+(1, 1, '제육볶음 정식', '2025-11-07 12:00:00'),
+(2, 2, '클래식 치즈 버거', '2025-11-07 12:00:00'),
+(3, 3, '탄탄멘', '2025-11-07 12:00:00'),
+(4, 4, '에티오피아 예가체프', '2025-11-07 12:00:00'),
+(5, 5, '슈퍼 디럭스 피자', '2025-11-06 18:30:00');
+
+-- 9) STAR
+INSERT INTO STAR (STAR_ID, USER_ID, RESTAURANT_ID, CATEGORY, SCORE) VALUES
+(1, 1, 1, 'TASTE', 5),
+(2, 5, 1, 'AMOUNT', 4),
+(3, 3, 2, 'TASTE', 3),
+(4, 1, 3, 'TASTE', 5),
+(5, 5, 5, 'AMOUNT', 4);
