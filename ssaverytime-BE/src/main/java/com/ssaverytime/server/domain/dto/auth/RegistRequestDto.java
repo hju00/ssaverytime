@@ -12,4 +12,5 @@ public class RegistRequestDto {
     private String password;
     private String name;
     private Integer season;
+    private String baekjoon;
 }

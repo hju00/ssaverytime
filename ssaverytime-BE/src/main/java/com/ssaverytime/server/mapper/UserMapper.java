@@ -15,4 +15,12 @@ public interface UserMapper {
     void insertUser(User user);
 
     User findByBojId(@Param("bojId")  String bojId);
+
+    // 마이페이지 수정
+    void updateMyPage(User user);
+
+    // 탈퇴 (VALID 변경)
+    void updateValid(@Param("bojId") String bojId,
+                     @Param("valid") String valid);
+
 }

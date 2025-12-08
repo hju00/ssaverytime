@@ -38,7 +38,7 @@ public class AuthService {
         user.setName(dto.getName());
         user.setSeason(dto.getSeason());
         user.setRole(UserRole.USER); // 기본 설정
-        user.setBaekjoon("dummy");
+        user.setBaekjoon(dto.getBaekjoon());
         user.setValid(UserValid.VALID);
 
         // 저장

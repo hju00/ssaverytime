@@ -37,7 +37,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/v1/auth/login",
-                                "/api/v1/auth/regist"
+                                "/api/v1/auth/regist",
+                                "/api/v1/auth/boj/validate"
                         ).permitAll()
                         .anyRequest().authenticated() // 나머지는 JWT 필요
                 )

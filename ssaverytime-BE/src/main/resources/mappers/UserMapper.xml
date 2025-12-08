@@ -46,4 +46,24 @@
         AND VALID = VALID
     </select>
 
+    <!-- 마이페이지 수정 -->
+    <update id="updateMyPage" parameterType="com.ssaverytime.server.domain.model.User">
+        UPDATE USER
+        SET
+        PASSWORD = #{password},
+        NAME     = #{name},
+        SEASON   = #{season}
+        WHERE BOJ_ID = #{bojId}
+        AND VALID = VALID
+    </update>
+
+    <!-- 탈퇴: VALID 변경 (예: VALID / INVALID) -->
+    <update id="updateValid">
+        UPDATE USER
+        SET VALID = #{valid}
+        WHERE BOJ_ID = #{bojId}
+    </update>
+
+
+
 </mapper>
