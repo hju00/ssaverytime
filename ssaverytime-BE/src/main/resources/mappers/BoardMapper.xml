@@ -5,7 +5,7 @@
 <mapper namespace="com.ssaverytime.server.mapper.BoardMapper">
 
     <!-- 게시글 목록 조회 -->
-    <select id="selectBoardList" resultType="com.ssaverytime.server.model.board.BoardResponseDto">
+    <select id="selectBoardList" resultType="com.ssaverytime.server.model.dto.board.BoardResponseDto">
         SELECT 
             b.BOARD_ID,
             b.TITLE,
@@ -51,7 +51,7 @@
     </select>
 
     <!-- 게시글 상세 조회 -->
-    <select id="selectBoardDetail" resultType="com.ssaverytime.server.model.board.BoardResponseDto">
+    <select id="selectBoardDetail" resultType="com.ssaverytime.server.model.dto.board.BoardResponseDto">
         SELECT 
             b.BOARD_ID,
             b.TITLE,
@@ -82,13 +82,13 @@
     </select>
 
     <!-- 게시글 작성 -->
-    <insert id="insertBoard" parameterType="com.ssaverytime.server.model.board.BoardRequestDto" useGeneratedKeys="true" keyProperty="boardId">
+    <insert id="insertBoard" parameterType="com.ssaverytime.server.model.dto.board.BoardRequestDto" useGeneratedKeys="true" keyProperty="boardId">
         INSERT INTO BOARD (USER_ID, TITLE, BODY, SUMMARY, VISIBLE, AUTHOR_TIER)
         VALUES (#{userSeq}, #{title}, #{body}, #{summary}, #{visible}, #{authorTier})
     </insert>
 
     <!-- 게시글 수정 -->
-    <update id="updateBoard" parameterType="com.ssaverytime.server.model.board.BoardRequestDto">
+    <update id="updateBoard" parameterType="com.ssaverytime.server.model.dto.board.BoardRequestDto">
         UPDATE BOARD
         SET TITLE = #{title},
             BODY = #{body},

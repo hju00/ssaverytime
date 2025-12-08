@@ -1,8 +1,8 @@
 package com.ssaverytime.server.service;
 
 import com.ssaverytime.server.mapper.BoardMapper;
-import com.ssaverytime.server.model.board.BoardRequestDto;
-import com.ssaverytime.server.model.board.BoardResponseDto;
+import com.ssaverytime.server.model.dto.board.BoardRequestDto;
+import com.ssaverytime.server.model.dto.board.BoardResponseDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

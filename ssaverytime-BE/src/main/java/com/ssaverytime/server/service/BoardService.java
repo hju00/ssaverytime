@@ -1,7 +1,7 @@
 package com.ssaverytime.server.service;
 
-import com.ssaverytime.server.model.board.BoardRequestDto;
-import com.ssaverytime.server.model.board.BoardResponseDto;
+import com.ssaverytime.server.model.dto.board.BoardRequestDto;
+import com.ssaverytime.server.model.dto.board.BoardResponseDto;
 import java.util.List;
 
 public interface BoardService {

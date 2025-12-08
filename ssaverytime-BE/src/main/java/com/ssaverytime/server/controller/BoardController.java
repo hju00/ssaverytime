@@ -1,7 +1,7 @@
 package com.ssaverytime.server.controller;
 
-import com.ssaverytime.server.model.board.BoardRequestDto;
-import com.ssaverytime.server.model.board.BoardResponseDto;
+import com.ssaverytime.server.model.dto.board.BoardRequestDto;
+import com.ssaverytime.server.model.dto.board.BoardResponseDto;
 import com.ssaverytime.server.service.BoardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

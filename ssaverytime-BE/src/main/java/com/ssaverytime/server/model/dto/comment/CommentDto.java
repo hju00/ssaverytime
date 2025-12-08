@@ -1,4 +1,4 @@
-package com.ssaverytime.server.model;
+package com.ssaverytime.server.model.dto.comment;
 
 import lombok.Data;
 import java.time.LocalDateTime;
