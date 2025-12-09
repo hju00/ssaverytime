@@ -44,7 +44,7 @@ public class MyPageController {
 
     /**
      * POST /api/v1/mypage
-     * 회원 탈퇴 (실제로는 VALID 를 INVALID 로 변경)
+     * 회원 탈퇴 (VALID -> INVALID 변경)
      */
     @PostMapping
     public ResponseEntity<Void> withdraw() {
