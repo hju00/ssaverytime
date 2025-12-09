@@ -39,7 +39,10 @@
                 <span class="font-semibold text-sm">{{ post.userName }}</span>
                 <img v-if="post.tierNumber" :src="`https://static.solved.ac/tier_small/${post.tierNumber}.svg`" alt="Tier Icon" class="w-4 h-4 inline-block" />
               </div>
-              <p class="text-xs text-muted-foreground">{{ post.formattedDate }}</p>
+              <p class="text-xs text-muted-foreground">
+                {{ post.formattedDate }}
+                <span v-if="post.updatedAt" class="ml-1 text-muted-foreground/70">(수정됨: {{ formatDate(post.updatedAt) }})</span>
+              </p>
             </div>
           </div>
         </CardHeader>
@@ -155,7 +158,8 @@ const formatDate = (dateString) => {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
+    hour12: false
   }).format(date);
 }
 
