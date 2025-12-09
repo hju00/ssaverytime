@@ -41,7 +41,7 @@ public class SocialService {
     // 2. name으로 사용자 목록 조회
     public List<SocialUserResponseDto> findByName(String name) {
         List<User> users= userMapper.findByName(name);
-        if (users==null || users.isEmpty()) {
+        if(users==null || users.isEmpty()){
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "해당 이름의 사용자가 없습니다.");
         }
 
@@ -58,19 +58,19 @@ public class SocialService {
 
     // 팔로우 (양방향 튜플 두 개 insert)
     public void follow(String myBojId, String targetBojId) {
-        if(myBojId.equals(targetBojId)) {
+        if(myBojId.equals(targetBojId)){
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "자기 자신은 팔로우할 수 없습니다.");
         }
 
         // 존재하는 유저인지 간단히 확인 (필요 없으면 생략 가능)
         User target= userMapper.findByBojId(targetBojId);
-        if(target==null) {
+        if(target==null){
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "팔로우 대상 사용자를 찾을 수 없습니다.");
         }
 
         // 이미 팔로우 관계인지 확인
         int already= followMapper.countFollow(myBojId, targetBojId);
-        if(already>0) {
+        if(already>0){
             throw new HttpClientErrorException(HttpStatus.CONFLICT, "이미 팔로우 중인 사용자입니다.");
         }
 

@@ -27,10 +27,10 @@ public class SocialController {
      */
     @GetMapping("/bojId")
     public ResponseEntity<?> getByBojId(@RequestBody SocialSearchByBojIdRequestDto request) {
-        try {
+        try{
             SocialUserResponseDto dto= socialService.findByBojId(request.getBojId());
             return ResponseEntity.ok(dto);
-        } catch (Exception e) {
+        }catch(Exception e){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
@@ -43,10 +43,10 @@ public class SocialController {
      */
     @GetMapping("/name")
     public ResponseEntity<?> getByName(@RequestBody SocialSearchByNameRequestDto request) {
-        try {
+        try{
             List<SocialUserResponseDto> list= socialService.findByName(request.getName());
             return ResponseEntity.ok(list);
-        } catch (Exception e) {
+        }catch(Exception e){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
@@ -61,10 +61,10 @@ public class SocialController {
     public ResponseEntity<?> follow(@PathVariable("bojId") String targetBojId) {
         String myBojId= AuthUtil.getLoginUserId();
 
-        try {
+        try{
             socialService.follow(myBojId, targetBojId);
             return ResponseEntity.status(HttpStatus.CREATED).build();
-        } catch (Exception e) {
+        }catch(Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
@@ -78,14 +78,14 @@ public class SocialController {
     @DeleteMapping("/follow/{bojId}")
     public ResponseEntity<?> unfollow(@PathVariable("bojId") String targetBojId) {
         String myBojId= AuthUtil.getLoginUserId();
-        if(myBojId==null) {
+        if(myBojId==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
         }
 
-        try {
+        try{
             socialService.unfollow(myBojId, targetBojId);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        } catch (Exception e) {
+        }catch(Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }

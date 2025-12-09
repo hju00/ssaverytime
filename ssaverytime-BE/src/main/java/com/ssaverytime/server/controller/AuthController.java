@@ -49,30 +49,29 @@ public class AuthController {
     @GetMapping("/boj/validate")
     public ResponseEntity<?> validateBoj(@RequestBody BojValidateRequestDto request) {
 
-        String bojId = request.getBojId();
-        if (bojId == null || bojId.isBlank()) {
+        String bojId= request.getBojId();
+        if(bojId==null || bojId.isBlank()) {
             return ResponseEntity
                     .badRequest()
                     .body("bojId는 필수입니다.");
         }
 
-        try {
-            String encodedId = URLEncoder.encode(bojId, StandardCharsets.UTF_8);
-            String url = "https://solved.ac/profile/" + encodedId;
+        try{
+            String encodedId= URLEncoder.encode(bojId, StandardCharsets.UTF_8);
+            String url= "https://solved.ac/profile/" + encodedId;
 
-            RestTemplate restTemplate = new RestTemplate();
-            String html = restTemplate.getForObject(url, String.class);
+            RestTemplate restTemplate= new RestTemplate();
+            String html= restTemplate.getForObject(url, String.class);
 
-            // solved.ac HTML 안에서 tier_small svg 주소만 뽑기
-            // 예: https://static.solved.ac/tier_small/11.svg
-            Pattern pattern = Pattern.compile("https://static\\.solved\\.ac/tier_small/\\d+\\.svg");
-            Matcher matcher = pattern.matcher(html);
+            // solved.ac에서 추출
+            Pattern pattern= Pattern.compile("https://static\\.solved\\.ac/tier_small/\\d+\\.svg");
+            Matcher matcher= pattern.matcher(html);
 
-            if (matcher.find()) {
-                String svgUrl = matcher.group();   // 찾은 svg 주소
+            if(matcher.find()){
+                String svgUrl= matcher.group();
                 return ResponseEntity.ok(new BojValidateResponseDto(svgUrl));
 
-            } else {
+            }else{
                 // 페이지는 있는데 티어 이미지를 못 찾은 경우
                 return ResponseEntity
                         .status(HttpStatus.NOT_FOUND)
@@ -94,12 +93,11 @@ public class AuthController {
      */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDto request) {
-        try {
+        try{
             LoginResponseDto response= authService.login(request);
             return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
+        }catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
-
 }

@@ -25,7 +25,7 @@ public class AuthService {
     @Transactional
     public void register(RegistRequestDto dto) {
 
-        // 1. 아이디 중복 확인
+        // 아이디 중복 확인
         int cnt= userMapper.countByBojId(dto.getBojId());
         if(cnt>0) {
             throw new RuntimeException();
@@ -47,7 +47,7 @@ public class AuthService {
 
     public LoginResponseDto login(LoginRequestDto dto) {
         User user= userMapper.findByBojId(dto.getBojId());
-        if(user==null) {
+        if(user==null){
             throw new RuntimeException("존재하지 않는 아이디입니다.");
         }
 

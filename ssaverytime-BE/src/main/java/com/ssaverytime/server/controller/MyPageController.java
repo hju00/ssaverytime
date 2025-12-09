@@ -58,28 +58,27 @@ public class MyPageController {
      */
     @PutMapping("/boj")
     public ResponseEntity<?> refreshMyBojRank() {
-        String bojId = AuthUtil.getLoginUserId();
+        String bojId= AuthUtil.getLoginUserId();
 
-        if(bojId==null) {
+        if(bojId==null){
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
                     .body("로그인이 필요합니다.");
         }
 
-        try {
+        try{
             BojValidateResponseDto dto = myPageService.refreshBojRank(bojId);
             return ResponseEntity.ok(dto); // svgUrl 담아서 반환
-        } catch (IllegalArgumentException e) {
+        }catch(IllegalArgumentException e){
             return ResponseEntity
                     .badRequest()
                     .body(e.getMessage());
-        } catch (RuntimeException e) {
+        }catch(RuntimeException e){
             // solved.ac 404 or 네트워크 문제 등
             return ResponseEntity
                     .status(HttpStatus.BAD_GATEWAY)
                     .body(e.getMessage());
         }
     }
-
 
 }

@@ -29,7 +29,7 @@ public class MyPageService {
     // 마이페이지 조회
     public MyPageResponseDto getMyPage(String loginBojId) {
         User user= userMapper.findByBojId(loginBojId);
-        if(user==null) {
+        if(user==null){
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다.");
         }
 
@@ -45,7 +45,7 @@ public class MyPageService {
     // 마이페이지 수정 (password, name, season)
     public void updateMyPage(String loginBojId, MyPageUpdateRequestDto request) {
         User user= userMapper.findByBojId(loginBojId);
-        if(user==null) {
+        if(user==null){
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다.");
         }
 
@@ -74,7 +74,7 @@ public class MyPageService {
             throw new IllegalArgumentException("bojId는 필수입니다.");
         }
 
-        try {
+        try{
             String encodedId= URLEncoder.encode(bojId, StandardCharsets.UTF_8);
             String url= "https://solved.ac/profile/" + encodedId;
 
@@ -91,9 +91,8 @@ public class MyPageService {
                 throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "존재하지 않는 BOJ 아이디입니다.");
             }
 
-            String svgUrl= matcher.group();   // 찾은 svg 주소
+            String svgUrl= matcher.group();
 
-            // 현재 로그인한 유저의 baekjoon 컬럼을 svgUrl로 갱신
             userMapper.updateBaekjoon(bojId, svgUrl);
 
             return new BojValidateResponseDto(svgUrl);

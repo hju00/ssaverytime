@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class User {
-    private Long userId;
+    private Integer userId;
     private String bojId;
     private String password;
     private String name;

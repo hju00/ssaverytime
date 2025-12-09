@@ -50,13 +50,13 @@ public class JwtUtil {
 
 
     public boolean validateToken(String token) {
-        try {
+        try{
             Jwts.parserBuilder()
                     .setSigningKey(secretKey)
                     .build()
                     .parseClaimsJws(token);
             return true;
-        } catch (JwtException | IllegalArgumentException e) {
+        }catch(JwtException | IllegalArgumentException e) {
             return false;
         }
     }
@@ -68,17 +68,16 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody();
 
-        String bojId = claims.getSubject();
-        String roleName = claims.get("role", String.class);
-        List<SimpleGrantedAuthority> authorities =
-                List.of(new SimpleGrantedAuthority("ROLE_" + roleName));
+        String bojId= claims.getSubject();
+        String roleName= claims.get("role", String.class);
+        List<SimpleGrantedAuthority> authorities= List.of(new SimpleGrantedAuthority("ROLE_" + roleName));
 
         return new UsernamePasswordAuthenticationToken(bojId, null, authorities);
     }
 
     public String resolveToken(HttpServletRequest request) {
         String bearer = request.getHeader("Authorization");
-        if (bearer != null && bearer.startsWith("Bearer ")) {
+        if(bearer!=null && bearer.startsWith("Bearer ")){
             return bearer.substring(7);
         }
         return null;
