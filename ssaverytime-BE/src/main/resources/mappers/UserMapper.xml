@@ -47,6 +47,24 @@
         AND VALID = VALID
     </select>
 
+    <select id="findByName"
+            parameterType="string"
+            resultType="com.ssaverytime.server.domain.model.User">
+        SELECT
+        USER_ID      AS userId,
+        BOJ_ID       AS bojId,
+        PASSWORD     AS password,
+        NAME         AS name,
+        ROLE         AS role,
+        SEASON       AS season,
+        BAEKJOON     AS baekjoon,
+        VALID        AS valid,
+        CREATED_AT   AS createdAt
+        FROM USER
+        WHERE NAME = #{name}
+    </select>
+
+
     <!-- 마이페이지 수정 -->
     <update id="updateMyPage" parameterType="com.ssaverytime.server.domain.model.User">
         UPDATE USER
