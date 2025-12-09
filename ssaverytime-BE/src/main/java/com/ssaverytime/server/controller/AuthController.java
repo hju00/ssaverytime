@@ -2,6 +2,7 @@ package com.ssaverytime.server.controller;
 
 import com.ssaverytime.server.domain.dto.auth.*;
 import com.ssaverytime.server.service.AuthService;
+import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.javassist.bytecode.DuplicateMemberException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,13 +19,10 @@ import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/api/v1/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
-
-    public AuthController(AuthService authService){
-        this.authService= authService;
-    }
 
     /**
      * POST /api/v1/auth/regist

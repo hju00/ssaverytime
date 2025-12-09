@@ -65,6 +65,13 @@
         WHERE BOJ_ID = #{bojId}
     </update>
 
+    <!-- BOJ 티어(svgUrl) 변경 -->
+    <update id="updateBaekjoon">
+        UPDATE USER
+        SET BAEKJOON = #{baekjoon}
+        WHERE BOJ_ID = #{bojId}
+    </update>
+
 
 
 </mapper>

@@ -23,4 +23,8 @@ public interface UserMapper {
     void updateValid(@Param("bojId") String bojId,
                      @Param("valid") String valid);
 
+    // 백준 티어 업데이트
+    void updateBaekjoon(@Param("bojId") String bojId,
+                        @Param("baekjoon") String baekjoon);
+
 }
