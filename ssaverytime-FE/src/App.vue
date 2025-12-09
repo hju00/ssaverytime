@@ -29,10 +29,15 @@
 
         <div class="my-4 border-t border-border"></div>
 
-        <RouterLink to="/login" class="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors">
+        <RouterLink v-if="!isLoggedIn" to="/login" class="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors">
           <LogInIcon class="w-5 h-5" />
           <span>{{ $t('home.login') }}</span>
         </RouterLink>
+
+        <button v-else @click="handleLogout" class="w-full flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors text-left">
+          <LogOutIcon class="w-5 h-5" />
+          <span>Logout</span>
+        </button>
       </nav>
 
       <div class="mt-auto pt-4 border-t border-border">
@@ -48,8 +53,31 @@
 </template>
 
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import { Home as HomeIcon, Clipboard as ClipboardIcon, Forklift as ForkliftIcon, FileText as FileTextIcon, User as UserIcon, LogIn as LogInIcon } from 'lucide-vue-next'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { RouterLink, RouterView, useRouter } from 'vue-router'
+import { Home as HomeIcon, Clipboard as ClipboardIcon, Forklift as ForkliftIcon, FileText as FileTextIcon, User as UserIcon, LogIn as LogInIcon, LogOut as LogOutIcon } from 'lucide-vue-next'
+
+const router = useRouter()
+const isLoggedIn = ref(false)
+
+const checkLoginStatus = () => {
+  isLoggedIn.value = !!localStorage.getItem('accessToken')
+}
+
+const handleLogout = () => {
+  localStorage.removeItem('accessToken')
+  window.dispatchEvent(new Event('auth-changed'))
+  router.push('/')
+}
+
+onMounted(() => {
+  checkLoginStatus()
+  window.addEventListener('auth-changed', checkLoginStatus)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('auth-changed', checkLoginStatus)
+})
 </script>
 
 <style>
