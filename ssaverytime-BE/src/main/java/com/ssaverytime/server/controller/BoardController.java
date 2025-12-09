@@ -2,10 +2,14 @@ package com.ssaverytime.server.controller;
 
 import com.ssaverytime.server.domain.dto.board.BoardRequestDto;
 import com.ssaverytime.server.domain.dto.board.BoardResponseDto;
+import com.ssaverytime.server.domain.model.User;
+import com.ssaverytime.server.mapper.UserMapper;
 import com.ssaverytime.server.service.BoardService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -14,11 +18,21 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/board")
-@CrossOrigin(origins = "*") // 프론트엔드 개발 편의를 위해 CORS 허용
+@RequiredArgsConstructor
 public class BoardController {
 
-    @Autowired
-    private BoardService boardService;
+    private final BoardService boardService;
+    private final UserMapper userMapper;
+
+    private Integer getCurrentUserSeq() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            return null;
+        }
+        String bojId = (String) auth.getPrincipal();
+        User user = userMapper.findByBojId(bojId);
+        return user != null ? user.getUserId().intValue() : null;
+    }
 
     // 목록 조회
     @GetMapping
@@ -28,9 +42,7 @@ public class BoardController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
         
-        // TODO: SecurityContextHolder에서 현재 로그인한 사용자 ID 가져오기
-        Integer currentUserSeq = 1; // 테스트용 (User ID 1번)
-
+        Integer currentUserSeq = getCurrentUserSeq();
         List<BoardResponseDto> list = boardService.getBoardList(keyword, sort, page, size, currentUserSeq);
         return new ResponseEntity<>(list, HttpStatus.OK);
     }
@@ -38,9 +50,7 @@ public class BoardController {
     // 상세 조회
     @GetMapping("/{boardId}")
     public ResponseEntity<BoardResponseDto> getBoardDetail(@PathVariable int boardId) {
-        // TODO: 실제 사용자 ID
-        Integer currentUserSeq = 1;
-        
+        Integer currentUserSeq = getCurrentUserSeq();
         BoardResponseDto board = boardService.getBoardDetail(boardId, currentUserSeq);
         if (board != null) {
             return new ResponseEntity<>(board, HttpStatus.OK);
@@ -52,8 +62,10 @@ public class BoardController {
     // 글 작성
     @PostMapping
     public ResponseEntity<String> writeBoard(@RequestBody BoardRequestDto boardRequestDto) {
-        // TODO: 로그인한 사용자 정보 세팅
-        boardRequestDto.setUserSeq(1);
+        Integer userSeq = getCurrentUserSeq();
+        if (userSeq == null) return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        
+        boardRequestDto.setUserSeq(userSeq);
 
         int result = boardService.writeBoard(boardRequestDto);
         if (result > 0) {
@@ -65,8 +77,10 @@ public class BoardController {
     // 글 수정
     @PutMapping
     public ResponseEntity<String> modifyBoard(@RequestBody BoardRequestDto boardRequestDto) {
-        // 본인 확인 로직 필요
-        boardRequestDto.setUserSeq(1); // 테스트용
+        Integer userSeq = getCurrentUserSeq();
+        if (userSeq == null) return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+        boardRequestDto.setUserSeq(userSeq);
 
         int result = boardService.modifyBoard(boardRequestDto);
         if (result > 0) {
@@ -78,7 +92,9 @@ public class BoardController {
     // 글 삭제
     @DeleteMapping("/{boardId}")
     public ResponseEntity<String> deleteBoard(@PathVariable int boardId) {
-        int userSeq = 1; // 테스트용
+        Integer userSeq = getCurrentUserSeq();
+        if (userSeq == null) return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
         int result = boardService.removeBoard(boardId, userSeq);
         if (result > 0) {
             return new ResponseEntity<>("success", HttpStatus.OK);
@@ -89,7 +105,9 @@ public class BoardController {
     // 좋아요 토글
     @PostMapping("/{boardId}/like")
     public ResponseEntity<Map<String, Object>> toggleLike(@PathVariable int boardId) {
-        int userSeq = 1; // 테스트용
+        Integer userSeq = getCurrentUserSeq();
+        if (userSeq == null) return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
         boolean isLiked = boardService.toggleLike(boardId, userSeq);
         
         Map<String, Object> response = new HashMap<>();
@@ -100,7 +118,9 @@ public class BoardController {
     // 스크랩 토글
     @PostMapping("/{boardId}/scrap")
     public ResponseEntity<Map<String, Object>> toggleScrap(@PathVariable int boardId) {
-        int userSeq = 1; // 테스트용
+        Integer userSeq = getCurrentUserSeq();
+        if (userSeq == null) return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
         boolean isScrapped = boardService.toggleScrap(boardId, userSeq);
 
         Map<String, Object> response = new HashMap<>();
