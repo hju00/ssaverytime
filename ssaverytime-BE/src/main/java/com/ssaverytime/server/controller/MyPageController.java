@@ -48,7 +48,7 @@ public class MyPageController {
      */
     @PostMapping
     public ResponseEntity<Void> withdraw() {
-        String loginBojId = AuthUtil.getLoginUserId();
+        String loginBojId= AuthUtil.getLoginUserId();
         myPageService.withdraw(loginBojId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

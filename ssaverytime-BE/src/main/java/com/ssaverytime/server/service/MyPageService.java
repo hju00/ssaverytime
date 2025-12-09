@@ -28,8 +28,8 @@ public class MyPageService {
 
     // 1. 마이페이지 조회
     public MyPageResponseDto getMyPage(String loginBojId) {
-        User user = userMapper.findByBojId(loginBojId);
-        if (user == null) {
+        User user= userMapper.findByBojId(loginBojId);
+        if(user==null) {
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다.");
         }
 
@@ -44,18 +44,18 @@ public class MyPageService {
 
     // 2. 마이페이지 수정 (password, name, season)
     public void updateMyPage(String loginBojId, MyPageUpdateRequestDto request) {
-        User user = userMapper.findByBojId(loginBojId);
-        if (user == null) {
+        User user= userMapper.findByBojId(loginBojId);
+        if(user==null) {
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다.");
         }
 
-        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+        if(request.getPassword()!=null && !request.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
         }
-        if (request.getName() != null) {
+        if(request.getName()!=null) {
             user.setName(request.getName());
         }
-        if (request.getSeason() != null) {
+        if(request.getSeason()!=null) {
             user.setSeason(request.getSeason());
         }
 

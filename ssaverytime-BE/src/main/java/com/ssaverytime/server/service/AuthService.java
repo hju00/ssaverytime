@@ -55,6 +55,10 @@ public class AuthService {
             throw new RuntimeException("비밀번호가 올바르지 않습니다.");
         }
 
+        if(user.getValid().equals(UserValid.INVALID)){
+            throw new RuntimeException("탈퇴된 계정입니다.");
+        }
+
         String accessToken= jwtUtil.generateAccessToken(user.getBojId(), user.getRole());
 
         return new LoginResponseDto(accessToken);

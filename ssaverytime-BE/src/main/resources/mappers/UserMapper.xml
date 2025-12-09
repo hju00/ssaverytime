@@ -40,7 +40,8 @@
         NAME         AS name,
         ROLE         AS role,
         SEASON       AS season,
-        BAEKJOON     AS baekjoon
+        BAEKJOON     AS baekjoon,
+        VALID        AS valid
         FROM USER
         WHERE BOJ_ID = #{bojId}
         AND VALID = VALID
