@@ -1,7 +1,50 @@
-<<<<<<< HEAD
-# ssaveryTime Database
+# ssaveryTime
 
-## ERD (Entity-Relationship Diagram)
+SSAFY 관통 프로젝트
+
+## 🚀 Getting Started (Docker)
+
+이 프로젝트는 Docker Compose를 사용하여 프론트엔드, 백엔드, 데이터베이스를 통합 실행할 수 있습니다.
+
+### 1. 사전 요구사항
+- Docker
+- Docker Compose
+
+### 2. 프로젝트 실행 (전체)
+모든 서비스를 빌드하고 실행합니다.
+```bash
+docker-compose up -d --build
+```
+- Frontend: http://localhost:5173
+- Backend: http://localhost:8080
+- Database: localhost:3306
+
+### 3. 프로젝트 종료
+```bash
+docker-compose down
+```
+
+### 4. 개별 서비스 재빌드 (개발 중)
+코드 수정 후 특정 서비스만 빠르게 재시작할 때 사용합니다.
+```bash
+# 백엔드만 재빌드
+docker-compose up -d --build backend
+
+# 프론트엔드만 재빌드
+docker-compose up -d --build frontend
+```
+
+### 5. 데이터베이스 초기화 (테이블 생성 및 데이터 삽입)
+프로젝트 최초 실행 시 또는 DB를 초기화하고 싶을 때 실행합니다. (DB 컨테이너가 실행 중이어야 합니다.)
+```bash
+docker exec -i ssaverytime-mysql mysql -u ssafy -pssafy --default-character-set=utf8mb4 ssaverytime < ssaverytime-BE/src/main/resources/database_setup.sql
+```
+
+---
+
+## Database
+
+### ERD (Entity-Relationship Diagram)
 
 ![ERD](img/erd_diagram.png)
 

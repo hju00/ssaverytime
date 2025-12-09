@@ -16,13 +16,13 @@ DROP TABLE IF EXISTS RESTAURANT;
 
 -- 1. 테이블 생성
 CREATE TABLE USER (
-    USER_ID    INT    NOT NULL AUTO_INCREMENT,
-    USERNAME    VARCHAR(255)    NOT NULL UNIQUE,
+    USER_ID    INT    NOT NULL AUTO_INCREMENT, -- 내부 식별용 고유 ID (PK)
+    BOJ_ID    VARCHAR(255)    NOT NULL UNIQUE, -- 로그인용 백준 ID
     PASSWORD    VARCHAR(255)    NOT NULL,
     NAME    VARCHAR(100)    NOT NULL,
     ROLE    ENUM('USER', 'ADMIN')    NOT NULL DEFAULT 'USER',
     SEASON    INT    NULL,
-    BAEKJOON    VARCHAR(100) NULL,
+    BAEKJOON    VARCHAR(100) NULL, -- 솔브드 티어 연동용 (BOJ_ID와 같을 수도 있음)
     VALID ENUM('1', '0') NOT NULL,
     CREATED_AT    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (USER_ID)
@@ -85,9 +85,17 @@ CREATE TABLE STAR (
     USER_ID    INT    NOT NULL,
     RESTAURANT_ID    INT    NOT NULL,
     CATEGORY    ENUM('TASTE', 'AMOUNT')    NOT NULL,
-    SCORE     INT     NOT NULL, -- 새로 추가된 컬럼
+    SCORE     INT     NOT NULL,
     DATE    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (STAR_ID)
+);
+
+CREATE TABLE FOLLOW (
+    FOLLOW_ID    INT    NOT NULL AUTO_INCREMENT,
+    BOJ_ID1    VARCHAR(255)    NOT NULL,
+    BOJ_ID2    VARCHAR(255)    NOT NULL,
+    DATE    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (FOLLOW_ID)
 );
 
 -- 2. 외래 키 (FOREIGN KEY) 제약 조건 추가
@@ -103,17 +111,17 @@ ALTER TABLE STAR ADD CONSTRAINT FK_USER_TO_STAR FOREIGN KEY (USER_ID) REFERENCES
 ALTER TABLE STAR ADD CONSTRAINT FK_RESTAURANT_TO_STAR FOREIGN KEY (RESTAURANT_ID) REFERENCES RESTAURANT (RESTAURANT_ID) ON DELETE CASCADE;
 
 
--- 3. 더미 데이터 삽입 (외래 키 순서 고려: USER -> RESTAURANT -> BOARD -> 나머지)
+-- 3. 더미 데이터 삽입
 
--- USER (USER_ID: 1 ~ 5)
-INSERT INTO USER (USERNAME, PASSWORD, NAME, ROLE, SEASON, BAEKJOON, VALID) VALUES
+-- USER (USERNAME -> BOJ_ID 변경 반영)
+INSERT INTO USER (BOJ_ID, PASSWORD, NAME, ROLE, SEASON, BAEKJOON, VALID) VALUES
 ('kinguser', 'hashed_pw_01', '유저왕', 'USER', 14, 'GOLD V', '1'),
 ('admin_guy', 'hashed_pw_admin', '최고관리자', 'ADMIN', NULL, NULL, '1'),
 ('season_2_user', 'hashed_pw_03', '계절이', 'USER', 13, 'SILVER III', '1'),
 ('temp_disabled', 'hashed_pw_04', '잠시휴식', 'USER', 15, 'PATINUM V', '0'),
 ('active_member', 'hashed_pw_05', '활동회원', 'USER', 15, 'BRONZE I', '1');
 
--- RESTAURANT (RESTAURANT_ID: 1 ~ 5)
+-- RESTAURANT
 INSERT INTO RESTAURANT (NAME) VALUES
 ('육수고집'),
 ('소담상'),
@@ -121,7 +129,7 @@ INSERT INTO RESTAURANT (NAME) VALUES
 ('차이나호'),
 ('속이찬새참');
 
--- BOARD (BOARD_ID: 1 ~ 5, USER_ID: 1, 5, 3, 2, 1 사용)
+-- BOARD
 INSERT INTO BOARD (USER_ID, TITLE, BODY, SUMMARY, VISIBLE, WARNING_CNT) VALUES
 (1, '백반집 점심 후기', '오늘 백반집 가봤는데 가성비 최고예요.', '1', 0),
 (5, '이번 시즌 알고리즘 질문', '다들 백준 문제 푸시나요?', '1', 0),
@@ -129,7 +137,7 @@ INSERT INTO BOARD (USER_ID, TITLE, BODY, SUMMARY, VISIBLE, WARNING_CNT) VALUES
 (2, '운영 공지: 서비스 업데이트 안내', '새로운 기능이 추가될 예정입니다.', '1', 0),
 (1, '숨김 테스트 게시글', '이 글은 관리자가 숨길 수 있습니다.', '0', 0);
 
--- COMMENT (BOARD_ID: 1~5, USER_ID: 3, 5, 1, 5, 4 사용)
+-- COMMENT
 INSERT INTO COMMENT (BOARD_ID, USER_ID, BODY, VISIBLE, WARNING_CNT) VALUES
 (1, 3, '메뉴가 궁금해요!', '1', 0),
 (2, 5, '저는 요즘 DP 문제 풀고 있습니다.', '1', 0),
@@ -137,7 +145,7 @@ INSERT INTO COMMENT (BOARD_ID, USER_ID, BODY, VISIBLE, WARNING_CNT) VALUES
 (4, 5, '업데이트 기대하겠습니다!', '1', 0),
 (1, 4, '혼밥하기 괜찮은가요?', '1', 0);
 
--- LIKES (BOARD_ID, USER_ID 조합이 고유해야 함)
+-- LIKES
 INSERT INTO LIKES (BOARD_ID, USER_ID) VALUES
 (1, 5),
 (2, 1),
@@ -145,7 +153,7 @@ INSERT INTO LIKES (BOARD_ID, USER_ID) VALUES
 (3, 5),
 (4, 1);
 
--- SCRAP (USER_ID, BOARD_ID 조합이 고유해야 함)
+-- SCRAP
 INSERT INTO SCRAP (USER_ID, BOARD_ID) VALUES
 (5, 1),
 (1, 3),
@@ -157,7 +165,7 @@ INSERT INTO SCRAP (USER_ID, BOARD_ID) VALUES
 INSERT INTO AI_TOKEN (REST, LAST_UPDATE) VALUES
 (10, DATE_SUB(NOW(), INTERVAL 3 HOUR));
 
--- MENU (RESTAURANT_ID: 1~5 사용)
+-- MENU
 INSERT INTO MENU (RESTAURANT_ID, MENU, DATE) VALUES
 (1, '제육볶음 정식', '2025-11-07 12:00:00'),
 (2, '클래식 치즈 버거', '2025-11-07 12:00:00'),
@@ -165,10 +173,10 @@ INSERT INTO MENU (RESTAURANT_ID, MENU, DATE) VALUES
 (4, '에티오피아 예가체프', '2025-11-07 12:00:00'),
 (5, '슈퍼 디럭스 피자', '2025-11-06 18:30:00');
 
--- STAR (SCORE 컬럼 추가 및 1~5점 임의 부여)
+-- STAR
 INSERT INTO STAR (USER_ID, RESTAURANT_ID, CATEGORY, SCORE) VALUES
-(1, 1, 'TASTE', 5), -- user1이 백반집에 맛 별점 5점
-(5, 1, 'AMOUNT', 4), -- user5가 백반집에 양 별점 4점
-(3, 2, 'TASTE', 3), -- user3이 버거집에 맛 별점 3점
-(1, 3, 'TASTE', 5), -- user1이 누들 팩토리에 맛 별점 5점
-(5, 5, 'AMOUNT', 4); -- user5가 피자에 양 별점 4점
+(1, 1, 'TASTE', 5),
+(5, 1, 'AMOUNT', 4),
+(3, 2, 'TASTE', 3),
+(1, 3, 'TASTE', 5),
+(5, 5, 'AMOUNT', 4);

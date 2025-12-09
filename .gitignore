@@ -34,3 +34,8 @@ coverage
 
 # Vitest
 __screenshots__/
+
+# Environment Variables
+.env
+# AI Session Context
+SESSION_CONTEXT.md
