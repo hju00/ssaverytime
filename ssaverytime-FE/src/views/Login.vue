@@ -60,6 +60,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import http from '@/api/http'
 import {
   Card,
   CardContent,
@@ -74,9 +75,23 @@ import { Label } from '@/components/ui/label'
 const router = useRouter()
 const loginData = ref({ id: '', password: '' })
 
-const handleLogin = () => {
-  console.log('Login:', loginData.value)
-  // Simulate login success
-  router.push('/')
+const handleLogin = async () => {
+  try {
+    const response = await http.post('/v1/auth/login', {
+      bojId: loginData.value.id,
+      password: loginData.value.password
+    })
+
+    const { accessToken } = response.data
+    localStorage.setItem('accessToken', accessToken)
+    
+    // 로그인 상태 변경 알림
+    window.dispatchEvent(new Event('auth-changed'))
+    
+    router.push('/')
+  } catch (error) {
+    console.error('Login failed:', error)
+    alert('로그인 실패: 아이디 또는 비밀번호를 확인하세요.')
+  }
 }
 </script>

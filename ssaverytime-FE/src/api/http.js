@@ -13,10 +13,10 @@ const http = axios.create({
 // 요청 인터셉터 (필요시 토큰 추가 등)
 http.interceptors.request.use(
   (config) => {
-    // const token = localStorage.getItem('token')
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`
-    // }
+    const token = localStorage.getItem('accessToken')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
     return config
   },
   (error) => {
