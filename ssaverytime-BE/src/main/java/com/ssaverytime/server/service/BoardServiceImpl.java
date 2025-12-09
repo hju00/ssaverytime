@@ -39,7 +39,7 @@ public class BoardServiceImpl implements BoardService {
                 board.setAuthor(count > 0);
             } else {
                 // 일반 게시글: UserSeq 직접 비교
-                board.setAuthor(board.getUserSeq() == userSeq);
+                board.setAuthor(board.getUserSeq() != null && board.getUserSeq().equals(userSeq));
             }
         }
         
