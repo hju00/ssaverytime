@@ -8,7 +8,7 @@ public class BoardResponseDto {
     private int boardId;
     
     // 작성자 정보
-    private int userSeq;     // USER table PK (USER_ID)
+    private Integer userSeq;     // USER table PK (USER_ID)
     private String bojId;    // USER table BOJ_ID (로그인 ID)
     private String userName; // USER table NAME
     private String userTier; // USER table BAEKJOON (티어 정보)
