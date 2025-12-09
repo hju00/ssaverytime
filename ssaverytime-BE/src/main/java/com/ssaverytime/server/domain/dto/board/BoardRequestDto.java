@@ -1,4 +1,4 @@
-package com.ssaverytime.server.model.board;
+package com.ssaverytime.server.domain.dto.board;
 
 import lombok.Data;
 

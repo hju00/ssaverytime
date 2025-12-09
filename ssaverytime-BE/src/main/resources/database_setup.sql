@@ -30,7 +30,7 @@ CREATE TABLE USER (
     ROLE    ENUM('USER', 'ADMIN')    NOT NULL DEFAULT 'USER',
     SEASON    INT    NULL,
     BAEKJOON    VARCHAR(100) NULL,
-    VALID ENUM('1', '0') NOT NULL,
+    VALID ENUM('VALID', 'INVALID') NOT NULL,
     CREATED_AT    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (USER_ID)
 );
@@ -136,11 +136,11 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 -- 1) USER
 INSERT INTO USER (USER_ID, BOJ_ID, PASSWORD, NAME, ROLE, SEASON, BAEKJOON, VALID) VALUES
-(1, 'kinguser', 'hashed_pw_01', '유저왕', 'USER', 14, 'GOLD V', '1'),
-(2, 'admin_guy', 'hashed_pw_admin', '최고관리자', 'ADMIN', NULL, NULL, '1'),
-(3, 'season_2_user', 'hashed_pw_03', '계절이', 'USER', 13, 'SILVER III', '1'),
-(4, 'temp_disabled', 'hashed_pw_04', '잠시휴식', 'USER', 15, 'PATINUM V', '0'),
-(5, 'active_member', 'hashed_pw_05', '활동회원', 'USER', 15, 'BRONZE I', '1');
+(1, 'kinguser', 'hashed_pw_01', '유저왕', 'USER', 14, 'GOLD V', 'VALID'),
+(2, 'admin_guy', 'hashed_pw_admin', '최고관리자', 'ADMIN', NULL, NULL, 'VALID'),
+(3, 'season_2_user', 'hashed_pw_03', '계절이', 'USER', 13, 'SILVER III', 'VALID'),
+(4, 'temp_disabled', 'hashed_pw_04', '잠시휴식', 'USER', 15, 'PATINUM V', 'INVALID'),
+(5, 'active_member', 'hashed_pw_05', '활동회원', 'USER', 15, 'BRONZE I', 'VALID');
 
 -- 2) RESTAURANT
 INSERT INTO RESTAURANT (RESTAURANT_ID, NAME) VALUES
