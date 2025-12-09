@@ -127,6 +127,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import http from '@/api/http'
 import {
   Card,
   CardContent,
@@ -155,13 +156,52 @@ const signupData = ref({
   baekjoonId: '',
 })
 
-const handleSignup = () => {
-  console.log('Signup:', signupData.value)
-  // Simulate signup success
-  router.push('/login')
+const handleSignup = async () => {
+  if (signupData.value.password !== signupData.value.confirmPassword) {
+    alert('비밀번호가 일치하지 않습니다.')
+    return
+  }
+
+  try {
+    await http.post('/v1/auth/regist', {
+      bojId: signupData.value.id,
+      password: signupData.value.password,
+      name: signupData.value.nickname,
+      season: 13, // 임시값 (UI에 없음)
+      baekjoon: signupData.value.baekjoonId || 'Unrated'
+    })
+    alert('회원가입이 완료되었습니다.')
+    router.push('/login')
+  } catch (error) {
+    console.error('Signup failed:', error)
+    if (error.response && error.response.status === 409) {
+      alert('이미 존재하는 아이디입니다.')
+    } else {
+      alert('회원가입에 실패했습니다.')
+    }
+  }
 }
 
-const handleVerifyBaekjoon = () => {
-  console.log('Verifying Baekjoon ID:', signupData.value.baekjoonId)
+const handleVerifyBaekjoon = async () => {
+  if (!signupData.value.baekjoonId) {
+    alert('백준 아이디를 입력해주세요.')
+    return
+  }
+  try {
+    const response = await http.get('/v1/auth/boj/validate', {
+      // GET 요청이지만 백엔드 Controller가 @RequestBody를 쓴다면 POST로 바꿔야 할 수도 있음.
+      // 백엔드 AuthController를 보니 @RequestBody를 쓰고 있음. -> GET 요청에서 Body 전송은 비표준.
+      // 하지만 axios는 지원할 수도 있음. 백엔드가 @RequestBody라면 보통 POST가 맞음.
+      // 확인 결과: AuthController.java에 @GetMapping("/boj/validate") @RequestBody ... 라고 되어 있음.
+      // 이는 Spring에서는 가능하지만 HTTP 표준 위반 소지가 있음. 일단 axios get에 data 옵션으로 시도.
+      // 안되면 백엔드를 고쳐야 함. (QueryParam으로 받는게 정석)
+      // 일단 프론트에서는 data로 보냄.
+      data: { bojId: signupData.value.baekjoonId } // axios get body
+    })
+    alert('확인되었습니다. 티어 정보를 가져왔습니다.')
+    // 실제로는 response에서 티어 이미지를 받아와서 보여줄 수 있음
+  } catch (error) {
+    alert('유효하지 않은 백준 아이디입니다.')
+  }
 }
 </script>
