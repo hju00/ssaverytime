@@ -24,4 +24,7 @@ public interface CommentMapper {
 
     // 댓글 삭제 (Soft Delete)
     int deleteComment(int commentId);
+
+    // 신고 누적
+    void increaseWarningCnt(int commentId);
 }

@@ -55,4 +55,9 @@
         UPDATE COMMENT SET VALID = '0' WHERE COMMENT_ID = #{commentId}
     </update>
 
+    <!-- 신고 누적 -->
+    <update id="increaseWarningCnt">
+        UPDATE COMMENT SET WARNING_CNT = WARNING_CNT + 1 WHERE COMMENT_ID = #{commentId}
+    </update>
+
 </mapper>

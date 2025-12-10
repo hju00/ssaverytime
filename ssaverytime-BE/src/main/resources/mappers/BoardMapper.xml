@@ -13,6 +13,7 @@
             b.CREATED_AT,
             b.UPDATED_AT,
             b.VISIBLE,
+            b.WARNING_CNT,
             b.USER_ID AS userSeq,
             CASE WHEN b.USER_ID IS NULL THEN 'anonymous' ELSE u.BOJ_ID END AS bojId,
             CASE WHEN b.USER_ID IS NULL THEN '익명' ELSE u.NAME END AS userName,
@@ -60,6 +61,7 @@
             b.CREATED_AT,
             b.UPDATED_AT,
             b.VISIBLE,
+            b.WARNING_CNT,
             b.USER_ID AS userSeq,
             CASE WHEN b.USER_ID IS NULL THEN 'anonymous' ELSE u.BOJ_ID END AS bojId,
             CASE WHEN b.USER_ID IS NULL THEN '익명' ELSE u.NAME END AS userName,
@@ -132,5 +134,10 @@
     <select id="checkScrap" resultType="int">
         SELECT COUNT(*) FROM SCRAP WHERE BOARD_ID = #{boardId} AND USER_ID = #{userSeq}
     </select>
+
+    <!-- 신고 누적 -->
+    <update id="increaseWarningCnt">
+        UPDATE BOARD SET WARNING_CNT = WARNING_CNT + 1 WHERE BOARD_ID = #{boardId}
+    </update>
 
 </mapper>
