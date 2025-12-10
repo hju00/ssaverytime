@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssaverytime.server.mapper.MenuMapper">
+
+    <insert id="insertMenu"
+            parameterType="com.ssaverytime.server.domain.model.Menu"
+            useGeneratedKeys="true"
+            keyProperty="menuId">
+        INSERT INTO MENU (RESTAURANT_ID, MENU, DATE)
+        VALUES (#{restaurantId}, #{menu}, #{date})
+    </insert>
+
+    <select id="findByDateAndRestaurant"
+            resultType="com.ssaverytime.server.domain.model.Menu">
+        SELECT
+        MENU_ID       AS menuId,
+        RESTAURANT_ID AS restaurantId,
+        MENU          AS menu,
+        DATE          AS date
+        FROM MENU
+        WHERE RESTAURANT_ID = #{restaurantId}
+        AND DATE BETWEEN #{start} AND #{end}
+        ORDER BY DATE ASC, MENU_ID ASC
+    </select>
+
+</mapper>

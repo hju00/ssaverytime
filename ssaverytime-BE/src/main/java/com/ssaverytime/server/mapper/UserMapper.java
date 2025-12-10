@@ -5,6 +5,8 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.List;
+
 @Mapper
 public interface UserMapper {
     @Select("SELECT BAEKJOON FROM USER WHERE USER_ID = #{userSeq}")
@@ -22,5 +24,11 @@ public interface UserMapper {
     // 탈퇴 (VALID 변경)
     void updateValid(@Param("bojId") String bojId,
                      @Param("valid") String valid);
+
+    // 백준 티어 업데이트
+    void updateBaekjoon(@Param("bojId") String bojId,
+                        @Param("baekjoon") String baekjoon);
+
+    List<User> findByName(@Param("name") String name);
 
 }
