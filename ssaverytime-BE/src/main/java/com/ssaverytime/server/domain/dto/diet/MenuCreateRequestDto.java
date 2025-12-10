@@ -12,6 +12,7 @@ public class MenuCreateRequestDto {
 
     private Integer restaurantId;
     private String menu;
+    private Integer calorie;
 
     // "2025-11-07 12:00:00" 형식
     @JsonFormat(pattern= "yyyy-MM-dd HH:mm:ss")

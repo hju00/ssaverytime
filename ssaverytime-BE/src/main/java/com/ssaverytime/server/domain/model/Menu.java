@@ -12,5 +12,6 @@ public class Menu {
     private Integer menuId;        // AUTO_INCREMENT
     private Integer restaurantId;
     private String menu;
+    private Integer calorie;
     private LocalDateTime date;
 }

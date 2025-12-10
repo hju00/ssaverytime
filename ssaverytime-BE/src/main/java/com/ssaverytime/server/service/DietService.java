@@ -45,6 +45,7 @@ public class DietService {
         Menu menu= new Menu();
         menu.setRestaurantId(dto.getRestaurantId());
         menu.setMenu(dto.getMenu());
+        menu.setCalorie(dto.getCalorie());
         menu.setDate(dto.getDate()); // null이면 DB에서 NULL로 들어감
 
         menuMapper.insertMenu(menu);
@@ -71,7 +72,7 @@ public class DietService {
         List<Menu> menus= menuMapper.findByDateAndRestaurant(start, end, restaurantId);
 
         return menus.stream()
-                .map(m -> new DietResponseDto(m.getMenu()))
+                .map(m -> new DietResponseDto(m.getMenu(), m.getCalorie()))
                 .collect(Collectors.toList());
     }
 
