@@ -2,9 +2,12 @@ package com.ssaverytime.server.controller;
 
 import com.ssaverytime.server.domain.dto.comment.CommentRequestDto;
 import com.ssaverytime.server.domain.dto.comment.CommentResponseDto;
+import com.ssaverytime.server.domain.dto.report.ReportRequestDto;
+import com.ssaverytime.server.domain.enums.report.ReportTargetType;
 import com.ssaverytime.server.domain.model.User;
 import com.ssaverytime.server.mapper.UserMapper;
 import com.ssaverytime.server.service.CommentService;
+import com.ssaverytime.server.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +24,7 @@ public class CommentController {
 
     private final CommentService commentService;
     private final UserMapper userMapper;
+    private final ReportService reportService;
 
     private Integer getCurrentUserSeq() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -87,6 +91,20 @@ public class CommentController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    // 댓글 신고
+    @PostMapping("/{commentId}/report")
+    public ResponseEntity<String> reportComment(@PathVariable int boardId, @PathVariable int commentId, @RequestBody ReportRequestDto request) {
+        Integer userSeq = getCurrentUserSeq();
+        if (userSeq == null) return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+        try {
+            reportService.report(userSeq, ReportTargetType.COMMENT, commentId, request.getReason());
+            return new ResponseEntity<>("success", HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT); // 409
         }
     }
 }

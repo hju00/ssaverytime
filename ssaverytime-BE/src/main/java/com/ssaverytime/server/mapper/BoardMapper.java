@@ -41,4 +41,7 @@ public interface BoardMapper {
     int insertScrap(@Param("boardId") int boardId, @Param("userSeq") int userSeq);
     int deleteScrap(@Param("boardId") int boardId, @Param("userSeq") int userSeq);
     int checkScrap(@Param("boardId") int boardId, @Param("userSeq") int userSeq);
+
+    // 신고 누적
+    void increaseWarningCnt(int boardId);
 }

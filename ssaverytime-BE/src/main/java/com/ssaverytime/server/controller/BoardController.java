@@ -2,9 +2,12 @@ package com.ssaverytime.server.controller;
 
 import com.ssaverytime.server.domain.dto.board.BoardRequestDto;
 import com.ssaverytime.server.domain.dto.board.BoardResponseDto;
+import com.ssaverytime.server.domain.dto.report.ReportRequestDto;
+import com.ssaverytime.server.domain.enums.report.ReportTargetType;
 import com.ssaverytime.server.domain.model.User;
 import com.ssaverytime.server.mapper.UserMapper;
 import com.ssaverytime.server.service.BoardService;
+import com.ssaverytime.server.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +26,7 @@ public class BoardController {
 
     private final BoardService boardService;
     private final UserMapper userMapper;
+    private final ReportService reportService;
 
     private Integer getCurrentUserSeq() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -126,5 +130,19 @@ public class BoardController {
         Map<String, Object> response = new HashMap<>();
         response.put("scrapped", isScrapped);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    // 게시글 신고
+    @PostMapping("/{boardId}/report")
+    public ResponseEntity<String> reportBoard(@PathVariable int boardId, @RequestBody ReportRequestDto request) {
+        Integer userSeq = getCurrentUserSeq();
+        if (userSeq == null) return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+        try {
+            reportService.report(userSeq, ReportTargetType.BOARD, boardId, request.getReason());
+            return new ResponseEntity<>("success", HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT); // 409
+        }
     }
 }
