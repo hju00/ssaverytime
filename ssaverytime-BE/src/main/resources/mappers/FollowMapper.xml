@@ -26,4 +26,32 @@
         AND BOJ_ID2 = #{bojId2}
     </select>
 
+    <!-- 내가 팔로우한 사람 목록 -->
+    <select id="findFollowing" resultType="com.ssaverytime.server.domain.model.User">
+        SELECT
+        U.USER_ID AS userId,
+        U.BOJ_ID AS bojId,
+        U.NAME AS name,
+        U.SEASON AS season,
+        U.BAEKJOON AS baekjoon,
+        U.VALID AS valid
+        FROM FOLLOW F
+        JOIN USER U ON F.BOJ_ID2 = U.BOJ_ID
+        WHERE F.BOJ_ID1 = #{myBojId}
+    </select>
+
+    <!-- 나를 팔로우한 사람 목록 -->
+    <select id="findFollowers" resultType="com.ssaverytime.server.domain.model.User">
+        SELECT
+        U.USER_ID AS userId,
+        U.BOJ_ID AS bojId,
+        U.NAME AS name,
+        U.SEASON AS season,
+        U.BAEKJOON AS baekjoon,
+        U.VALID AS valid
+        FROM FOLLOW F
+        JOIN USER U ON F.BOJ_ID1 = U.BOJ_ID
+        WHERE F.BOJ_ID2 = #{myBojId}
+    </select>
+
 </mapper>

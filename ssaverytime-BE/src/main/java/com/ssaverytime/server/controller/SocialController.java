@@ -89,4 +89,33 @@ public class SocialController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+
+    /**
+     * 내가 팔로우한 사람 목록
+     */
+    @GetMapping("/follow/to")
+    public ResponseEntity<?> getFollowingList() {
+
+        String myBojId = AuthUtil.getLoginUserId();
+
+        List<SocialUserResponseDto> list =
+                socialService.getFollowingList(myBojId);
+
+        return ResponseEntity.ok(list);
+    }
+
+    /**
+     * 나를 팔로우한 사람 목록
+     */
+    @GetMapping("/follow/from")
+    public ResponseEntity<?> getFollowerList() {
+
+        String myBojId = AuthUtil.getLoginUserId();
+
+        List<SocialUserResponseDto> list =
+                socialService.getFollowerList(myBojId);
+
+        return ResponseEntity.ok(list);
+    }
 }
