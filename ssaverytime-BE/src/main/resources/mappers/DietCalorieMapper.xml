@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssaverytime.server.mapper.DietCalorieMapper">
+
+    <!--
+        특정 유저가 특정 날짜에 별점 남긴 식당들에 대해,
+        해당 날짜의 MENU.CALORIE 를 합산.
+
+        - STAR 에 TASTE/AMOUNT 두 줄이 있더라도
+          EXISTS 로 한 번만 카운트.
+    -->
+    <select id="sumRestaurantCalorie" resultType="int">
+        SELECT COALESCE(SUM(M.CALORIE), 0)
+        FROM MENU M
+        WHERE M.DATE BETWEEN #{start} AND #{end}
+        AND EXISTS (
+        SELECT 1
+        FROM STAR S
+        WHERE S.USER_ID = #{userId}
+        AND S.RESTAURANT_ID = M.RESTAURANT_ID
+        AND S.DATE BETWEEN #{start} AND #{end}
+        )
+    </select>
+
+</mapper>

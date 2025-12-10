@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssaverytime.server.mapper.PersonalDietMapper">
+
+    <insert id="insertPersonalDiet"
+            parameterType="com.ssaverytime.server.domain.model.PersonalDiet"
+            useGeneratedKeys="true"
+            keyProperty="dietId">
+        INSERT INTO PERSONAL_DIET (USER_ID, MENU, CALORIE, DATE)
+        VALUES (#{userId}, #{menu}, #{calorie}, #{date})
+    </insert>
+
+    <select id="sumPersonalCalorie" resultType="int">
+        SELECT COALESCE(SUM(CALORIE), 0)
+        FROM PERSONAL_DIET
+        WHERE USER_ID = #{userId}
+        AND DATE BETWEEN #{start} AND #{end}
+    </select>
+
+</mapper>

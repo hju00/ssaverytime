@@ -1,9 +1,6 @@
 package com.ssaverytime.server.controller;
 
-import com.ssaverytime.server.domain.dto.diet.DietResponseDto;
-import com.ssaverytime.server.domain.dto.diet.MenuCreateRequestDto;
-import com.ssaverytime.server.domain.dto.diet.StarCategoryRequestDto;
-import com.ssaverytime.server.domain.dto.diet.StarRequestDto;
+import com.ssaverytime.server.domain.dto.diet.*;
 import com.ssaverytime.server.service.DietService;
 import com.ssaverytime.server.util.AuthUtil;
 import lombok.RequiredArgsConstructor;
@@ -114,6 +111,48 @@ public class DietController {
         }catch(HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).body(e.getMessage());
         }catch(Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
+        }
+    }
+
+    /**
+     * POST /api/v1/diet
+     * 개인이 섭취한 음식 추가
+     * @param request
+     * @return
+     */
+    @PostMapping
+    public ResponseEntity<?> addPersonalDiet(@RequestBody PersonalDietRequestDto request) {
+
+        String loginBojId= AuthUtil.getLoginUserId();
+
+        try{
+            dietService.addPersonalDiet(loginBojId, request);
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        }catch(HttpClientErrorException e){
+            return ResponseEntity.status(e.getStatusCode()).body(e.getMessage());
+        }catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
+        }
+    }
+
+    /**
+     * GET /api/v1/diet/{DATE}
+     * 특정 날짜 섭취한 음식 칼로리 총합
+     * @param date
+     * @return
+     */
+    @GetMapping("/{date}")
+    public ResponseEntity<?> getDailyTotalCalorie(@PathVariable("date") String date) {
+
+        String loginBojId= AuthUtil.getLoginUserId();
+
+        try{
+            int total= dietService.getTotalDailyCalorie(loginBojId, date);
+            return ResponseEntity.ok(Map.of("totalCalorie", total));
+        }catch(HttpClientErrorException e){
+            return ResponseEntity.status(e.getStatusCode()).body(e.getMessage());
+        }catch(Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
         }
     }

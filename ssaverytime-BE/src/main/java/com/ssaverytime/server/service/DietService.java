@@ -2,14 +2,14 @@ package com.ssaverytime.server.service;
 
 import com.ssaverytime.server.domain.dto.diet.DietResponseDto;
 import com.ssaverytime.server.domain.dto.diet.MenuCreateRequestDto;
+import com.ssaverytime.server.domain.dto.diet.PersonalDietRequestDto;
 import com.ssaverytime.server.domain.dto.diet.StarRequestDto;
 import com.ssaverytime.server.domain.enums.star.StarCategory;
 import com.ssaverytime.server.domain.model.Menu;
+import com.ssaverytime.server.domain.model.PersonalDiet;
 import com.ssaverytime.server.domain.model.Star;
 import com.ssaverytime.server.domain.model.User;
-import com.ssaverytime.server.mapper.MenuMapper;
-import com.ssaverytime.server.mapper.StarMapper;
-import com.ssaverytime.server.mapper.UserMapper;
+import com.ssaverytime.server.mapper.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -27,6 +27,8 @@ public class DietService {
     private final MenuMapper menuMapper;
     private final UserMapper userMapper;
     private final StarMapper starMapper;
+    private final PersonalDietMapper personalDietMapper;
+    private final DietCalorieMapper dietCalorieMapper;
 
     // 메뉴 등록
     public void createMenu(MenuCreateRequestDto dto) {
@@ -168,5 +170,56 @@ public class DietService {
             return 0.0;
         }
         return avg;
+    }
+
+    // 개인 섭취 음식 추가
+    public void addPersonalDiet(String loginBojId, PersonalDietRequestDto dto) {
+
+        User me= userMapper.findByBojId(loginBojId);
+        if(me==null){
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다.");
+        }
+
+        if(dto.getMenu()==null || dto.getMenu().isBlank()){
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "menu는 필수입니다.");
+        }
+        if(dto.getCalorie()==null || dto.getCalorie()<0){
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "calorie는 0 이상이어야 합니다.");
+        }
+
+        PersonalDiet diet= new PersonalDiet();
+        diet.setUserId(me.getUserId());
+        diet.setMenu(dto.getMenu());
+        diet.setCalorie(dto.getCalorie());
+        diet.setDate(LocalDateTime.now());
+
+        personalDietMapper.insertPersonalDiet(diet);
+    }
+
+    // 특정 날짜의 총 섭취 칼로리 조회 (개인 + 식당)
+    public int getTotalDailyCalorie(String loginBojId, String dateStr) {
+
+        User me= userMapper.findByBojId(loginBojId);
+        if(me==null){
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다.");
+        }
+
+        LocalDate localDate;
+        try{
+            localDate= LocalDate.parse(dateStr); // yyyy-MM-dd
+        }catch(Exception e){
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "DATE 형식이 올바르지 않습니다. (yyyy-MM-dd)");
+        }
+
+        LocalDateTime start= localDate.atStartOfDay();
+        LocalDateTime end= localDate.atTime(23, 59, 59);
+
+        Integer personal= personalDietMapper.sumPersonalCalorie(me.getUserId(), start, end);
+        Integer restaurant= dietCalorieMapper.sumRestaurantCalorie(me.getUserId(), start, end);
+
+        if(personal==null) personal= 0;
+        if(restaurant==null) restaurant= 0;
+
+        return personal+restaurant;
     }
 }
