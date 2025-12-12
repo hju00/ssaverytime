@@ -21,6 +21,9 @@ public class BoardServiceImpl implements BoardService {
     @Autowired
     private com.ssaverytime.server.mapper.UserMapper userMapper;
 
+    @Autowired
+    private AiService aiService;
+
     @Override
     public List<BoardResponseDto> getBoardList(String keyword, String sort, int page, int size, Integer userSeq) {
         int offset = (page - 1) * size;
@@ -49,12 +52,8 @@ public class BoardServiceImpl implements BoardService {
     @Override
     @Transactional
     public int writeBoard(BoardRequestDto boardRequestDto) {
-        // Summary 생성 로직
-        if (boardRequestDto.getBody() != null && boardRequestDto.getBody().length() > 100) {
-            boardRequestDto.setSummary(boardRequestDto.getBody().substring(0, 100) + "...");
-        } else {
-            boardRequestDto.setSummary(boardRequestDto.getBody());
-        }
+        // Summary 자동 생성 로직 제거
+        boardRequestDto.setSummary(null);
         
         Integer realUserSeq = boardRequestDto.getUserSeq();
         
@@ -82,18 +81,13 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     public int modifyBoard(BoardRequestDto boardRequestDto) {
-        if (boardRequestDto.getBody() != null && boardRequestDto.getBody().length() > 100) {
-            boardRequestDto.setSummary(boardRequestDto.getBody().substring(0, 100) + "...");
-        } else {
-            boardRequestDto.setSummary(boardRequestDto.getBody());
-        }
+        // Summary 자동 업데이트 로직 제거
+        boardRequestDto.setSummary(null);
         return boardMapper.updateBoard(boardRequestDto);
     }
 
     @Override
     public int removeBoard(int boardId, int userSeq) {
-        // 실제 삭제가 아닌 숨김 처리로 구현 (데이터 보존) -> Soft Delete (VALID='0')
-        // 본인 확인 로직은 Controller나 Security 레벨에서 수행된다고 가정
         return boardMapper.deleteBoard(boardId);
     }
 
@@ -121,5 +115,28 @@ public class BoardServiceImpl implements BoardService {
             boardMapper.insertScrap(boardId, userSeq);
             return true; // 스크랩 됨
         }
+    }
+
+    @Override
+    @Transactional
+    public String getBoardSummary(int boardId) {
+        BoardResponseDto board = boardMapper.selectBoardDetail(boardId, null);
+        if (board == null) throw new IllegalArgumentException("게시글이 존재하지 않습니다.");
+
+        if (board.getSummary() != null && !board.getSummary().isEmpty()) {
+             return board.getSummary();
+        }
+        
+        if (board.getBody() == null || board.getBody().length() < 200) {
+            return "본문이 너무 짧아 요약하지 않습니다.";
+        }
+
+        // FastAPI 호출
+        String summary = aiService.getSummary(board.getBody());
+
+        // DB 저장
+        boardMapper.updateSummary(boardId, summary);
+        
+        return summary;
     }
 }

@@ -140,4 +140,9 @@
         UPDATE BOARD SET WARNING_CNT = WARNING_CNT + 1 WHERE BOARD_ID = #{boardId}
     </update>
 
+    <!-- AI 요약 저장 -->
+    <update id="updateSummary">
+        UPDATE BOARD SET SUMMARY = #{summary} WHERE BOARD_ID = #{boardId}
+    </update>
+
 </mapper>

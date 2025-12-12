@@ -20,9 +20,9 @@ public interface BoardService {
     // 글 삭제 (숨김 처리)
     int removeBoard(int boardId, int userSeq);
     
-    // 좋아요 토글
     boolean toggleLike(int boardId, int userSeq);
-    
-    // 스크랩 토글
     boolean toggleScrap(int boardId, int userSeq);
+
+    // AI 요약
+    String getBoardSummary(int boardId);
 }

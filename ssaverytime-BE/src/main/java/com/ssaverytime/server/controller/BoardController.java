@@ -144,5 +144,20 @@ public class BoardController {
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT); // 409
         }
+    }    @PostMapping("/{boardId}/ai")
+    public ResponseEntity<String> generateSummary(@PathVariable int boardId) {
+        try {
+            String summary = boardService.getBoardSummary(boardId);
+            return ResponseEntity.ok(summary);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/{boardId}/ai")
+    public ResponseEntity<String> getSummary(@PathVariable int boardId) {
+        return generateSummary(boardId);
     }
 }
