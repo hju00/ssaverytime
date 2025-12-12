@@ -145,4 +145,31 @@
         UPDATE BOARD SET SUMMARY = #{summary} WHERE BOARD_ID = #{boardId}
     </update>
 
+    <!-- 내 스크랩 게시글 목록 조회 -->
+    <select id="selectScrapBoardList" resultType="com.ssaverytime.server.domain.dto.board.BoardResponseDto">
+        SELECT 
+            b.BOARD_ID,
+            b.TITLE,
+            b.SUMMARY,
+            b.CREATED_AT,
+            b.UPDATED_AT,
+            b.VISIBLE,
+            b.WARNING_CNT,
+            b.USER_ID AS userSeq,
+            CASE WHEN b.USER_ID IS NULL THEN 'anonymous' ELSE u.BOJ_ID END AS bojId,
+            CASE WHEN b.USER_ID IS NULL THEN '익명' ELSE u.NAME END AS userName,
+            CASE WHEN b.USER_ID IS NULL THEN b.AUTHOR_TIER ELSE IFNULL(u.BAEKJOON, 'Unrated') END AS userTier,
+            (SELECT COUNT(*) FROM LIKES l WHERE l.BOARD_ID = b.BOARD_ID) AS likeCount,
+            (SELECT COUNT(*) FROM COMMENT c WHERE c.BOARD_ID = b.BOARD_ID AND c.VISIBLE = '1' AND c.VALID = '1') AS commentCount,
+            (SELECT COUNT(*) > 0 FROM LIKES l WHERE l.BOARD_ID = b.BOARD_ID AND l.USER_ID = #{userSeq}) AS isLiked,
+            TRUE AS isScrapped
+        FROM SCRAP s
+        JOIN BOARD b ON s.BOARD_ID = b.BOARD_ID
+        LEFT JOIN USER u ON b.USER_ID = u.USER_ID
+        WHERE s.USER_ID = #{userSeq}
+          AND b.VALID = '1'
+        ORDER BY s.SCRAP_ID DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
 </mapper>

@@ -51,6 +51,19 @@ public class BoardController {
         return new ResponseEntity<>(list, HttpStatus.OK);
     }
 
+    // 내 스크랩 목록 조회
+    @GetMapping("/scrap")
+    public ResponseEntity<List<BoardResponseDto>> getScrapBoardList(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        
+        Integer userSeq = getCurrentUserSeq();
+        if (userSeq == null) return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+        List<BoardResponseDto> list = boardService.getScrapBoardList(userSeq, page, size);
+        return new ResponseEntity<>(list, HttpStatus.OK);
+    }
+
     // 상세 조회
     @GetMapping("/{boardId}")
     public ResponseEntity<BoardResponseDto> getBoardDetail(@PathVariable int boardId) {
