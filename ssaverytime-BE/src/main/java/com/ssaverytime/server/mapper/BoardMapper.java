@@ -44,4 +44,7 @@ public interface BoardMapper {
 
     // 신고 누적
     void increaseWarningCnt(int boardId);
+
+    // AI 요약 저장
+    void updateSummary(@Param("boardId") int boardId, @Param("summary") String summary);
 }
