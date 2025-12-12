@@ -139,4 +139,10 @@ public class BoardServiceImpl implements BoardService {
         
         return summary;
     }
+
+    @Override
+    public List<BoardResponseDto> getScrapBoardList(int userSeq, int page, int size) {
+        int offset = (page - 1) * size;
+        return boardMapper.selectScrapBoardList(userSeq, size, offset);
+    }
 }

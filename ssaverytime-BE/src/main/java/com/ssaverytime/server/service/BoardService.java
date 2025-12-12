@@ -25,4 +25,7 @@ public interface BoardService {
 
     // AI 요약
     String getBoardSummary(int boardId);
+
+    // 내 스크랩 목록 조회
+    List<BoardResponseDto> getScrapBoardList(int userSeq, int page, int size);
 }

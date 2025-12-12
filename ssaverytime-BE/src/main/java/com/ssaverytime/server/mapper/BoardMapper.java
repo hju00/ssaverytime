@@ -47,4 +47,9 @@ public interface BoardMapper {
 
     // AI 요약 저장
     void updateSummary(@Param("boardId") int boardId, @Param("summary") String summary);
+
+    // 내 스크랩 게시글 목록 조회
+    List<BoardResponseDto> selectScrapBoardList(@Param("userSeq") int userSeq,
+                                                @Param("limit") int limit,
+                                                @Param("offset") int offset);
 }
