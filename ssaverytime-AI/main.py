@@ -23,7 +23,7 @@ async def generate_summary(request: SummaryRequest):
     try:
         # LangChain ChatOpenAI 초기화
         chat = ChatOpenAI(
-            model="gpt-4o",
+            model="gpt-4o-mini",
             api_key=GEMINI_API_KEY,
             base_url=GMS_OPENAI_BASE_URL,
             temperature=0.5
