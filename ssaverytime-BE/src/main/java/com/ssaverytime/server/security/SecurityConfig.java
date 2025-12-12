@@ -36,6 +36,9 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 .authorizeHttpRequests(auth -> auth
+                        // 관리자 전용
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+
                         .requestMatchers(HttpMethod.GET, "/api/board", "/api/board/**", "/api/v1/board", "/api/v1/board/**").permitAll()
                         .requestMatchers(
                                 "/api/v1/auth/login",
