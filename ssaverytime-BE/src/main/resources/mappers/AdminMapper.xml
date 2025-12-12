@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssaverytime.server.mapper.AdminMapper">
+
+    <select id="selectReportedBoards" resultType="com.ssaverytime.server.domain.dto.admin.ReportedBoardResponseDto">
+        SELECT 
+            b.BOARD_ID,
+            b.TITLE,
+            b.WARNING_CNT,
+            b.VISIBLE,
+            b.CREATED_AT,
+            u.BOJ_ID,
+            u.NAME AS userName
+        FROM BOARD b
+        LEFT JOIN USER u ON b.USER_ID = u.USER_ID
+        WHERE b.WARNING_CNT > 0
+        ORDER BY b.WARNING_CNT DESC, b.CREATED_AT DESC
+    </select>
+
+    <select id="selectReportedComments" resultType="com.ssaverytime.server.domain.dto.admin.ReportedCommentResponseDto">
+        SELECT 
+            c.COMMENT_ID,
+            c.BOARD_ID,
+            c.BODY,
+            c.WARNING_CNT,
+            c.VISIBLE,
+            c.CREATED_AT,
+            u.BOJ_ID,
+            u.NAME AS userName
+        FROM COMMENT c
+        LEFT JOIN USER u ON c.USER_ID = u.USER_ID
+        WHERE c.WARNING_CNT > 0
+        ORDER BY c.WARNING_CNT DESC, c.CREATED_AT DESC
+    </select>
+
+    <update id="deactivateUser">
+        UPDATE USER SET VALID = 'INVALID' WHERE USER_ID = #{userId}
+    </update>
+
+    <update id="deactivateBoard">
+        UPDATE BOARD SET VISIBLE = '0' WHERE BOARD_ID = #{boardId}
+    </update>
+
+    <update id="deactivateComment">
+        UPDATE COMMENT SET VISIBLE = '0' WHERE COMMENT_ID = #{commentId}
+    </update>
+
+</mapper>
