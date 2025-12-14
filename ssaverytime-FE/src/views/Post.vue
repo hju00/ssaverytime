@@ -126,23 +126,50 @@
                 <div class="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs shrink-0">
                    {{ comment.bojId ? comment.bojId.substring(0, 2).toUpperCase() : '?' }}
                 </div>
-                <div class="flex-1 space-y-1">
+                
+                <div class="flex-1 space-y-1 w-full min-w-0">
                    <div class="flex items-center justify-between">
                       <div class="flex items-center gap-2">
                          <span class="text-sm font-semibold">{{ comment.userName }}</span>
                          <span class="text-xs text-muted-foreground">{{ formatDate(comment.createdAt) }}</span>
                       </div>
+                      
                       <!-- Comment Actions -->
                       <div class="flex items-center gap-1">
-                         <Button v-if="comment.author" variant="ghost" size="sm" class="h-6 w-6 p-0" @click="handleDeleteComment(comment.commentId)">
-                            <Trash2Icon class="w-3 h-3 text-muted-foreground hover:text-destructive" />
-                         </Button>
-                         <Button v-else variant="ghost" size="sm" class="h-6 w-6 p-0 text-muted-foreground hover:text-red-500" @click="handleReportComment(comment.commentId)">
-                            <AlertTriangleIcon class="w-3 h-3" />
-                         </Button>
+                         <!-- 수정 모드일 때 -->
+                         <template v-if="editingCommentId === comment.commentId">
+                           <Button variant="ghost" size="sm" class="h-6 w-6 p-0 text-green-500 hover:text-green-600" @click="saveEditComment(comment.commentId)">
+                              <CheckIcon class="w-3 h-3" />
+                           </Button>
+                           <Button variant="ghost" size="sm" class="h-6 w-6 p-0 text-muted-foreground hover:text-destructive" @click="cancelEditComment">
+                              <XIcon class="w-3 h-3" />
+                           </Button>
+                         </template>
+                         
+                         <!-- 일반 모드일 때 -->
+                         <template v-else>
+                           <div v-if="comment.author" class="flex gap-1">
+                             <Button variant="ghost" size="sm" class="h-6 w-6 p-0 text-muted-foreground hover:text-foreground" @click="startEditComment(comment)">
+                                <EditIcon class="w-3 h-3" />
+                             </Button>
+                             <Button variant="ghost" size="sm" class="h-6 w-6 p-0 text-muted-foreground hover:text-destructive" @click="handleDeleteComment(comment.commentId)">
+                                <Trash2Icon class="w-3 h-3" />
+                             </Button>
+                           </div>
+                           <Button v-else variant="ghost" size="sm" class="h-6 w-6 p-0 text-muted-foreground hover:text-red-500" @click="handleReportComment(comment.commentId)">
+                              <AlertTriangleIcon class="w-3 h-3" />
+                           </Button>
+                         </template>
                       </div>
                    </div>
-                   <p class="text-sm text-foreground leading-relaxed">{{ comment.body }}</p>
+                   
+                   <!-- 본문 or 수정 Input -->
+                   <div v-if="editingCommentId === comment.commentId">
+                      <Input v-model="editingCommentText" class="h-8 text-sm" @keyup.enter="saveEditComment(comment.commentId)" />
+                   </div>
+                   <p v-else class="text-sm text-foreground leading-relaxed break-words">
+                     {{ comment.body }}
+                   </p>
                 </div>
              </div>
           </div>
@@ -158,7 +185,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getBoardDetail, toggleLike, toggleScrap, deleteBoard } from '@/api/board'
-import { getCommentList, writeComment, deleteComment } from '@/api/comment'
+import { getCommentList, writeComment, updateComment, deleteComment } from '@/api/comment'
 import { reportBoard, reportComment } from '@/api/report'
 import { getTierNumber } from '@/lib/utils'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -173,7 +200,9 @@ import {
   Trash2 as Trash2Icon,
   ChevronLeft as ChevronLeftIcon,
   Edit as EditIcon,
-  AlertTriangle as AlertTriangleIcon
+  AlertTriangle as AlertTriangleIcon,
+  Check as CheckIcon,
+  X as XIcon
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -184,6 +213,10 @@ const comments = ref([])
 
 const commentText = ref('')
 const anonymous = ref(false)
+
+// 댓글 수정 상태
+const editingCommentId = ref(null)
+const editingCommentText = ref('')
 
 const formatDate = (dateString) => {
   if (!dateString) return '';
@@ -204,7 +237,6 @@ const fetchPost = async () => {
   loading.value = true;
   try {
     const response = await getBoardDetail(boardId);
-    console.log("Post Response:", response.data);
     if (response.data) {
        const data = response.data;
        post.value = {
@@ -212,7 +244,7 @@ const fetchPost = async () => {
          tierNumber: getTierNumber(data.userTier),
          formattedDate: formatDate(data.createdAt)
        };
-       fetchComments(boardId); // 댓글 목록도 함께 로딩
+       fetchComments(boardId);
     }
   } catch (error) {
     console.error("Failed to fetch post detail:", error);
@@ -240,10 +272,45 @@ const addComment = async () => {
       visible: anonymous.value ? '0' : '1'
     });
     commentText.value = '';
-    fetchComments(post.value.boardId); // 목록 갱신
+    fetchComments(post.value.boardId);
   } catch (error) {
     console.error("Failed to write comment:", error);
     alert("댓글 작성에 실패했습니다. (로그인 필요)");
+  }
+}
+
+const startEditComment = (comment) => {
+  editingCommentId.value = comment.commentId;
+  editingCommentText.value = comment.body;
+}
+
+const cancelEditComment = () => {
+  editingCommentId.value = null;
+  editingCommentText.value = '';
+}
+
+const saveEditComment = async (commentId) => {
+  if (!editingCommentText.value.trim()) {
+    alert("내용을 입력해주세요.");
+    return;
+  }
+
+  try {
+    // 댓글 수정 시 가시성(visible)은 유지하거나 변경 UI를 추가해야 함. 
+    // 현재 UI에는 수정 시 익명 여부 변경이 없으므로 기존 visible 값을 쓸 수 없음 (API에서 required라면 문제).
+    // 백엔드 Mapper를 보면 updateComment는 BODY만 수정함: UPDATE COMMENT SET BODY = #{body} ...
+    // 따라서 visible은 안 보내도 됨. DTO에는 필드가 있지만 null이면 MyBatis에서 무시되거나 에러? 
+    // Mapper XML을 보면 visible은 update 문에 없음. -> body만 보내면 됨.
+    await updateComment(post.value.boardId, commentId, {
+      body: editingCommentText.value
+    });
+    
+    // 수정 완료 후
+    cancelEditComment();
+    fetchComments(post.value.boardId);
+  } catch (error) {
+    console.error("Failed to update comment:", error);
+    alert("댓글 수정에 실패했습니다.");
   }
 }
 
@@ -336,6 +403,10 @@ onMounted(() => {
   fetchPost();
 });
 </script>
+
+<style scoped>
+/* Scoped styles for Post.vue */
+</style>
 
 <style scoped>
 /* Scoped styles for Post.vue */
