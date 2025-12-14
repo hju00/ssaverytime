@@ -63,7 +63,7 @@
                 <div class="flex items-center gap-2">
                   <span class="text-xs font-medium text-foreground">{{ post.userName }}</span>
                   <img 
-                    v-if="post.tierNumber > 0"
+                    v-if="post.tierNumber !== undefined"
                     :src="`https://static.solved.ac/tier_small/${post.tierNumber}.svg`" 
                     alt="Tier Icon" 
                     class="w-4 h-4 inline-block" 
