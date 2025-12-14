@@ -14,7 +14,11 @@ export function valueUpdater(updaterOrValue, ref) {
 
 export const getTierNumber = (tierStr) => {
   if (!tierStr) return 0;
-  const tiers = ['BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND', 'RUBY', 'MASTER'];
+  
+  // MASTER 처리 (31)
+  if (tierStr.toUpperCase() === 'MASTER') return 31;
+
+  const tiers = ['BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND', 'RUBY'];
   
   const parts = tierStr.split(' ');
   if (parts.length < 2) return 0;
