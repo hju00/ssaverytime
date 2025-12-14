@@ -40,11 +40,11 @@
     </update>
 
     <update id="deactivateBoard">
-        UPDATE BOARD SET VISIBLE = '0' WHERE BOARD_ID = #{boardId}
+        UPDATE BOARD SET VALID = '0' WHERE BOARD_ID = #{boardId}
     </update>
 
     <update id="deactivateComment">
-        UPDATE COMMENT SET VISIBLE = '0' WHERE COMMENT_ID = #{commentId}
+        UPDATE COMMENT SET VALID = '0' WHERE COMMENT_ID = #{commentId}
     </update>
 
 </mapper>

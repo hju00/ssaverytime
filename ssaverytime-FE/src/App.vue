@@ -1,3 +1,51 @@
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
+import { RouterLink, RouterView, useRouter } from 'vue-router'
+import { Home as HomeIcon, Clipboard as ClipboardIcon, Forklift as ForkliftIcon, FileText as FileTextIcon, User as UserIcon, LogIn as LogInIcon, LogOut as LogOutIcon, Settings as SettingsIcon } from 'lucide-vue-next'
+import http from '@/api/http'
+
+const router = useRouter()
+const isLoggedIn = ref(false)
+const isAdmin = ref(false)
+
+const checkLoginStatus = async () => {
+  const token = localStorage.getItem('accessToken')
+  isLoggedIn.value = !!token
+
+  if (token) {
+    try {
+      const res = await http.get('/v1/mypage')
+      if (res.data.role === 'ADMIN') {
+        isAdmin.value = true
+      } else {
+        isAdmin.value = false
+      }
+    } catch (e) {
+      console.error('Failed to fetch user info:', e)
+      isAdmin.value = false
+    }
+  } else {
+    isAdmin.value = false
+  }
+}
+
+const handleLogout = () => {
+  localStorage.removeItem('accessToken')
+  isAdmin.value = false
+  window.dispatchEvent(new Event('auth-changed'))
+  router.push('/')
+}
+
+onMounted(() => {
+  checkLoginStatus()
+  window.addEventListener('auth-changed', checkLoginStatus)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('auth-changed', checkLoginStatus)
+})
+</script>
+
 <template>
   <div class="flex min-h-screen bg-background">
     <!-- Sidebar -->
@@ -26,6 +74,11 @@
           <UserIcon class="w-5 h-5" />
           <span>{{ $t('sidebar.profile') }}</span>
         </RouterLink>
+        
+        <RouterLink v-if="isAdmin" to="/admin" class="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors text-red-500 hover:text-red-600">
+          <SettingsIcon class="w-5 h-5" />
+          <span>관리자 페이지</span>
+        </RouterLink>
 
         <div class="my-4 border-t border-border"></div>
 
@@ -51,34 +104,6 @@
     </main>
   </div>
 </template>
-
-<script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { RouterLink, RouterView, useRouter } from 'vue-router'
-import { Home as HomeIcon, Clipboard as ClipboardIcon, Forklift as ForkliftIcon, FileText as FileTextIcon, User as UserIcon, LogIn as LogInIcon, LogOut as LogOutIcon } from 'lucide-vue-next'
-
-const router = useRouter()
-const isLoggedIn = ref(false)
-
-const checkLoginStatus = () => {
-  isLoggedIn.value = !!localStorage.getItem('accessToken')
-}
-
-const handleLogout = () => {
-  localStorage.removeItem('accessToken')
-  window.dispatchEvent(new Event('auth-changed'))
-  router.push('/')
-}
-
-onMounted(() => {
-  checkLoginStatus()
-  window.addEventListener('auth-changed', checkLoginStatus)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('auth-changed', checkLoginStatus)
-})
-</script>
 
 <style>
 /* Global styles for App.vue. Tailwind handles most of it. */

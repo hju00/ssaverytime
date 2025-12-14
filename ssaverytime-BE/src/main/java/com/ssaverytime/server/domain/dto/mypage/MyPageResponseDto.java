@@ -14,5 +14,6 @@ public class MyPageResponseDto {
     private String name;
     private Integer season;
     private String baekjoon;
+    private String role;
     private LocalDateTime createdAt;
 }

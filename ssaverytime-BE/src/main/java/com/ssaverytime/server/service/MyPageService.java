@@ -38,6 +38,7 @@ public class MyPageService {
                 user.getName(),
                 user.getSeason(),
                 user.getBaekjoon(),
+                user.getRole().name(),
                 user.getCreatedAt()
         );
     }
