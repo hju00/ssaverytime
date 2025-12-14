@@ -59,6 +59,8 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { writeBoard, getBoardDetail, updateBoard } from '@/api/board'
+import http from '@/api/http'
+import { getTierNumber } from '@/lib/utils'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -68,17 +70,23 @@ import { Textarea } from '@/components/ui/textarea'
 const router = useRouter()
 const route = useRoute()
 
-// TODO: 나중에 JWT 토큰에서 사용자 정보를 파싱하는 로직으로 대체 필요
-const getUserInfo = () => {
-  return {
-    name: '유저왕(JWT)',
-    tier: 'PLATINUM I',
-    tierNumber: 16
+// 사용자 정보 초기화
+const user = ref({ name: '', tier: '', tierNumber: 0 })
+
+const fetchUserInfo = async () => {
+  try {
+    const res = await http.get('/v1/mypage')
+    user.value = {
+      name: res.data.name,
+      tier: res.data.baekjoon,
+      tierNumber: getTierNumber(res.data.baekjoon)
+    }
+  } catch (error) {
+    console.error("Failed to fetch user info:", error)
+    alert("로그인이 필요합니다.")
+    router.push('/login')
   }
 }
-
-// 사용자 정보 초기화
-const user = ref(getUserInfo())
 
 const isSubmitting = ref(false)
 const isEditMode = ref(false)
@@ -90,6 +98,8 @@ const form = reactive({
 })
 
 onMounted(async () => {
+  await fetchUserInfo()
+
   const boardId = route.query.id
   if (boardId) {
     isEditMode.value = true
