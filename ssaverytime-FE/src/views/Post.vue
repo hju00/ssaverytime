@@ -131,6 +131,12 @@
                    <div class="flex items-center justify-between">
                       <div class="flex items-center gap-2">
                          <span class="text-sm font-semibold">{{ comment.userName }}</span>
+                         <img 
+                           v-if="getTierNumber(comment.userTier) !== undefined" 
+                           :src="`https://static.solved.ac/tier_small/${getTierNumber(comment.userTier)}.svg`" 
+                           alt="Tier Icon" 
+                           class="w-3 h-3 inline-block" 
+                         />
                          <span class="text-xs text-muted-foreground">{{ formatDate(comment.createdAt) }}</span>
                       </div>
                       
@@ -220,6 +226,9 @@ const editingCommentText = ref('')
 
 const formatDate = (dateString) => {
   if (!dateString) return '';
+  if (typeof dateString === 'string' && !dateString.endsWith('Z')) {
+    dateString += 'Z';
+  }
   const date = new Date(dateString);
   return new Intl.DateTimeFormat('ko-KR', {
     month: 'short',
