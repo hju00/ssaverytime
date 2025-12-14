@@ -18,7 +18,7 @@
             <h1 class="text-2xl font-bold text-foreground leading-tight flex-1">{{ post.title }}</h1>
             <div class="flex items-center gap-1 shrink-0">
                <!-- 수정/삭제 (본인일 때) -->
-               <div v-if="post.isAuthor" class="flex gap-1">
+               <div v-if="post.author" class="flex gap-1">
                  <Button variant="ghost" size="sm" class="h-8 w-8 p-0" @click="editPost">
                     <EditIcon class="w-4 h-4 text-muted-foreground hover:text-foreground" />
                  </Button>
@@ -134,7 +134,7 @@
                       </div>
                       <!-- Comment Actions -->
                       <div class="flex items-center gap-1">
-                         <Button v-if="comment.isAuthor" variant="ghost" size="sm" class="h-6 w-6 p-0" @click="handleDeleteComment(comment.commentId)">
+                         <Button v-if="comment.author" variant="ghost" size="sm" class="h-6 w-6 p-0" @click="handleDeleteComment(comment.commentId)">
                             <Trash2Icon class="w-3 h-3 text-muted-foreground hover:text-destructive" />
                          </Button>
                          <Button v-else variant="ghost" size="sm" class="h-6 w-6 p-0 text-muted-foreground hover:text-red-500" @click="handleReportComment(comment.commentId)">
