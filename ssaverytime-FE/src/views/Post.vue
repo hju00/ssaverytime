@@ -15,22 +15,27 @@
       <Card class="border-border">
         <CardHeader class="space-y-4">
           <div class="flex justify-between items-start gap-4">
-          <h1 class="text-2xl font-bold text-foreground leading-tight flex-1">{{ post.title }}</h1>
-          <!-- TODO: 로그인 구현 후 'true ||' 제거하여 권한 체크 활성화 필요 -->
-          <div v-if="true || post.isAuthor" class="flex items-center gap-1 shrink-0">
-             <Button variant="ghost" size="sm" class="h-8 w-8 p-0" @click="editPost">
-                <EditIcon class="w-4 h-4 text-muted-foreground hover:text-foreground" />
-             </Button>
-             <Button variant="ghost" size="sm" class="h-8 w-8 p-0" @click="deletePostAction">
-                <Trash2Icon class="w-4 h-4 text-muted-foreground hover:text-destructive" />
-             </Button>
+            <h1 class="text-2xl font-bold text-foreground leading-tight flex-1">{{ post.title }}</h1>
+            <div class="flex items-center gap-1 shrink-0">
+               <!-- 수정/삭제 (본인일 때) -->
+               <div v-if="post.isAuthor" class="flex gap-1">
+                 <Button variant="ghost" size="sm" class="h-8 w-8 p-0" @click="editPost">
+                    <EditIcon class="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                 </Button>
+                 <Button variant="ghost" size="sm" class="h-8 w-8 p-0" @click="deletePostAction">
+                    <Trash2Icon class="w-4 h-4 text-muted-foreground hover:text-destructive" />
+                 </Button>
+               </div>
+               <!-- 신고 (본인 아닐 때) -->
+               <Button v-else variant="ghost" size="sm" class="h-8 w-8 p-0 text-red-400 hover:text-red-600 hover:bg-red-50" @click="handleReportBoard">
+                  <AlertTriangleIcon class="w-4 h-4" />
+               </Button>
+            </div>
           </div>
-      </div>
 
           <!-- Author Info -->
           <div class="flex items-center gap-3 pt-2 border-t border-border/50">
             <div class="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-lg overflow-hidden">
-               <!-- Placeholder Avatar or BOJ ID -->
                <span v-if="!post.userTier">👤</span>
                <span v-else>{{ post.bojId || 'U' }}</span>
             </div>
@@ -78,7 +83,7 @@
       <!-- Comment Section -->
       <Card class="border-border">
         <CardHeader>
-          <h2 class="font-bold text-lg">{{ $t('post.comments') }} ({{ post.commentCount || 0 }})</h2>
+          <h2 class="font-bold text-lg">{{ $t('post.comments') }} ({{ comments.length }})</h2>
         </CardHeader>
         <CardContent class="space-y-4">
           <!-- Comment Input -->
@@ -87,6 +92,7 @@
               :placeholder="$t('post.write_comment_placeholder')"
               v-model="commentText"
               class="bg-background border-input rounded-lg"
+              @keyup.enter="addComment"
             />
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
@@ -102,18 +108,43 @@
                 class="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-9 px-4"
                 size="sm"
                 @click="addComment"
+                :disabled="!commentText.trim()"
               >
                 {{ $t('post.post_button') }}
               </Button>
             </div>
           </div>
 
-          <!-- Comments List (Empty for now) -->
+          <!-- Comments List -->
           <div class="space-y-4 pt-4 border-t border-border/50">
              <div v-if="comments.length === 0" class="text-center text-muted-foreground text-sm py-4">
                {{ $t('post.no_comments') || '아직 댓글이 없습니다.' }}
              </div>
-             <!-- TODO: Implement Comment List when API is ready -->
+             
+             <div v-for="comment in comments" :key="comment.commentId" class="flex gap-3 p-3 rounded-lg hover:bg-muted/30 transition-colors">
+                <!-- Avatar -->
+                <div class="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs shrink-0">
+                   {{ comment.bojId ? comment.bojId.substring(0, 2).toUpperCase() : '?' }}
+                </div>
+                <div class="flex-1 space-y-1">
+                   <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                         <span class="text-sm font-semibold">{{ comment.userName }}</span>
+                         <span class="text-xs text-muted-foreground">{{ formatDate(comment.createdAt) }}</span>
+                      </div>
+                      <!-- Comment Actions -->
+                      <div class="flex items-center gap-1">
+                         <Button v-if="comment.isAuthor" variant="ghost" size="sm" class="h-6 w-6 p-0" @click="handleDeleteComment(comment.commentId)">
+                            <Trash2Icon class="w-3 h-3 text-muted-foreground hover:text-destructive" />
+                         </Button>
+                         <Button v-else variant="ghost" size="sm" class="h-6 w-6 p-0 text-muted-foreground hover:text-red-500" @click="handleReportComment(comment.commentId)">
+                            <AlertTriangleIcon class="w-3 h-3" />
+                         </Button>
+                      </div>
+                   </div>
+                   <p class="text-sm text-foreground leading-relaxed">{{ comment.body }}</p>
+                </div>
+             </div>
           </div>
         </CardContent>
       </Card>
@@ -127,6 +158,8 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getBoardDetail, toggleLike, toggleScrap, deleteBoard } from '@/api/board'
+import { getCommentList, writeComment, deleteComment } from '@/api/comment'
+import { reportBoard, reportComment } from '@/api/report'
 import { getTierNumber } from '@/lib/utils'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -139,14 +172,15 @@ import {
   Reply as ReplyIcon,
   Trash2 as Trash2Icon,
   ChevronLeft as ChevronLeftIcon,
-  Edit as EditIcon
+  Edit as EditIcon,
+  AlertTriangle as AlertTriangleIcon
 } from 'lucide-vue-next'
 
 const router = useRouter()
 const route = useRoute()
 const post = ref(null)
 const loading = ref(false)
-const comments = ref([]) // Placeholder
+const comments = ref([])
 
 const commentText = ref('')
 const anonymous = ref(false)
@@ -177,12 +211,80 @@ const fetchPost = async () => {
          tierNumber: getTierNumber(data.userTier),
          formattedDate: formatDate(data.createdAt)
        };
+       fetchComments(boardId); // 댓글 목록도 함께 로딩
     }
   } catch (error) {
     console.error("Failed to fetch post detail:", error);
     post.value = null;
   } finally {
     loading.value = false;
+  }
+}
+
+const fetchComments = async (boardId) => {
+  try {
+    const res = await getCommentList(boardId);
+    comments.value = res.data;
+  } catch (error) {
+    console.error("Failed to fetch comments:", error);
+  }
+}
+
+const addComment = async () => {
+  if (!commentText.value.trim() || !post.value) return;
+  
+  try {
+    await writeComment(post.value.boardId, {
+      body: commentText.value,
+      visible: anonymous.value ? '0' : '1'
+    });
+    commentText.value = '';
+    fetchComments(post.value.boardId); // 목록 갱신
+  } catch (error) {
+    console.error("Failed to write comment:", error);
+    alert("댓글 작성에 실패했습니다. (로그인 필요)");
+  }
+}
+
+const handleDeleteComment = async (commentId) => {
+  if (!confirm('댓글을 삭제하시겠습니까?')) return;
+  try {
+    await deleteComment(post.value.boardId, commentId);
+    fetchComments(post.value.boardId);
+  } catch (error) {
+    alert("댓글 삭제 실패");
+  }
+}
+
+const handleReportBoard = async () => {
+  const reason = prompt('신고 사유를 입력해주세요:');
+  if (!reason) return;
+  
+  try {
+    await reportBoard(post.value.boardId, reason);
+    alert("게시글이 신고되었습니다.");
+  } catch (error) {
+    if (error.response && error.response.status === 409) {
+      alert("이미 신고한 게시글입니다.");
+    } else {
+      alert("신고 실패: " + (error.response?.data || error.message));
+    }
+  }
+}
+
+const handleReportComment = async (commentId) => {
+  const reason = prompt('신고 사유를 입력해주세요:');
+  if (!reason) return;
+  
+  try {
+    await reportComment(post.value.boardId, commentId, reason);
+    alert("댓글이 신고되었습니다.");
+  } catch (error) {
+    if (error.response && error.response.status === 409) {
+      alert("이미 신고한 댓글입니다.");
+    } else {
+      alert("신고 실패: " + (error.response?.data || error.message));
+    }
   }
 }
 
@@ -208,8 +310,6 @@ const toggleLikeAction = async () => {
   if (!post.value) return;
   try {
     const res = await toggleLike(post.value.boardId);
-    // Optimistic update or refetch
-    // Assuming API returns { liked: true/false }
     if (res.data && typeof res.data.liked === 'boolean') {
         post.value.isLiked = res.data.liked;
         post.value.likeCount += res.data.liked ? 1 : -1;
@@ -229,11 +329,6 @@ const toggleScrapAction = async () => {
   } catch (e) {
     console.error("Scrap toggle failed", e);
   }
-}
-
-const addComment = () => {
-  console.log("Comment feature not implemented yet.");
-  // TODO: Implement write comment
 }
 
 onMounted(() => {
