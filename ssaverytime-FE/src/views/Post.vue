@@ -286,13 +286,17 @@ const fetchComments = async (boardId) => {
 }
 
 const addComment = async () => {
+  console.log("Anonymous Checkbox Value:", anonymous.value);
   if (!commentText.value.trim() || !post.value) return;
   
   try {
-    await writeComment(post.value.boardId, {
+    const payload = {
       body: commentText.value,
       visible: anonymous.value ? '0' : '1'
-    });
+    };
+    console.log("Sending Comment Payload:", payload);
+
+    await writeComment(post.value.boardId, payload);
     commentText.value = '';
     fetchComments(post.value.boardId);
   } catch (error) {
