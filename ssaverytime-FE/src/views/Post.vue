@@ -35,9 +35,14 @@
 
           <!-- Author Info -->
           <div class="flex items-center gap-3 pt-2 border-t border-border/50">
-            <div class="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-lg overflow-hidden">
-               <span v-if="!post.userTier">👤</span>
-               <span v-else>{{ post.bojId || 'U' }}</span>
+            <div class="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0 border border-border">
+               <img 
+                 v-if="post.tierNumber !== undefined" 
+                 :src="`https://static.solved.ac/tier_small/${post.tierNumber}.svg`" 
+                 alt="Profile" 
+                 class="w-6 h-6 object-contain" 
+               />
+               <span v-else class="text-lg">👤</span>
             </div>
             <div class="flex-1">
               <div class="flex items-center gap-2">
@@ -123,8 +128,14 @@
              
              <div v-for="comment in comments" :key="comment.commentId" class="flex gap-3 p-3 rounded-lg hover:bg-muted/30 transition-colors">
                 <!-- Avatar -->
-                <div class="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs shrink-0">
-                   {{ comment.bojId ? comment.bojId.substring(0, 2).toUpperCase() : '?' }}
+                <div class="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0 border border-border">
+                   <img 
+                     v-if="getTierNumber(comment.userTier) !== undefined" 
+                     :src="`https://static.solved.ac/tier_small/${getTierNumber(comment.userTier)}.svg`" 
+                     alt="Profile" 
+                     class="w-5 h-5 object-contain" 
+                   />
+                   <span v-else class="text-xs">?</span>
                 </div>
                 
                 <div class="flex-1 space-y-1 w-full min-w-0">
