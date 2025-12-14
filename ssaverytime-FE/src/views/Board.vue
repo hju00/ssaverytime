@@ -210,6 +210,9 @@ onUnmounted(() => {
 
 const formatDate = (dateString) => {
   if (!dateString) return '';
+  if (typeof dateString === 'string' && !dateString.endsWith('Z')) {
+    dateString += 'Z';
+  }
   const date = new Date(dateString);
   return new Intl.DateTimeFormat('ko-KR', {
     month: 'short',

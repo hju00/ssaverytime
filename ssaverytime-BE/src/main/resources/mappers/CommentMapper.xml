@@ -12,9 +12,20 @@
             c.VISIBLE,
             c.CREATED_AT,
             c.USER_ID AS userSeq,
-            CASE WHEN c.USER_ID IS NULL THEN 'anonymous' ELSE u.BOJ_ID END AS bojId,
-            CASE WHEN c.USER_ID IS NULL THEN '익명' ELSE u.NAME END AS userName,
-            IFNULL(u.BAEKJOON, 'Unrated') AS userTier,
+            CASE 
+                WHEN c.VISIBLE = '0' THEN 'anonymous'
+                WHEN c.USER_ID IS NULL THEN 'anonymous' 
+                ELSE u.BOJ_ID 
+            END AS bojId,
+            CASE 
+                WHEN c.VISIBLE = '0' THEN '익명'
+                WHEN c.USER_ID IS NULL THEN '익명' 
+                ELSE u.NAME 
+            END AS userName,
+            CASE 
+                WHEN c.VISIBLE = '0' THEN 'Unrated'
+                ELSE IFNULL(u.BAEKJOON, 'Unrated') 
+            END AS userTier,
             <choose>
                 <when test="currentUserSeq != null">
                     (c.USER_ID IS NOT NULL AND c.USER_ID = #{currentUserSeq}) AS isAuthor
