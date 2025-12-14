@@ -94,6 +94,20 @@
           </Select>
         </div>
 
+        <div class="space-y-2">
+          <Label for="season" class="text-sm font-medium">
+            기수
+          </Label>
+          <Select v-model="signupData.season">
+            <SelectTrigger id="season" class="rounded-lg border-input bg-background h-11">
+              <SelectValue placeholder="기수를 선택하세요" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="s in seasonList" :key="s" :value="String(s)">{{ s }}기</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <Button
           @click="handleSignup"
           class="w-full h-11 rounded-lg bg-primary text-primary-foreground font-medium mt-6 hover:bg-primary/90"
@@ -141,12 +155,40 @@ const signupData = ref({
   confirmPassword: '',
   nickname: '',
   campus: '',
-  // baekjoonId field removed as it's merged with id
+  season: '',
+  baekjoonId: '',
 })
+
+const generateSeasons = () => {
+  const seasons = []
+  const startYear = 2019
+  const now = new Date()
+  const currentYear = now.getFullYear()
+  const currentMonth = now.getMonth() + 1
+
+  let maxSeason = (currentYear - startYear) * 2
+  if (currentMonth >= 7) {
+    maxSeason += 2
+  } else {
+    maxSeason += 1
+  }
+
+  for (let i = maxSeason; i >= 1; i--) {
+    seasons.push(i)
+  }
+  return seasons
+}
+
+const seasonList = generateSeasons()
 
 const handleSignup = async () => {
   if (signupData.value.password !== signupData.value.confirmPassword) {
     alert('비밀번호가 일치하지 않습니다.')
+    return
+  }
+
+  if (!signupData.value.season) {
+    alert('기수를 선택해주세요.')
     return
   }
 
@@ -155,8 +197,8 @@ const handleSignup = async () => {
       bojId: signupData.value.id,
       password: signupData.value.password,
       name: signupData.value.nickname,
-      season: 13, // 임시값
-      baekjoon: signupData.value.id // 아이디가 곧 백준 ID
+      season: parseInt(signupData.value.season),
+      baekjoon: signupData.value.id 
     })
     alert('회원가입이 완료되었습니다.')
     router.push('/login')
