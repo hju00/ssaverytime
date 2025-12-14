@@ -35,19 +35,20 @@
 
           <!-- Author Info -->
           <div class="flex items-center gap-3 pt-2 border-t border-border/50">
-            <div class="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0 border border-border">
+            <!-- 프로필 아이콘을 랭크 아이콘으로 대체함 -->
+            <div class="w-10 h-10 flex items-center justify-center shrink-0">
                <img 
                  v-if="post.tierNumber !== undefined" 
                  :src="`https://static.solved.ac/tier_small/${post.tierNumber}.svg`" 
                  alt="Profile" 
-                 class="w-6 h-6 object-contain" 
+                 class="w-8 h-8 object-contain" 
                />
                <span v-else class="text-lg">👤</span>
             </div>
             <div class="flex-1">
               <div class="flex items-center gap-2">
                 <span class="font-semibold text-sm">{{ post.userName }}</span>
-                <img v-if="post.tierNumber !== undefined" :src="`https://static.solved.ac/tier_small/${post.tierNumber}.svg`" alt="Tier Icon" class="w-4 h-4 inline-block" />
+                <!-- <img v-if="post.tierNumber !== undefined" :src="`https://static.solved.ac/tier_small/${post.tierNumber}.svg`" alt="Tier Icon" class="w-4 h-4 inline-block" /> -->
               </div>
               <p class="text-xs text-muted-foreground">
                 {{ post.formattedDate }}
@@ -127,13 +128,13 @@
              </div>
              
              <div v-for="comment in comments" :key="comment.commentId" class="flex gap-3 p-3 rounded-lg hover:bg-muted/30 transition-colors">
-                <!-- Avatar -->
-                <div class="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0 border border-border">
+                <!-- Avatar (프로필 아이콘을 랭크 아이콘으로 대체함) -->
+                <div class="w-8 h-8 flex items-center justify-center shrink-0">
                    <img 
                      v-if="getTierNumber(comment.userTier) !== undefined" 
                      :src="`https://static.solved.ac/tier_small/${getTierNumber(comment.userTier)}.svg`" 
                      alt="Profile" 
-                     class="w-5 h-5 object-contain" 
+                     class="w-6 h-6 object-contain" 
                    />
                    <span v-else class="text-xs">?</span>
                 </div>
@@ -142,12 +143,12 @@
                    <div class="flex items-center justify-between">
                       <div class="flex items-center gap-2">
                          <span class="text-sm font-semibold">{{ comment.userName }}</span>
-                         <img 
+                         <!-- <img 
                            v-if="getTierNumber(comment.userTier) !== undefined" 
                            :src="`https://static.solved.ac/tier_small/${getTierNumber(comment.userTier)}.svg`" 
                            alt="Tier Icon" 
                            class="w-3 h-3 inline-block" 
-                         />
+                         /> -->
                          <span class="text-xs text-muted-foreground">{{ formatDate(comment.createdAt) }}</span>
                       </div>
                       
