@@ -204,6 +204,7 @@ const fetchPost = async () => {
   loading.value = true;
   try {
     const response = await getBoardDetail(boardId);
+    console.log("Post Response:", response.data);
     if (response.data) {
        const data = response.data;
        post.value = {
