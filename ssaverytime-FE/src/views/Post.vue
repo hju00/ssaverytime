@@ -104,8 +104,7 @@
               <div class="flex items-center gap-2">
                 <Checkbox
                   id="anonymous"
-                  :checked="anonymous"
-                  @update:checked="(val) => anonymous = val"
+                  v-model="anonymous"
                 />
                 <label for="anonymous" class="text-sm cursor-pointer text-foreground">
                   {{ $t('post.write_anonymously') }}
