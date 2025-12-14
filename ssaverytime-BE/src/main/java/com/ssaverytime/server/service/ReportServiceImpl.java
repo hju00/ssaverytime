@@ -1,5 +1,7 @@
 package com.ssaverytime.server.service;
 
+import com.ssaverytime.server.domain.dto.board.BoardResponseDto;
+import com.ssaverytime.server.domain.dto.comment.CommentResponseDto;
 import com.ssaverytime.server.domain.enums.report.ReportTargetType;
 import com.ssaverytime.server.domain.model.Report;
 import com.ssaverytime.server.mapper.BoardMapper;
@@ -26,7 +28,29 @@ public class ReportServiceImpl implements ReportService {
             throw new IllegalArgumentException("이미 신고한 대상입니다.");
         }
 
-        // 2. 신고 이력 저장
+        // 2. 본인 신고 방지 확인 및 대상 테이블의 신고 횟수 증가
+        if (targetType == ReportTargetType.BOARD) {
+            BoardResponseDto board = boardMapper.selectBoardDetail(targetId, null);
+            if (board == null) {
+                throw new IllegalArgumentException("존재하지 않는 게시글입니다.");
+            }
+            if (board.getUserSeq() != null && board.getUserSeq().equals(userId)) {
+                throw new IllegalArgumentException("본인의 게시글은 신고할 수 없습니다.");
+            }
+            boardMapper.increaseWarningCnt(targetId);
+            
+        } else if (targetType == ReportTargetType.COMMENT) {
+            CommentResponseDto comment = commentMapper.selectCommentById(targetId);
+            if (comment == null) {
+                throw new IllegalArgumentException("존재하지 않는 댓글입니다.");
+            }
+            if (comment.getUserSeq() != null && comment.getUserSeq().equals(userId)) {
+                throw new IllegalArgumentException("본인의 댓글은 신고할 수 없습니다.");
+            }
+            commentMapper.increaseWarningCnt(targetId);
+        }
+
+        // 3. 신고 이력 저장
         Report report = Report.builder()
                 .userId(userId)
                 .targetType(targetType)
@@ -35,12 +59,5 @@ public class ReportServiceImpl implements ReportService {
                 .build();
         
         reportMapper.insertReport(report);
-
-        // 3. 대상 테이블의 신고 횟수 증가
-        if (targetType == ReportTargetType.BOARD) {
-            boardMapper.increaseWarningCnt(targetId);
-        } else if (targetType == ReportTargetType.COMMENT) {
-            commentMapper.increaseWarningCnt(targetId);
-        }
     }
 }
