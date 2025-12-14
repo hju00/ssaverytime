@@ -12,17 +12,27 @@
       </CardHeader>
 
       <CardContent class="space-y-4">
+        <!-- Baekjoon ID (Used as User ID) -->
         <div class="space-y-2">
-          <Label for="signup-id" class="text-sm font-medium">
-            {{ $t('home.signup_id_label') }}
+          <Label for="baekjoon" class="text-sm font-medium">
+            {{ $t('home.signup_baekjoon_label') }} (아이디)
           </Label>
-          <Input
-            id="signup-id"
-            name="id"
-            :placeholder="$t('home.signup_id_placeholder')"
-            v-model="signupData.id"
-            class="rounded-lg border-input bg-background h-11"
-          />
+          <div class="flex gap-2">
+            <Input
+              id="baekjoon"
+              name="baekjoonId"
+              :placeholder="$t('home.signup_baekjoon_placeholder')"
+              v-model="signupData.id"
+              class="rounded-lg border-input bg-background h-11 flex-1"
+            />
+            <Button
+              @click="handleVerifyBaekjoon"
+              variant="outline"
+              class="rounded-lg border-input h-11 px-4 bg-transparent"
+            >
+              {{ $t('home.verify_button') }}
+            </Button>
+          </div>
         </div>
 
         <div class="space-y-2">
@@ -84,28 +94,6 @@
           </Select>
         </div>
 
-        <div class="space-y-2">
-          <Label for="baekjoon" class="text-sm font-medium">
-            {{ $t('home.signup_baekjoon_label') }}
-          </Label>
-          <div class="flex gap-2">
-            <Input
-              id="baekjoon"
-              name="baekjoonId"
-              :placeholder="$t('home.signup_baekjoon_placeholder')"
-              v-model="signupData.baekjoonId"
-              class="rounded-lg border-input bg-background h-11 flex-1"
-            />
-            <Button
-              @click="handleVerifyBaekjoon"
-              variant="outline"
-              class="rounded-lg border-input h-11 px-4 bg-transparent"
-            >
-              {{ $t('home.verify_button') }}
-            </Button>
-          </div>
-        </div>
-
         <Button
           @click="handleSignup"
           class="w-full h-11 rounded-lg bg-primary text-primary-foreground font-medium mt-6 hover:bg-primary/90"
@@ -153,7 +141,7 @@ const signupData = ref({
   confirmPassword: '',
   nickname: '',
   campus: '',
-  baekjoonId: '',
+  // baekjoonId field removed as it's merged with id
 })
 
 const handleSignup = async () => {
@@ -167,8 +155,8 @@ const handleSignup = async () => {
       bojId: signupData.value.id,
       password: signupData.value.password,
       name: signupData.value.nickname,
-      season: 13, // 임시값 (UI에 없음)
-      baekjoon: signupData.value.baekjoonId || 'Unrated'
+      season: 13, // 임시값
+      baekjoon: signupData.value.id // 아이디가 곧 백준 ID
     })
     alert('회원가입이 완료되었습니다.')
     router.push('/login')
@@ -183,23 +171,15 @@ const handleSignup = async () => {
 }
 
 const handleVerifyBaekjoon = async () => {
-  if (!signupData.value.baekjoonId) {
+  if (!signupData.value.id) {
     alert('백준 아이디를 입력해주세요.')
     return
   }
   try {
     const response = await http.get('/v1/auth/boj/validate', {
-      // GET 요청이지만 백엔드 Controller가 @RequestBody를 쓴다면 POST로 바꿔야 할 수도 있음.
-      // 백엔드 AuthController를 보니 @RequestBody를 쓰고 있음. -> GET 요청에서 Body 전송은 비표준.
-      // 하지만 axios는 지원할 수도 있음. 백엔드가 @RequestBody라면 보통 POST가 맞음.
-      // 확인 결과: AuthController.java에 @GetMapping("/boj/validate") @RequestBody ... 라고 되어 있음.
-      // 이는 Spring에서는 가능하지만 HTTP 표준 위반 소지가 있음. 일단 axios get에 data 옵션으로 시도.
-      // 안되면 백엔드를 고쳐야 함. (QueryParam으로 받는게 정석)
-      // 일단 프론트에서는 data로 보냄.
-      data: { bojId: signupData.value.baekjoonId } // axios get body
+      data: { bojId: signupData.value.id }
     })
     alert('확인되었습니다. 티어 정보를 가져왔습니다.')
-    // 실제로는 response에서 티어 이미지를 받아와서 보여줄 수 있음
   } catch (error) {
     alert('유효하지 않은 백준 아이디입니다.')
   }
