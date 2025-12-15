@@ -34,3 +34,8 @@ export const toggleLike = (boardId) => {
 export const toggleScrap = (boardId) => {
   return http.post(`/v1/board/${boardId}/scrap`)
 }
+
+// 내 스크랩 목록 조회
+export const getScrapList = (params) => {
+  return http.get('/v1/board/scrap', { params })
+}
