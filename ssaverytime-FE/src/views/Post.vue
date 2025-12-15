@@ -61,7 +61,28 @@
 
       <!-- Post Content -->
       <Card class="border-border">
-        <CardContent class="p-6">
+        <CardContent class="p-6 space-y-4">
+          <!-- AI Summary Button & Section -->
+          <div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              class="gap-2 text-violet-600 border-violet-200 hover:bg-violet-50 hover:text-violet-700"
+              @click="fetchSummary"
+            >
+              <BotIcon class="w-4 h-4" />
+              {{ showSummary ? 'AI 요약 접기' : 'AI 요약 보기' }}
+            </Button>
+            
+            <div v-if="showSummary" class="mt-3 p-4 bg-violet-50/50 rounded-lg border border-violet-100 text-sm text-foreground/80 leading-relaxed">
+               <div v-if="isSummaryLoading" class="flex items-center gap-2 text-violet-500">
+                 <div class="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
+                 <span>요약 중입니다...</span>
+               </div>
+               <p v-else>{{ summaryText }}</p>
+            </div>
+          </div>
+
           <p class="text-foreground leading-relaxed whitespace-pre-wrap">{{ post.body }}</p>
         </CardContent>
       </Card>
@@ -210,7 +231,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { getBoardDetail, toggleLike, toggleScrap, deleteBoard } from '@/api/board'
+import { getBoardDetail, toggleLike, toggleScrap, deleteBoard, getAiSummary } from '@/api/board'
 import { getCommentList, writeComment, updateComment, deleteComment } from '@/api/comment'
 import { reportBoard, reportComment } from '@/api/report'
 import { getTierNumber } from '@/lib/utils'
@@ -228,7 +249,8 @@ import {
   Edit as EditIcon,
   AlertTriangle as AlertTriangleIcon,
   Check as CheckIcon,
-  X as XIcon
+  X as XIcon,
+  Bot as BotIcon
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -243,6 +265,31 @@ const anonymous = ref(false)
 // 댓글 수정 상태
 const editingCommentId = ref(null)
 const editingCommentText = ref('')
+
+// AI 요약 상태
+const summaryText = ref('')
+const isSummaryLoading = ref(false)
+const showSummary = ref(false)
+
+const fetchSummary = async () => {
+  if (summaryText.value) {
+    showSummary.value = !showSummary.value
+    return
+  }
+  
+  isSummaryLoading.value = true
+  showSummary.value = true
+  
+  try {
+    const res = await getAiSummary(post.value.boardId)
+    summaryText.value = res.data
+  } catch (error) {
+    console.error("AI Summary failed", error)
+    summaryText.value = "요약 정보를 가져오지 못했습니다."
+  } finally {
+    isSummaryLoading.value = false
+  }
+}
 
 const formatDate = (dateString) => {
   if (!dateString) return '';

@@ -39,3 +39,8 @@ export const toggleScrap = (boardId) => {
 export const getScrapList = (params) => {
   return http.get('/v1/board/scrap', { params })
 }
+
+// AI 요약
+export const getAiSummary = (boardId) => {
+  return http.post(`/v1/board/${boardId}/ai`)
+}
