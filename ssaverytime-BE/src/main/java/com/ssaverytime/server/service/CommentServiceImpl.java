@@ -24,6 +24,7 @@ public class CommentServiceImpl implements CommentService {
     private final AnonymousCommentMapper anonymousCommentMapper;
     private final BoardMapper boardMapper;
     private final AnonymousBoardMapper anonymousBoardMapper;
+    private final com.ssaverytime.server.mapper.UserMapper userMapper;
 
     @Override
     public List<CommentResponseDto> getCommentList(int boardId, Integer userSeq) {
@@ -74,7 +75,7 @@ public class CommentServiceImpl implements CommentService {
 
                 if (isPostAuthor) {
                     comment.setUserName("작성자");
-                    comment.setUserTier("Unrated"); // 작성자 표시는 티어 안 보여주는 게 일반적 (또는 본인 티어?)
+                    // comment.setUserTier("Unrated"); // 작성자 티어는 이미 저장된 값으로 나옴
                 } else {
                     if (!anonymousMap.containsKey(hash)) {
                         anonymousMap.put(hash, anonymousCounter++);
@@ -90,6 +91,10 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public int writeComment(CommentRequestDto commentRequestDto) {
         Integer realUserSeq = commentRequestDto.getUserSeq();
+        
+        // 티어 저장
+        String tier = userMapper.getUserTier(realUserSeq);
+        commentRequestDto.setAuthorTier(tier != null ? tier : "Unrated");
 
         if ("0".equals(commentRequestDto.getVisible())) {
             commentRequestDto.setUserSeq(null); // 익명 저장
