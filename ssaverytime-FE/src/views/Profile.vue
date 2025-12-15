@@ -4,13 +4,18 @@
       <!-- Profile Card -->
       <Card class="border-border text-center">
         <CardContent class="p-8 space-y-4">
-          <div class="w-20 h-20 rounded-full bg-primary flex items-center justify-center text-5xl mx-auto">
-            {{ user.avatar }}
+          <div class="w-24 h-24 flex items-center justify-center mx-auto mb-4">
+             <img 
+               v-if="user.tierNumber !== undefined" 
+               :src="`https://static.solved.ac/tier_small/${user.tierNumber}.svg`" 
+               alt="Profile" 
+               class="w-full h-full object-contain animate-float" 
+             />
+             <span v-else class="text-6xl animate-float">👤</span>
           </div>
           <div>
             <h1 class="text-2xl font-bold text-foreground">{{ user.nickname }}</h1>
-            <img :src="`https://static.solved.ac/tier_small/${user.tierNumber}.svg`" alt="Tier Icon" class="w-6 h-6 inline-block ml-2" />
-            <p class="text-sm text-muted-foreground">{{ user.campus }} Campus</p>
+            <p class="text-sm text-muted-foreground">{{ user.season }}기</p>
           </div>
         </CardContent>
       </Card>
@@ -23,27 +28,20 @@
         <CardContent class="space-y-4">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <div class="w-12 h-12 rounded-lg bg-yellow-100 flex items-center justify-center font-bold text-yellow-800">
-                AU
+              <!-- Tier Icon -->
+              <div class="w-12 h-12 flex items-center justify-center">
+                 <img 
+                   v-if="user.tierNumber !== undefined" 
+                   :src="`https://static.solved.ac/tier_small/${user.tierNumber}.svg`" 
+                   alt="Tier" 
+                   class="w-10 h-10 object-contain" 
+                 />
               </div>
               <div>
-                <p class="font-semibold text-lg">{{ user.tier }}</p>
+                <p class="font-semibold text-lg">{{ user.tier || 'Unrated' }}</p>
                 <p class="text-xs text-muted-foreground">{{ $t('profile.algorithm_rank') }}</p>
               </div>
             </div>
-            <span class="text-sm font-semibold text-primary">{{ user.currentRating }}</span>
-          </div>
-          <div class="space-y-2">
-            <div class="flex items-center justify-between text-sm">
-              <span class="text-muted-foreground">{{ $t('profile.progress_to_next_tier') }}</span>
-              <span class="font-semibold">
-                {{ progressToNextTierPercentage }}%
-              </span>
-            </div>
-            <Progress :model-value="progressToNextTierPercentage" class="h-2 rounded-full" />
-            <p class="text-xs text-muted-foreground text-right">
-              {{ user.nextTierThreshold - user.currentRating }} {{ $t('profile.points_until_next_tier') }}
-            </p>
           </div>
         </CardContent>
       </Card>
@@ -72,16 +70,20 @@
         <CardContent class="space-y-3">
           <div
             v-for="post in scrappedPosts"
-            :key="post.id"
+            :key="post.boardId"
+            @click="$router.push(`/post/${post.boardId}`)"
             class="flex items-start justify-between p-3 hover:bg-muted rounded-lg transition-colors cursor-pointer group"
           >
             <div class="flex-1">
               <h3 class="font-medium text-sm text-foreground line-clamp-2 group-hover:text-primary">
                 {{ post.title }}
               </h3>
-              <p class="text-xs text-muted-foreground mt-1">{{ $t('profile.by_prefix') }} {{ post.author }}</p>
+              <p class="text-xs text-muted-foreground mt-1">{{ $t('profile.by_prefix') }} {{ post.userName }}</p>
             </div>
             <ChevronRightIcon class="w-4 h-4 text-muted-foreground flex-shrink-0 mt-1" />
+          </div>
+          <div v-if="scrappedPosts.length === 0" class="text-center text-sm text-muted-foreground py-4">
+            스크랩한 게시글이 없습니다.
           </div>
         </CardContent>
       </Card>
@@ -90,10 +92,13 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { getMyPage } from '@/api/mypage'
+import { getScrapList } from '@/api/board'
+import { getTierNumber } from '@/lib/utils'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
 import {
   FileText as FileTextIcon,
   MessageSquare as MessageSquareIcon,
@@ -102,45 +107,63 @@ import {
   ChevronRight as ChevronRightIcon,
 } from 'lucide-vue-next'
 
+const router = useRouter()
+
 const user = ref({
-  nickname: 'StudyBuddy',
-  campus: 'Seoul',
-  avatar: '👤',
-  tierNumber: 15, // Example: 15 corresponds to Gold 1
-  currentRating: 1850,
-  nextTierThreshold: 2000,
+  nickname: '',
+  season: '',
+  tier: '',
+  tierNumber: 0,
 })
 
 const menuItems = ref([
-  { icon: FileTextIcon, label: 'My Posts', count: 24 },
-  { icon: MessageSquareIcon, label: 'My Comments', count: 87 },
-  { icon: BookmarkIcon, label: 'Scrapped Posts', count: 12 },
+  { icon: FileTextIcon, label: 'My Posts', count: null }, // Count API needed
+  { icon: MessageSquareIcon, label: 'My Comments', count: null }, // Count API needed
+  { icon: BookmarkIcon, label: 'Scrapped Posts', count: null }, // Will update with length
   { icon: SettingsIcon, label: 'Edit Profile', count: null },
 ])
 
-const scrappedPosts = ref([
-  {
-    id: 1,
-    title: 'Top 10 Algorithm tips for beginners',
-    author: 'CodeMaster',
-  },
-  {
-    id: 2,
-    title: 'Best resources for learning System Design',
-    author: 'DesignPro',
-  },
-  {
-    id: 3,
-    title: 'How to prepare for coding interviews',
-    author: 'InterviewExpert',
-  },
-])
+const scrappedPosts = ref([])
 
-const progressToNextTierPercentage = computed(() => {
-  return Math.round((user.value.currentRating / user.value.nextTierThreshold) * 100)
+const fetchProfile = async () => {
+  try {
+    const res = await getMyPage()
+    user.value = {
+      nickname: res.data.name,
+      season: res.data.season,
+      tier: res.data.baekjoon,
+      tierNumber: getTierNumber(res.data.baekjoon)
+    }
+  } catch (error) {
+    console.error("Failed to fetch profile:", error)
+    // alert("로그인이 필요합니다.")
+    // router.push('/login')
+  }
+}
+
+const fetchScraps = async () => {
+  try {
+    const res = await getScrapList({ page: 1, size: 5 }) // 최근 5개만
+    scrappedPosts.value = res.data
+    menuItems.value[2].count = res.data.length // Update count (simple version)
+  } catch (error) {
+    console.error("Failed to fetch scraps:", error)
+  }
+}
+
+onMounted(() => {
+  fetchProfile()
+  fetchScraps()
 })
 </script>
 
 <style scoped>
-/* Scoped styles for Profile.vue */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
 </style>
