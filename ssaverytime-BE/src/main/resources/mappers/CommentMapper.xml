@@ -26,6 +26,7 @@
                 WHEN c.VISIBLE = '0' THEN 'Unrated'
                 ELSE IFNULL(u.BAEKJOON, 'Unrated') 
             END AS userTier,
+            aca.AUTHOR_HASH AS authorHash,
             <choose>
                 <when test="currentUserSeq != null">
                     (c.USER_ID IS NOT NULL AND c.USER_ID = #{currentUserSeq}) AS isAuthor
@@ -36,6 +37,7 @@
             </choose>
         FROM COMMENT c
         LEFT JOIN USER u ON c.USER_ID = u.USER_ID
+        LEFT JOIN ANONYMOUS_COMMENT_AUTHORSHIP aca ON c.COMMENT_ID = aca.COMMENT_ID
         WHERE c.BOARD_ID = #{boardId} AND c.VALID = '1'
         ORDER BY c.CREATED_AT ASC
     </select>

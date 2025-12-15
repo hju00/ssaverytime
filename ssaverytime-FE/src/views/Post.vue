@@ -145,8 +145,13 @@
                 <div class="flex-1 space-y-1 w-full min-w-0">
                    <div class="flex items-center justify-between">
                       <div class="flex items-center gap-2">
-                         <span class="text-sm font-semibold">{{ comment.userName }}</span>
-                         <!-- <img 
+                         <span 
+                           class="text-sm font-semibold"
+                           :class="{ 'text-primary': comment.userName === '작성자' }"
+                         >
+                           {{ comment.userName }}
+                         </span>
+                         <img 
                            v-if="getTierNumber(comment.userTier) !== undefined" 
                            :src="`https://static.solved.ac/tier_small/${getTierNumber(comment.userTier)}.svg`" 
                            alt="Tier Icon" 
