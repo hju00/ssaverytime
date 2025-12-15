@@ -19,7 +19,7 @@
             CASE WHEN b.USER_ID IS NULL THEN '익명' ELSE u.NAME END AS userName,
             CASE WHEN b.USER_ID IS NULL THEN b.AUTHOR_TIER ELSE IFNULL(u.BAEKJOON, 'Unrated') END AS userTier,
             (SELECT COUNT(*) FROM LIKES l WHERE l.BOARD_ID = b.BOARD_ID) AS likeCount,
-            (SELECT COUNT(*) FROM COMMENT c WHERE c.BOARD_ID = b.BOARD_ID AND c.VISIBLE = '1' AND c.VALID = '1') AS commentCount,
+            (SELECT COUNT(*) FROM COMMENT c WHERE c.BOARD_ID = b.BOARD_ID AND c.VALID = '1') AS commentCount,
             <choose>
                 <when test="currentUserSeq != null">
                     (SELECT COUNT(*) > 0 FROM LIKES l WHERE l.BOARD_ID = b.BOARD_ID AND l.USER_ID = #{currentUserSeq}) AS isLiked,
@@ -67,7 +67,7 @@
             CASE WHEN b.USER_ID IS NULL THEN '익명' ELSE u.NAME END AS userName,
             CASE WHEN b.USER_ID IS NULL THEN b.AUTHOR_TIER ELSE IFNULL(u.BAEKJOON, 'Unrated') END AS userTier,
             (SELECT COUNT(*) FROM LIKES l WHERE l.BOARD_ID = b.BOARD_ID) AS likeCount,
-            (SELECT COUNT(*) FROM COMMENT c WHERE c.BOARD_ID = b.BOARD_ID AND c.VISIBLE = '1' AND c.VALID = '1') AS commentCount,
+            (SELECT COUNT(*) FROM COMMENT c WHERE c.BOARD_ID = b.BOARD_ID AND c.VALID = '1') AS commentCount,
             <choose>
                 <when test="currentUserSeq != null">
                     (SELECT COUNT(*) > 0 FROM LIKES l WHERE l.BOARD_ID = b.BOARD_ID AND l.USER_ID = #{currentUserSeq}) AS isLiked,

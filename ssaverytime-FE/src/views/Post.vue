@@ -102,9 +102,12 @@
             />
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <Checkbox
-                  id="anonymous"
-                  v-model:checked="anonymous"
+                <input 
+                  type="checkbox" 
+                  id="anonymous" 
+                  class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer accent-primary"
+                  :checked="anonymous"
+                  @change="(e) => anonymous = e.target.checked"
                 />
                 <label for="anonymous" class="text-sm cursor-pointer text-foreground">
                   {{ $t('post.write_anonymously') }}
@@ -142,8 +145,13 @@
                 <div class="flex-1 space-y-1 w-full min-w-0">
                    <div class="flex items-center justify-between">
                       <div class="flex items-center gap-2">
-                         <span class="text-sm font-semibold">{{ comment.userName }}</span>
-                         <!-- <img 
+                         <span 
+                           class="text-sm font-semibold"
+                           :class="{ 'text-primary': comment.userName === '작성자' }"
+                         >
+                           {{ comment.userName }}
+                         </span>
+                         <img 
                            v-if="getTierNumber(comment.userTier) !== undefined" 
                            :src="`https://static.solved.ac/tier_small/${getTierNumber(comment.userTier)}.svg`" 
                            alt="Tier Icon" 
@@ -285,13 +293,17 @@ const fetchComments = async (boardId) => {
 }
 
 const addComment = async () => {
+  console.log("Anonymous Checkbox Value:", anonymous.value);
   if (!commentText.value.trim() || !post.value) return;
   
   try {
-    await writeComment(post.value.boardId, {
+    const payload = {
       body: commentText.value,
       visible: anonymous.value ? '0' : '1'
-    });
+    };
+    console.log("Sending Comment Payload:", payload);
+
+    await writeComment(post.value.boardId, payload);
     commentText.value = '';
     fetchComments(post.value.boardId);
   } catch (error) {

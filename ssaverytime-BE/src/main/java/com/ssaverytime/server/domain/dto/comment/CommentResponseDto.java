@@ -18,5 +18,6 @@ public class CommentResponseDto {
     private String visible; // '1' or '0' (익명 여부)
     private LocalDateTime createdAt;
     
+    private String authorHash; // 익명 식별용 해시 (내부용)
     private boolean isAuthor; // 본인 댓글 여부
 }
