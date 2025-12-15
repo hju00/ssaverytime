@@ -37,6 +37,7 @@ public class MyPageService {
                 user.getBojId(),
                 user.getName(),
                 user.getSeason(),
+                user.getCampus(),
                 user.getBaekjoon(),
                 user.getRole().name(),
                 user.getCreatedAt()

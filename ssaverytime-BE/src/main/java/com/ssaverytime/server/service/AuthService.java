@@ -37,6 +37,7 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setName(dto.getName());
         user.setSeason(dto.getSeason());
+        user.setCampus(dto.getCampus());
         user.setRole(UserRole.USER); // 기본 설정
         user.setBaekjoon(dto.getBaekjoon());
         user.setValid(UserValid.VALID);
