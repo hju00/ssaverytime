@@ -15,4 +15,10 @@
         WHERE BOARD_ID = #{boardId} AND AUTHOR_HASH = #{authorHash}
     </select>
 
+    <select id="getAuthorHash" resultType="string">
+        SELECT AUTHOR_HASH
+        FROM ANONYMOUS_BOARD_AUTHORSHIP
+        WHERE BOARD_ID = #{boardId}
+    </select>
+
 </mapper>
