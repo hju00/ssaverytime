@@ -15,7 +15,7 @@
     <!-- 회원 정보 저장 -->
     <insert id="insertUser" parameterType="com.ssaverytime.server.domain.model.User">
         INSERT INTO USER
-        (BOJ_ID, PASSWORD, NAME, ROLE, SEASON, BAEKJOON, VALID, CREATED_AT)
+        (BOJ_ID, PASSWORD, NAME, ROLE, SEASON, CAMPUS, BAEKJOON, VALID, CREATED_AT)
         VALUES
         (
         #{bojId},
@@ -23,6 +23,7 @@
         #{name},
         #{role},
         #{season},
+        #{campus},
         #{baekjoon},
         '1',
         NOW()
@@ -40,6 +41,7 @@
         NAME         AS name,
         ROLE         AS role,
         SEASON       AS season,
+        CAMPUS       AS campus,
         BAEKJOON     AS baekjoon,
         VALID        AS valid
         FROM USER
@@ -57,6 +59,7 @@
         NAME         AS name,
         ROLE         AS role,
         SEASON       AS season,
+        CAMPUS       AS campus,
         BAEKJOON     AS baekjoon,
         VALID        AS valid,
         CREATED_AT   AS createdAt

@@ -15,7 +15,7 @@
           </div>
           <div>
             <h1 class="text-2xl font-bold text-foreground">{{ user.nickname }}</h1>
-            <p class="text-sm text-muted-foreground">{{ user.season }}기</p>
+            <p class="text-sm text-muted-foreground">{{ user.campus ? user.campus + ' Campus' : '' }} {{ user.season }}기</p>
           </div>
         </CardContent>
       </Card>
@@ -112,14 +112,15 @@ const router = useRouter()
 const user = ref({
   nickname: '',
   season: '',
+  campus: '',
   tier: '',
   tierNumber: 0,
 })
 
 const menuItems = ref([
-  { icon: FileTextIcon, label: 'My Posts', count: null }, // Count API needed
-  { icon: MessageSquareIcon, label: 'My Comments', count: null }, // Count API needed
-  { icon: BookmarkIcon, label: 'Scrapped Posts', count: null }, // Will update with length
+  { icon: FileTextIcon, label: 'My Posts', count: null },
+  { icon: MessageSquareIcon, label: 'My Comments', count: null },
+  { icon: BookmarkIcon, label: 'Scrapped Posts', count: null },
   { icon: SettingsIcon, label: 'Edit Profile', count: null },
 ])
 
@@ -131,21 +132,20 @@ const fetchProfile = async () => {
     user.value = {
       nickname: res.data.name,
       season: res.data.season,
+      campus: res.data.campus,
       tier: res.data.baekjoon,
       tierNumber: getTierNumber(res.data.baekjoon)
     }
   } catch (error) {
     console.error("Failed to fetch profile:", error)
-    // alert("로그인이 필요합니다.")
-    // router.push('/login')
   }
 }
 
 const fetchScraps = async () => {
   try {
-    const res = await getScrapList({ page: 1, size: 5 }) // 최근 5개만
+    const res = await getScrapList({ page: 1, size: 5 })
     scrappedPosts.value = res.data
-    menuItems.value[2].count = res.data.length // Update count (simple version)
+    menuItems.value[2].count = res.data.length
   } catch (error) {
     console.error("Failed to fetch scraps:", error)
   }

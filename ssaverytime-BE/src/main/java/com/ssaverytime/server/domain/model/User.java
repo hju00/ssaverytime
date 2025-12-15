@@ -19,6 +19,7 @@ public class User {
     private String name;
     private UserRole role;        // DB에는 'USER' / 'ADMIN' 문자열로 들어감
     private Integer season;
+    private String campus;
     private String baekjoon;      // 가입 단계에서는 null
     private UserValid valid;      // 논리 상태 (VALID/INVALID)
     private LocalDateTime createdAt;

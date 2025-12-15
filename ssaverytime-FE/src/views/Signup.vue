@@ -198,6 +198,7 @@ const handleSignup = async () => {
       password: signupData.value.password,
       name: signupData.value.nickname,
       season: parseInt(signupData.value.season),
+      campus: signupData.value.campus,
       baekjoon: signupData.value.id 
     })
     alert('회원가입이 완료되었습니다.')
