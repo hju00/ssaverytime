@@ -151,12 +151,12 @@
                          >
                            {{ comment.userName }}
                          </span>
-                         <img 
+                         <!-- <img 
                            v-if="getTierNumber(comment.userTier) !== undefined" 
                            :src="`https://static.solved.ac/tier_small/${getTierNumber(comment.userTier)}.svg`" 
                            alt="Tier Icon" 
                            class="w-3 h-3 inline-block" 
-                         /> -->
+                         />  -->
                          <span class="text-xs text-muted-foreground">{{ formatDate(comment.createdAt) }}</span>
                       </div>
                       
