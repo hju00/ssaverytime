@@ -4,14 +4,14 @@
       <!-- Profile Card -->
       <Card class="border-border text-center">
         <CardContent class="p-8 space-y-4">
-          <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto overflow-hidden border border-border bg-muted">
+          <div class="w-24 h-24 flex items-center justify-center mx-auto mb-4">
              <img 
                v-if="user.tierNumber !== undefined" 
                :src="`https://static.solved.ac/tier_small/${user.tierNumber}.svg`" 
                alt="Profile" 
-               class="w-16 h-16 object-contain" 
+               class="w-full h-full object-contain animate-float" 
              />
-             <span v-else class="text-4xl">👤</span>
+             <span v-else class="text-6xl animate-float">👤</span>
           </div>
           <div>
             <h1 class="text-2xl font-bold text-foreground">{{ user.nickname }}</h1>
@@ -158,5 +158,12 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Scoped styles for Profile.vue */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
 </style>
