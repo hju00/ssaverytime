@@ -102,10 +102,12 @@
             />
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <Checkbox
-                  id="anonymous"
+                <input 
+                  type="checkbox" 
+                  id="anonymous" 
+                  class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer accent-primary"
                   :checked="anonymous"
-                  @update:checked="(val) => anonymous = val"
+                  @change="(e) => anonymous = e.target.checked"
                 />
                 <label for="anonymous" class="text-sm cursor-pointer text-foreground">
                   {{ $t('post.write_anonymously') }}
