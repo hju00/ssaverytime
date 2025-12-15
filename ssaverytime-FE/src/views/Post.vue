@@ -70,18 +70,18 @@
       <div class="flex gap-2">
         <Button
           @click="toggleLikeAction"
-          :variant="post.isLiked ? 'default' : 'outline'"
-          :class="`flex-1 gap-2 rounded-lg h-11 ${post.isLiked ? 'bg-primary text-primary-foreground' : ''}`"
+          :variant="post.liked ? 'default' : 'outline'"
+          :class="`flex-1 gap-2 rounded-lg h-11 ${post.liked ? 'bg-primary text-primary-foreground' : ''}`"
         >
           <ThumbsUpIcon class="w-4 h-4" />
           {{ $t('post.like') }} ({{ post.likeCount }})
         </Button>
         <Button
           @click="toggleScrapAction"
-          :variant="post.isScrapped ? 'default' : 'outline'"
-          :class="`flex-1 gap-2 rounded-lg h-11 ${post.isScrapped ? 'bg-primary text-primary-foreground' : ''}`"
+          :variant="post.scrapped ? 'default' : 'outline'"
+          :class="`flex-1 gap-2 rounded-lg h-11 ${post.scrapped ? 'bg-primary text-primary-foreground' : ''}`"
         >
-          <StarIcon :class="`w-4 h-4 ${post.isScrapped ? 'fill-current' : ''}`" />
+          <StarIcon :class="`w-4 h-4 ${post.scrapped ? 'fill-current' : ''}`" />
           {{ $t('post.scrap') }}
         </Button>
       </div>
@@ -412,7 +412,7 @@ const toggleLikeAction = async () => {
   try {
     const res = await toggleLike(post.value.boardId);
     if (res.data && typeof res.data.liked === 'boolean') {
-        post.value.isLiked = res.data.liked;
+        post.value.liked = res.data.liked;
         post.value.likeCount += res.data.liked ? 1 : -1;
     }
   } catch (e) {
@@ -425,7 +425,7 @@ const toggleScrapAction = async () => {
   try {
     const res = await toggleScrap(post.value.boardId);
      if (res.data && typeof res.data.scrapped === 'boolean') {
-        post.value.isScrapped = res.data.scrapped;
+        post.value.scrapped = res.data.scrapped;
     }
   } catch (e) {
     console.error("Scrap toggle failed", e);
