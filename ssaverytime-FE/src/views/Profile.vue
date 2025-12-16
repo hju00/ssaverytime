@@ -5,68 +5,65 @@
       <Card class="border-border text-center">
         <CardContent class="p-8 space-y-4">
           <div class="w-24 h-24 flex items-center justify-center mx-auto mb-4">
-             <img 
-               v-if="user.tierNumber !== undefined" 
-               :src="`https://static.solved.ac/tier_small/${user.tierNumber}.svg`" 
-               alt="Profile" 
-               class="w-full h-full object-contain animate-float" 
-             />
-             <span v-else class="text-6xl animate-float">👤</span>
+            <img
+              v-if="tierSvgUrl"
+              :src="tierSvgUrl"
+              alt="Profile"
+              class="w-full h-full object-contain animate-float"
+            />
+            <span v-else class="text-6xl animate-float">👤</span>
           </div>
+
           <div>
             <h1 class="text-2xl font-bold text-foreground">{{ user.nickname }}</h1>
-            <p class="text-sm text-muted-foreground">{{ user.campus ? user.campus + ' Campus' : '' }} {{ user.season }}기</p>
+            <p class="text-sm text-muted-foreground">{{ user.season }}기</p>
           </div>
         </CardContent>
       </Card>
 
       <!-- Rank Section -->
       <Card class="border-border">
-        <CardHeader>
+        <CardHeader class="flex flex-row items-center justify-between">
           <h2 class="font-bold text-lg">{{ $t('profile.baekjoon_tier') }}</h2>
+
+          <Button
+            variant="outline"
+            class="bg-transparent"
+            :disabled="refreshingRank"
+            @click="handleRefreshRank"
+          >
+            {{ refreshingRank ? '갱신중...' : '랭크 갱신' }}
+          </Button>
         </CardHeader>
+
         <CardContent class="space-y-4">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <!-- Tier Icon -->
-              <div class="w-12 h-12 flex items-center justify-center">
-                 <img 
-                   v-if="user.tierNumber !== undefined" 
-                   :src="`https://static.solved.ac/tier_small/${user.tierNumber}.svg`" 
-                   alt="Tier" 
-                   class="w-10 h-10 object-contain" 
-                 />
-              </div>
-              <div>
-                <p class="font-semibold text-lg">{{ user.tier || 'Unrated' }}</p>
-                <p class="text-xs text-muted-foreground">{{ $t('profile.algorithm_rank') }}</p>
-              </div>
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 flex items-center justify-center">
+              <img v-if="tierSvgUrl" :src="tierSvgUrl" alt="Tier" class="w-10 h-10 object-contain" />
             </div>
+            <div>
+              <p class="font-semibold text-lg">{{ user.tier || 'Unrated' }}</p>
+              <p class="text-xs text-muted-foreground">{{ $t('profile.algorithm_rank') }}</p>
+            </div>
+          </div>
+
+          <div class="pt-2">
+            <Button variant="outline" class="bg-transparent w-full" @click="router.push('/profile/edit')">
+              회원정보 수정 / 탈퇴
+            </Button>
           </div>
         </CardContent>
       </Card>
 
-      <!-- Menu Grid -->
-      <div class="grid grid-cols-2 gap-3">
-        <Button
-          v-for="(item, i) in menuItems"
-          :key="i"
-          variant="outline"
-          class="h-24 flex flex-col items-start justify-between p-4 rounded-lg border-border hover:bg-muted hover:border-primary group bg-transparent"
-        >
-          <component :is="item.icon" class="w-6 h-6 text-primary group-hover:text-primary/80" />
-          <div class="text-left">
-            <p class="font-semibold text-sm text-foreground">{{ $t(item.label) }}</p>
-            <p v-if="item.count !== null" class="text-xs text-muted-foreground">{{ item.count }}</p>
-          </div>
-        </Button>
-      </div>
-
-      <!-- Scrapped Posts Preview -->
+      <!-- ✅ Scrapped Posts Preview (복구) -->
       <Card class="border-border">
-        <CardHeader>
-          <h2 class="font-bold text-lg">{{ $t('profile.recently_scrapped') }}</h2>
+        <CardHeader class="flex flex-row items-center justify-between">
+          <h2 class="font-bold text-lg">스크랩한 게시글</h2>
+          <Button variant="outline" class="bg-transparent" :disabled="loadingScraps" @click="fetchScraps">
+            {{ loadingScraps ? '불러오는 중...' : '새로고침' }}
+          </Button>
         </CardHeader>
+
         <CardContent class="space-y-3">
           <div
             v-for="post in scrappedPosts"
@@ -78,12 +75,186 @@
               <h3 class="font-medium text-sm text-foreground line-clamp-2 group-hover:text-primary">
                 {{ post.title }}
               </h3>
-              <p class="text-xs text-muted-foreground mt-1">{{ $t('profile.by_prefix') }} {{ post.userName }}</p>
+              <p class="text-xs text-muted-foreground mt-1">by {{ post.userName }}</p>
             </div>
-            <ChevronRightIcon class="w-4 h-4 text-muted-foreground flex-shrink-0 mt-1" />
           </div>
+
           <div v-if="scrappedPosts.length === 0" class="text-center text-sm text-muted-foreground py-4">
             스크랩한 게시글이 없습니다.
+          </div>
+        </CardContent>
+      </Card>
+
+      <!-- Social Section -->
+      <Card class="border-border">
+        <CardHeader class="flex flex-row items-center justify-between">
+          <h2 class="font-bold text-lg">소셜</h2>
+          <Button variant="outline" class="bg-transparent" :disabled="loadingSocial" @click="reloadSocial">
+            {{ loadingSocial ? '불러오는 중...' : '새로고침' }}
+          </Button>
+        </CardHeader>
+
+        <CardContent class="space-y-6">
+          <!-- Followers / Followings -->
+          <div class="grid grid-cols-2 gap-3">
+            <div class="p-4 rounded-lg border border-border bg-card">
+              <p class="text-sm text-muted-foreground">팔로워</p>
+              <p class="text-2xl font-bold">{{ followers.length }}</p>
+            </div>
+            <div class="p-4 rounded-lg border border-border bg-card">
+              <p class="text-sm text-muted-foreground">팔로잉</p>
+              <p class="text-2xl font-bold">{{ followings.length }}</p>
+            </div>
+          </div>
+
+          <!-- Search -->
+          <div class="space-y-2">
+            <div class="flex gap-2">
+              <Button
+                variant="outline"
+                class="bg-transparent"
+                :class="searchMode === 'bojId' ? 'border-primary text-primary' : ''"
+                @click="searchMode = 'bojId'"
+              >
+                아이디
+              </Button>
+              <Button
+                variant="outline"
+                class="bg-transparent"
+                :class="searchMode === 'name' ? 'border-primary text-primary' : ''"
+                @click="searchMode = 'name'"
+              >
+                이름
+              </Button>
+            </div>
+
+            <div class="flex gap-2">
+              <Input
+                v-model="keyword"
+                class="h-11"
+                :placeholder="searchMode === 'bojId' ? '백준 아이디로 검색' : '이름으로 검색'"
+                @keyup.enter="handleSearch"
+              />
+              <Button :disabled="searching || !keyword.trim()" @click="handleSearch" class="h-11">
+                {{ searching ? '검색중...' : '검색' }}
+              </Button>
+            </div>
+
+            <div v-if="searchError" class="text-sm text-red-500">
+              {{ searchError }}
+            </div>
+
+            <!-- Search Results -->
+            <div v-if="searchResults.length > 0" class="space-y-2 pt-2">
+              <p class="text-sm text-muted-foreground">검색 결과</p>
+
+              <div
+                v-for="u in searchResults"
+                :key="u.bojId"
+                class="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted transition-colors"
+              >
+                <div class="min-w-0">
+                  <p class="font-semibold truncate">{{ u.name }}</p>
+                  <p class="text-xs text-muted-foreground truncate">bojId: {{ u.bojId }}</p>
+                  <p class="text-xs text-muted-foreground truncate">season: {{ u.season }}</p>
+                </div>
+
+                <div class="flex gap-2">
+                  <Button
+                    variant="outline"
+                    class="bg-transparent"
+                    :disabled="togglingBojIds.has(u.bojId)"
+                    v-if="!isFollowing(u.bojId)"
+                    @click="handleFollow(u.bojId)"
+                  >
+                    팔로우
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    class="bg-transparent"
+                    :disabled="togglingBojIds.has(u.bojId)"
+                    v-else
+                    @click="handleUnfollow(u.bojId)"
+                  >
+                    언팔
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Followers list -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <p class="font-semibold">팔로워 목록</p>
+            </div>
+
+            <div v-if="followers.length === 0" class="text-sm text-muted-foreground py-2">
+              팔로워가 없습니다.
+            </div>
+
+            <div
+              v-for="u in followers"
+              :key="u.bojId"
+              class="flex items-center justify-between p-3 rounded-lg border border-border"
+            >
+              <div class="min-w-0">
+                <p class="font-medium truncate">{{ u.name }}</p>
+                <p class="text-xs text-muted-foreground truncate">bojId: {{ u.bojId }}</p>
+              </div>
+
+              <Button
+                variant="outline"
+                class="bg-transparent"
+                :disabled="togglingBojIds.has(u.bojId)"
+                v-if="isFollowing(u.bojId)"
+                @click="handleUnfollow(u.bojId)"
+              >
+                언팔
+              </Button>
+
+              <Button
+                variant="outline"
+                class="bg-transparent"
+                :disabled="togglingBojIds.has(u.bojId)"
+                v-else
+                @click="handleFollow(u.bojId)"
+              >
+                맞팔
+              </Button>
+            </div>
+          </div>
+
+          <!-- Followings list -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <p class="font-semibold">팔로잉 목록</p>
+            </div>
+
+            <div v-if="followings.length === 0" class="text-sm text-muted-foreground py-2">
+              팔로잉이 없습니다.
+            </div>
+
+            <div
+              v-for="u in followings"
+              :key="u.bojId"
+              class="flex items-center justify-between p-3 rounded-lg border border-border"
+            >
+              <div class="min-w-0">
+                <p class="font-medium truncate">{{ u.name }}</p>
+                <p class="text-xs text-muted-foreground truncate">bojId: {{ u.bojId }}</p>
+              </div>
+
+              <Button
+                variant="outline"
+                class="bg-transparent"
+                :disabled="togglingBojIds.has(u.bojId)"
+                @click="handleUnfollow(u.bojId)"
+              >
+                언팔
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -92,68 +263,187 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getMyPage } from '@/api/mypage'
+import { getMyPage, refreshBojRank } from '@/api/mypage'
 import { getScrapList } from '@/api/board'
 import { getTierNumber } from '@/lib/utils'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+
 import {
-  FileText as FileTextIcon,
-  MessageSquare as MessageSquareIcon,
-  Bookmark as BookmarkIcon,
-  Settings as SettingsIcon,
-  ChevronRight as ChevronRightIcon,
-} from 'lucide-vue-next'
+  searchUserByBojId,
+  searchUserByName,
+  followUser,
+  unfollowUser,
+  getFollowers,
+  getFollowings,
+} from '@/api/social'
 
 const router = useRouter()
 
 const user = ref({
   nickname: '',
   season: '',
-  campus: '',
   tier: '',
-  tierNumber: 0,
+  tierNumber: null,
 })
 
-const menuItems = ref([
-  { icon: FileTextIcon, label: 'My Posts', count: null },
-  { icon: MessageSquareIcon, label: 'My Comments', count: null },
-  { icon: BookmarkIcon, label: 'Scrapped Posts', count: null },
-  { icon: SettingsIcon, label: 'Edit Profile', count: null },
-])
+const tierSvgUrl = computed(() => {
+  if (user.value.tier && user.value.tier.startsWith('http')) return user.value.tier
+  const num = getTierNumber(user.value.tier)
+  if (num) return `https://static.solved.ac/tier_small/${num}.svg`
+  return ''
+})
 
-const scrappedPosts = ref([])
+const refreshingRank = ref(false)
 
 const fetchProfile = async () => {
-  try {
-    const res = await getMyPage()
-    user.value = {
-      nickname: res.data.name,
-      season: res.data.season,
-      campus: res.data.campus,
-      tier: res.data.baekjoon,
-      tierNumber: getTierNumber(res.data.baekjoon)
-    }
-  } catch (error) {
-    console.error("Failed to fetch profile:", error)
+  const res = await getMyPage()
+  user.value = {
+    nickname: res.data.name,
+    season: res.data.season,
+    tier: res.data.baekjoon,
+    tierNumber: getTierNumber(res.data.baekjoon),
   }
 }
 
+const handleRefreshRank = async () => {
+  refreshingRank.value = true
+  try {
+    const res = await refreshBojRank()
+    const svgUrl = res?.data?.baekjoon
+    if (svgUrl) user.value.tier = svgUrl
+    alert('랭크가 갱신되었습니다.')
+  } catch (e) {
+    console.error(e)
+    alert('랭크 갱신에 실패했습니다.')
+  } finally {
+    refreshingRank.value = false
+  }
+}
+
+/** -------------------- Scraps -------------------- **/
+const scrappedPosts = ref([])
+const loadingScraps = ref(false)
+
 const fetchScraps = async () => {
+  loadingScraps.value = true
   try {
     const res = await getScrapList({ page: 1, size: 5 })
     scrappedPosts.value = res.data
-    menuItems.value[2].count = res.data.length
-  } catch (error) {
-    console.error("Failed to fetch scraps:", error)
+  } catch (e) {
+    console.error(e)
+    alert('스크랩 목록을 불러오지 못했습니다.')
+    scrappedPosts.value = []
+  } finally {
+    loadingScraps.value = false
   }
 }
 
-onMounted(() => {
-  fetchProfile()
-  fetchScraps()
+/** -------------------- Social -------------------- **/
+const followers = ref([])
+const followings = ref([])
+const loadingSocial = ref(false)
+
+const searchMode = ref('bojId')
+const keyword = ref('')
+const searching = ref(false)
+const searchResults = ref([])
+const searchError = ref('')
+
+// bojId 기준으로 토글 상태 관리
+const togglingBojIds = ref(new Set())
+
+const normalizeUsers = (arr) => {
+  return (arr ?? []).map((u) => ({
+    bojId: u.bojId,
+    name: u.name,
+    season: u.season,
+    baekjoon: u.baekjoon,
+    withdrawn: u.withdrawn,
+  }))
+}
+
+const reloadSocial = async () => {
+  loadingSocial.value = true
+  try {
+    const [toRes, fromRes] = await Promise.all([getFollowers(), getFollowings()])
+    followers.value = normalizeUsers(toRes.data)
+    followings.value = normalizeUsers(fromRes.data)
+  } catch (e) {
+    console.error(e)
+    alert('소셜 정보를 불러오지 못했습니다.')
+    followers.value = []
+    followings.value = []
+  } finally {
+    loadingSocial.value = false
+  }
+}
+
+const followingSet = computed(() => new Set(followings.value.map((u) => u.bojId)))
+
+const isFollowing = (bojId) => {
+  if (!bojId) return false
+  return followingSet.value.has(bojId)
+}
+
+const handleSearch = async () => {
+  const q = keyword.value.trim()
+  if (!q) return
+
+  searching.value = true
+  searchError.value = ''
+  searchResults.value = []
+
+  try {
+    const res = searchMode.value === 'bojId'
+      ? await searchUserByBojId(q)
+      : await searchUserByName(q)
+
+    const data = Array.isArray(res.data) ? res.data : [res.data]
+    searchResults.value = normalizeUsers(data)
+  } catch (e) {
+    console.error(e)
+    searchError.value = '검색 결과를 불러오지 못했습니다.'
+  } finally {
+    searching.value = false
+  }
+}
+
+const handleFollow = async (bojId) => {
+  if (!bojId) return
+  togglingBojIds.value.add(bojId)
+  try {
+    await followUser(bojId)
+    await reloadSocial()
+  } catch (e) {
+    console.error(e)
+    alert('팔로우에 실패했습니다.')
+  } finally {
+    togglingBojIds.value.delete(bojId)
+  }
+}
+
+const handleUnfollow = async (bojId) => {
+  if (!bojId) return
+  togglingBojIds.value.add(bojId)
+  try {
+    await unfollowUser(bojId)
+    await reloadSocial()
+  } catch (e) {
+    console.error(e)
+    alert('언팔로우에 실패했습니다.')
+  } finally {
+    togglingBojIds.value.delete(bojId)
+  }
+}
+
+onMounted(async () => {
+  await fetchProfile()
+  await fetchScraps()
+  await reloadSocial()
 })
 </script>
 
@@ -162,7 +452,6 @@ onMounted(() => {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
 }
-
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }

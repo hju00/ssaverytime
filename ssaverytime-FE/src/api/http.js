@@ -1,34 +1,35 @@
 import axios from 'axios'
 
-// 백엔드 API 주소 (Vite Proxy 사용)
-const BASE_URL = '/api'
-
+// ✅ Vite proxy 경유용
 const http = axios.create({
-  baseURL: BASE_URL,
+  baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
   },
 })
 
-// 요청 인터셉터 (필요시 토큰 추가 등)
 http.interceptors.request.use(
   (config) => {
+    // skipAuth 요청이면 Authorization 제거
+    if (config.skipAuth === true) {
+      config.headers = config.headers || {}
+      delete config.headers.Authorization
+      return config
+    }
+
+    // 기본: 토큰 있으면 Authorization 추가
     const token = localStorage.getItem('accessToken')
     if (token) {
+      config.headers = config.headers || {}
       config.headers.Authorization = `Bearer ${token}`
     }
     return config
   },
-  (error) => {
-    return Promise.reject(error)
-  }
+  (error) => Promise.reject(error)
 )
 
-// 응답 인터셉터 (에러 처리 등)
 http.interceptors.response.use(
-  (response) => {
-    return response
-  },
+  (response) => response,
   (error) => {
     console.error('API Error:', error)
     return Promise.reject(error)

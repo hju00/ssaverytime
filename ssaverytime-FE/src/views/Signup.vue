@@ -6,119 +6,110 @@
           <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
             <span class="text-primary-foreground font-bold">S</span>
           </div>
-          <CardTitle class="text-2xl">{{ $t('home.signup') }}</CardTitle>
+          <CardTitle class="text-2xl">회원가입</CardTitle>
         </div>
-        <CardDescription class="text-center">Create an account to get started.</CardDescription>
+        <CardDescription class="text-center">
+          Create an account to get started.
+        </CardDescription>
       </CardHeader>
 
       <CardContent class="space-y-4">
-        <!-- Baekjoon ID (Used as User ID) -->
+        <!-- 백준 ID -->
         <div class="space-y-2">
-          <Label for="baekjoon" class="text-sm font-medium">
-            {{ $t('home.signup_baekjoon_label') }} (아이디)
-          </Label>
+          <Label class="text-sm font-medium">백준 ID</Label>
+
           <div class="flex gap-2">
             <Input
-              id="baekjoon"
-              name="baekjoonId"
-              :placeholder="$t('home.signup_baekjoon_placeholder')"
               v-model="signupData.id"
-              class="rounded-lg border-input bg-background h-11 flex-1"
+              placeholder="백준 아이디 입력"
+              class="h-11 flex-1"
             />
             <Button
-              @click="handleVerifyBaekjoon"
               variant="outline"
-              class="rounded-lg border-input h-11 px-4 bg-transparent"
+              :disabled="verifying || !signupData.id"
+              @click="handleVerifyBaekjoon"
             >
-              {{ $t('home.verify_button') }}
+              {{ verifying ? '확인중...' : isBojVerified ? '인증완료' : '인증' }}
             </Button>
           </div>
+
+          <div
+            v-if="isBojVerified"
+            class="flex items-center gap-2 text-sm text-green-600"
+          >
+            <span>인증 성공</span>
+            <img :src="signupData.baekjoon" alt="tier" class="h-5" />
+          </div>
+
+          <p v-else class="text-xs text-muted-foreground">
+            * 백준 인증 후에만 회원가입이 가능합니다.
+          </p>
         </div>
 
-        <div class="space-y-2">
-          <Label for="signup-password" class="text-sm font-medium">
-            {{ $t('home.signup_password_label') }}
-          </Label>
-          <Input
-            id="signup-password"
-            name="password"
-            type="password"
-            :placeholder="$t('home.signup_password_placeholder')"
-            v-model="signupData.password"
-            class="rounded-lg border-input bg-background h-11"
-          />
-        </div>
+        <!-- 비밀번호 -->
+        <Input
+          type="password"
+          placeholder="비밀번호"
+          v-model="signupData.password"
+          class="h-11"
+        />
 
-        <div class="space-y-2">
-          <Label for="confirm-password" class="text-sm font-medium">
-            {{ $t('home.signup_confirm_password_label') }}
-          </Label>
-          <Input
-            id="confirm-password"
-            name="confirmPassword"
-            type="password"
-            :placeholder="$t('home.signup_confirm_password_placeholder')"
-            v-model="signupData.confirmPassword"
-            class="rounded-lg border-input bg-background h-11"
-          />
-        </div>
+        <Input
+          type="password"
+          placeholder="비밀번호 확인"
+          v-model="signupData.confirmPassword"
+          class="h-11"
+        />
 
-        <div class="space-y-2">
-          <Label for="nickname" class="text-sm font-medium">
-            {{ $t('home.signup_nickname_label') }}
-          </Label>
-          <Input
-            id="nickname"
-            name="nickname"
-            :placeholder="$t('home.signup_nickname_placeholder')"
-            v-model="signupData.nickname"
-            class="rounded-lg border-input bg-background h-11"
-          />
-        </div>
+        <!-- 닉네임 -->
+        <Input
+          placeholder="닉네임"
+          v-model="signupData.nickname"
+          class="h-11"
+        />
 
-        <div class="space-y-2">
-          <Label for="campus" class="text-sm font-medium">
-            {{ $t('home.signup_campus_label') }}
-          </Label>
-          <Select v-model="signupData.campus">
-            <SelectTrigger id="campus" class="rounded-lg border-input bg-background h-11">
-              <SelectValue :placeholder="$t('home.signup_campus_placeholder')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="gwangju">Gwangju</SelectItem>
-              <SelectItem value="seoul">Seoul</SelectItem>
-              <SelectItem value="daejeon">Daejeon</SelectItem>
-              <SelectItem value="gumi">Gumi</SelectItem>
-              <SelectItem value="buil">Buil</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <!-- 캠퍼스 -->
+        <Select v-model="signupData.campus">
+          <SelectTrigger class="h-11">
+            <SelectValue placeholder="캠퍼스 선택" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="seoul">Seoul</SelectItem>
+            <SelectItem value="gwangju">Gwangju</SelectItem>
+            <SelectItem value="daejeon">Daejeon</SelectItem>
+            <SelectItem value="gumi">Gumi</SelectItem>
+            <SelectItem value="buil">Buil</SelectItem>
+          </SelectContent>
+        </Select>
 
-        <div class="space-y-2">
-          <Label for="season" class="text-sm font-medium">
-            기수
-          </Label>
-          <Select v-model="signupData.season">
-            <SelectTrigger id="season" class="rounded-lg border-input bg-background h-11">
-              <SelectValue placeholder="기수를 선택하세요" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="s in seasonList" :key="s" :value="String(s)">{{ s }}기</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <!-- 기수 -->
+        <Select v-model="signupData.season">
+          <SelectTrigger class="h-11">
+            <SelectValue placeholder="기수 선택" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem
+              v-for="s in seasonList"
+              :key="s"
+              :value="String(s)"
+            >
+              {{ s }}기
+            </SelectItem>
+          </SelectContent>
+        </Select>
 
+        <!-- 회원가입 버튼 -->
         <Button
+          class="w-full h-11 mt-4"
+          :disabled="!canSignup"
           @click="handleSignup"
-          class="w-full h-11 rounded-lg bg-primary text-primary-foreground font-medium mt-6 hover:bg-primary/90"
         >
-          {{ $t('home.create_account_button') }}
+          계정 생성
         </Button>
 
-        <div class="text-center text-sm mt-4">
-          <span class="text-muted-foreground">Already have an account? </span>
-          <router-link to="/login" class="text-primary font-medium hover:underline">
-            {{ $t('home.login') }}
+        <div class="text-center text-sm">
+          <router-link to="/login" class="text-primary hover:underline">
+            로그인
           </router-link>
         </div>
       </CardContent>
@@ -127,9 +118,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import http from '@/api/http'
+
 import {
   Card,
   CardContent,
@@ -149,82 +141,74 @@ import {
 } from '@/components/ui/select'
 
 const router = useRouter()
+
+/* ================= 상태 ================= */
 const signupData = ref({
-  id: '',
+  id: '',          // BOJ_ID
   password: '',
   confirmPassword: '',
   nickname: '',
   campus: '',
   season: '',
-  baekjoonId: '',
+  baekjoon: '',    // 티어 SVG URL
 })
 
-const generateSeasons = () => {
-  const seasons = []
-  const startYear = 2019
-  const now = new Date()
-  const currentYear = now.getFullYear()
-  const currentMonth = now.getMonth() + 1
+const verifying = ref(false)
+const isBojVerified = ref(false)
 
-  let maxSeason = (currentYear - startYear) * 2
-  if (currentMonth >= 7) {
-    maxSeason += 2
-  } else {
-    maxSeason += 1
-  }
+/* ================= 백준 ID 변경 시 인증 무효 ================= */
+watch(() => signupData.value.id, () => {
+  isBojVerified.value = false
+  signupData.value.baekjoon = ''
+})
 
-  for (let i = maxSeason; i >= 1; i--) {
-    seasons.push(i)
-  }
-  return seasons
-}
+/* ================= 기수 목록 ================= */
+const seasonList = Array.from({ length: 20 }, (_, i) => i + 1).reverse()
 
-const seasonList = generateSeasons()
+/* ================= 가입 가능 여부 ================= */
+const canSignup = computed(() => {
+  return (
+    isBojVerified.value &&
+    signupData.value.password &&
+    signupData.value.password === signupData.value.confirmPassword &&
+    signupData.value.nickname &&
+    signupData.value.campus &&
+    signupData.value.season
+  )
+})
 
-const handleSignup = async () => {
-  if (signupData.value.password !== signupData.value.confirmPassword) {
-    alert('비밀번호가 일치하지 않습니다.')
-    return
-  }
-
-  if (!signupData.value.season) {
-    alert('기수를 선택해주세요.')
-    return
-  }
-
-  try {
-    await http.post('/v1/auth/regist', {
-      bojId: signupData.value.id,
-      password: signupData.value.password,
-      name: signupData.value.nickname,
-      season: parseInt(signupData.value.season),
-      campus: signupData.value.campus,
-      baekjoon: signupData.value.id 
-    })
-    alert('회원가입이 완료되었습니다.')
-    router.push('/login')
-  } catch (error) {
-    console.error('Signup failed:', error)
-    if (error.response && error.response.status === 409) {
-      alert('이미 존재하는 아이디입니다.')
-    } else {
-      alert('회원가입에 실패했습니다.')
-    }
-  }
-}
-
+/* ================= 백준 인증 ================= */
 const handleVerifyBaekjoon = async () => {
-  if (!signupData.value.id) {
-    alert('백준 아이디를 입력해주세요.')
-    return
-  }
+  verifying.value = true
   try {
-    const response = await http.get('/v1/auth/boj/validate', {
-      data: { bojId: signupData.value.id }
+    const res = await http.get('/v1/auth/boj/validate', {
+      params: { bojId: signupData.value.id },
     })
-    alert('확인되었습니다. 티어 정보를 가져왔습니다.')
+
+    signupData.value.baekjoon = res.data.baekjoon
+    isBojVerified.value = true
+    alert('백준 인증 성공')
   } catch (error) {
+    isBojVerified.value = false
+    signupData.value.baekjoon = ''
     alert('유효하지 않은 백준 아이디입니다.')
+  } finally {
+    verifying.value = false
   }
+}
+
+/* ================= 회원가입 ================= */
+const handleSignup = async () => {
+  await http.post('/v1/auth/regist', {
+    bojId: signupData.value.id,
+    password: signupData.value.password,
+    name: signupData.value.nickname,
+    campus: signupData.value.campus,
+    season: Number(signupData.value.season),
+    baekjoon: signupData.value.baekjoon,
+  })
+
+  alert('회원가입 완료')
+  router.push('/login')
 }
 </script>
