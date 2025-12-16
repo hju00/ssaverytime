@@ -9,8 +9,8 @@
             parameterType="com.ssaverytime.server.domain.model.Menu"
             useGeneratedKeys="true"
             keyProperty="menuId">
-        INSERT INTO MENU (RESTAURANT_ID, MENU, DATE)
-        VALUES (#{restaurantId}, #{menu}, #{date})
+        INSERT INTO MENU (RESTAURANT_ID, MENU, CALORIE, DATE)
+        VALUES (#{restaurantId}, #{menu}, #{calorie}, #{date})
     </insert>
 
     <select id="findByDateAndRestaurant"
@@ -19,6 +19,7 @@
         MENU_ID       AS menuId,
         RESTAURANT_ID AS restaurantId,
         MENU          AS menu,
+        CALORIE       AS calorie,
         DATE          AS date
         FROM MENU
         WHERE RESTAURANT_ID = #{restaurantId}

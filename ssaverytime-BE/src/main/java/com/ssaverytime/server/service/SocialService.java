@@ -76,7 +76,7 @@ public class SocialService {
 
         // 두 개 방향으로 튜플 삽입
         followMapper.insertFollow(myBojId, targetBojId);
-        followMapper.insertFollow(targetBojId, myBojId);
+        // followMapper.insertFollow(targetBojId, myBojId);
     }
 
     // 4. 언팔로우 (양방향 튜플 두 개 delete)
@@ -86,6 +86,39 @@ public class SocialService {
         }
 
         followMapper.deleteFollow(myBojId, targetBojId);
-        followMapper.deleteFollow(targetBojId, myBojId);
+        // followMapper.deleteFollow(targetBojId, myBojId);
     }
+
+    // 내가 팔로우한 사람들
+    public List<SocialUserResponseDto> getFollowingList(String myBojId) {
+
+        List<User> users = followMapper.findFollowing(myBojId);
+
+        return users.stream()
+                .map(u -> new SocialUserResponseDto(
+                        u.getBaekjoon(),
+                        u.getBojId(),
+                        u.getName(),
+                        u.getSeason(),
+                        u.getValid() == UserValid.INVALID
+                ))
+                .toList();
+    }
+
+    // 나를 팔로우한 사람들
+    public List<SocialUserResponseDto> getFollowerList(String myBojId) {
+
+        List<User> users = followMapper.findFollowers(myBojId);
+
+        return users.stream()
+                .map(u -> new SocialUserResponseDto(
+                        u.getBaekjoon(),
+                        u.getBojId(),
+                        u.getName(),
+                        u.getSeason(),
+                        u.getValid() == UserValid.INVALID
+                ))
+                .toList();
+    }
+
 }
