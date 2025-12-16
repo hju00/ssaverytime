@@ -9,6 +9,7 @@ import PostWrite from '../views/PostWrite.vue'
 import Profile from '../views/Profile.vue'
 import ProfileEdit from '../views/ProfileEdit.vue'
 import Admin from '../views/Admin.vue'
+import ScrapList from '../views/ScrapList.vue'
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
@@ -22,6 +23,8 @@ const routes = [
 
   { path: '/profile', name: 'Profile', component: Profile },
   { path: '/profile/edit', name: 'ProfileEdit', component: ProfileEdit },
+
+  { path: '/scraps', name: 'ScrapList', component: ScrapList }
 ]
 
 const router = createRouter({
