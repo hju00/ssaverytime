@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssaverytime.server.mapper.CommentMapper">
+
+    <select id="selectCommentList" resultType="com.ssaverytime.server.domain.dto.comment.CommentResponseDto">
+        SELECT 
+            c.COMMENT_ID,
+            c.BOARD_ID,
+            c.BODY,
+            c.VISIBLE,
+            c.CREATED_AT,
+            c.USER_ID AS userSeq,
+            CASE 
+                WHEN c.VISIBLE = '0' THEN 'anonymous'
+                WHEN c.USER_ID IS NULL THEN 'anonymous' 
+                ELSE u.BOJ_ID 
+            END AS bojId,
+            CASE 
+                WHEN c.VISIBLE = '0' THEN '익명'
+                WHEN c.USER_ID IS NULL THEN '익명' 
+                ELSE u.NAME 
+            END AS userName,
+            IFNULL(c.AUTHOR_TIER, 'Unrated') AS userTier,
+            aca.AUTHOR_HASH AS authorHash,
+            <choose>
+                <when test="currentUserSeq != null">
+                    (c.USER_ID IS NOT NULL AND c.USER_ID = #{currentUserSeq}) AS isAuthor
+                </when>
+                <otherwise>
+                    FALSE AS isAuthor
+                </otherwise>
+            </choose>
+        FROM COMMENT c
+        LEFT JOIN USER u ON c.USER_ID = u.USER_ID
+        LEFT JOIN ANONYMOUS_COMMENT_AUTHORSHIP aca ON c.COMMENT_ID = aca.COMMENT_ID
+        WHERE c.BOARD_ID = #{boardId} AND c.VALID = '1'
+        ORDER BY c.CREATED_AT ASC
+    </select>
+
+    <select id="selectCommentById" resultType="com.ssaverytime.server.domain.dto.comment.CommentResponseDto">
+        SELECT 
+            c.COMMENT_ID,
+            c.BOARD_ID,
+            c.USER_ID AS userSeq,
+            c.BODY,
+            c.VISIBLE
+        FROM COMMENT c
+        WHERE c.COMMENT_ID = #{commentId} AND c.VALID = '1'
+    </select>
+
+    <insert id="insertComment" parameterType="com.ssaverytime.server.domain.dto.comment.CommentRequestDto" useGeneratedKeys="true" keyProperty="commentId">
+        INSERT INTO COMMENT (BOARD_ID, USER_ID, BODY, VISIBLE, AUTHOR_TIER)
+        VALUES (#{boardId}, #{userSeq}, #{body}, #{visible}, #{authorTier})
+    </insert>
+
+    <update id="updateComment" parameterType="com.ssaverytime.server.domain.dto.comment.CommentRequestDto">
+        UPDATE COMMENT
+        SET BODY = #{body}
+        WHERE COMMENT_ID = #{commentId}
+    </update>
+
+    <update id="deleteComment">
+        UPDATE COMMENT SET VALID = '0' WHERE COMMENT_ID = #{commentId}
+    </update>
+
+    <!-- 신고 누적 -->
+    <update id="increaseWarningCnt">
+        UPDATE COMMENT SET WARNING_CNT = WARNING_CNT + 1 WHERE COMMENT_ID = #{commentId}
+    </update>
+
+</mapper>

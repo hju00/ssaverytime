@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssaverytime.server.mapper.ReportMapper">
+
+    <insert id="insertReport" parameterType="com.ssaverytime.server.domain.model.Report" useGeneratedKeys="true" keyProperty="reportId">
+        INSERT INTO REPORT (USER_ID, TARGET_TYPE, TARGET_ID, REASON)
+        VALUES (#{userId}, #{targetType}, #{targetId}, #{reason})
+    </insert>
+
+    <select id="checkReportExists" resultType="int">
+        SELECT COUNT(*)
+        FROM REPORT
+        WHERE USER_ID = #{userId} 
+          AND TARGET_TYPE = #{targetType} 
+          AND TARGET_ID = #{targetId}
+    </select>
+
+</mapper>

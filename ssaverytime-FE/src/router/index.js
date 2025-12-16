@@ -1,11 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
-import Auth from '../views/Auth.vue'
+import Login from '../views/Login.vue'
+import Signup from '../views/Signup.vue'
 import Board from '../views/Board.vue'
 import Diet from '../views/Diet.vue'
 import Post from '../views/Post.vue'
 import PostWrite from '../views/PostWrite.vue'
 import Profile from '../views/Profile.vue'
+import Admin from '../views/Admin.vue'
 
 const routes = [
   {
@@ -16,12 +18,17 @@ const routes = [
   {
     path: '/login',
     name: 'Login',
-    component: Auth
+    component: Login
   },
   {
     path: '/signup',
     name: 'Signup',
-    component: Auth
+    component: Signup
+  },
+  {
+    path: '/admin',
+    name: 'Admin',
+    component: Admin
   },
   {
     path: '/board',

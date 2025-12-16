@@ -36,5 +36,13 @@ services:
     depends_on:
       - backend
 
+  ai-service:
+    build: ./ssaverytime-AI
+    container_name: ssaverytime-ai
+    ports:
+      - "8000:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+
 volumes:
   db-data:

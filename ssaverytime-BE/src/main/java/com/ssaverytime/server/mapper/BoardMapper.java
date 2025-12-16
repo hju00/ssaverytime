@@ -41,4 +41,15 @@ public interface BoardMapper {
     int insertScrap(@Param("boardId") int boardId, @Param("userSeq") int userSeq);
     int deleteScrap(@Param("boardId") int boardId, @Param("userSeq") int userSeq);
     int checkScrap(@Param("boardId") int boardId, @Param("userSeq") int userSeq);
+
+    // 신고 누적
+    void increaseWarningCnt(int boardId);
+
+    // AI 요약 저장
+    void updateSummary(@Param("boardId") int boardId, @Param("summary") String summary);
+
+    // 내 스크랩 게시글 목록 조회
+    List<BoardResponseDto> selectScrapBoardList(@Param("userSeq") int userSeq,
+                                                @Param("limit") int limit,
+                                                @Param("offset") int offset);
 }

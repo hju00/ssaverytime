@@ -2,9 +2,12 @@ package com.ssaverytime.server.controller;
 
 import com.ssaverytime.server.domain.dto.board.BoardRequestDto;
 import com.ssaverytime.server.domain.dto.board.BoardResponseDto;
+import com.ssaverytime.server.domain.dto.report.ReportRequestDto;
+import com.ssaverytime.server.domain.enums.report.ReportTargetType;
 import com.ssaverytime.server.domain.model.User;
 import com.ssaverytime.server.mapper.UserMapper;
 import com.ssaverytime.server.service.BoardService;
+import com.ssaverytime.server.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,12 +20,13 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/board")
+@RequestMapping("/api/v1/board")
 @RequiredArgsConstructor
 public class BoardController {
 
     private final BoardService boardService;
     private final UserMapper userMapper;
+    private final ReportService reportService;
 
     private Integer getCurrentUserSeq() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -44,6 +48,19 @@ public class BoardController {
         
         Integer currentUserSeq = getCurrentUserSeq();
         List<BoardResponseDto> list = boardService.getBoardList(keyword, sort, page, size, currentUserSeq);
+        return new ResponseEntity<>(list, HttpStatus.OK);
+    }
+
+    // 내 스크랩 목록 조회
+    @GetMapping("/scrap")
+    public ResponseEntity<List<BoardResponseDto>> getScrapBoardList(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        
+        Integer userSeq = getCurrentUserSeq();
+        if (userSeq == null) return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+        List<BoardResponseDto> list = boardService.getScrapBoardList(userSeq, page, size);
         return new ResponseEntity<>(list, HttpStatus.OK);
     }
 
@@ -126,5 +143,34 @@ public class BoardController {
         Map<String, Object> response = new HashMap<>();
         response.put("scrapped", isScrapped);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    // 게시글 신고
+    @PostMapping("/{boardId}/report")
+    public ResponseEntity<String> reportBoard(@PathVariable int boardId, @RequestBody ReportRequestDto request) {
+        Integer userSeq = getCurrentUserSeq();
+        if (userSeq == null) return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+        try {
+            reportService.report(userSeq, ReportTargetType.BOARD, boardId, request.getReason());
+            return new ResponseEntity<>("success", HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT); // 409
+        }
+    }    @PostMapping("/{boardId}/ai")
+    public ResponseEntity<String> generateSummary(@PathVariable int boardId) {
+        try {
+            String summary = boardService.getBoardSummary(boardId);
+            return ResponseEntity.ok(summary);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/{boardId}/ai")
+    public ResponseEntity<String> getSummary(@PathVariable int boardId) {
+        return generateSummary(boardId);
     }
 }

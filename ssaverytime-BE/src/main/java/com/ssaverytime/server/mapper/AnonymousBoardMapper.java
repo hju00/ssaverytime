@@ -11,4 +11,7 @@ public interface AnonymousBoardMapper {
 
     // 익명 소유권 확인 (해시값 존재 여부 반환)
     int checkAnonymousAuthorship(@Param("boardId") int boardId, @Param("authorHash") String authorHash);
+
+    // 게시글의 해시값 조회
+    String getAuthorHash(int boardId);
 }

@@ -13,6 +13,8 @@ public class MyPageResponseDto {
     private String bojId;
     private String name;
     private Integer season;
+    private String campus;
     private String baekjoon;
+    private String role;
     private LocalDateTime createdAt;
 }

@@ -15,29 +15,40 @@
       <Card class="border-border">
         <CardHeader class="space-y-4">
           <div class="flex justify-between items-start gap-4">
-          <h1 class="text-2xl font-bold text-foreground leading-tight flex-1">{{ post.title }}</h1>
-          <!-- TODO: 로그인 구현 후 'true ||' 제거하여 권한 체크 활성화 필요 -->
-          <div v-if="true || post.isAuthor" class="flex items-center gap-1 shrink-0">
-             <Button variant="ghost" size="sm" class="h-8 w-8 p-0" @click="editPost">
-                <EditIcon class="w-4 h-4 text-muted-foreground hover:text-foreground" />
-             </Button>
-             <Button variant="ghost" size="sm" class="h-8 w-8 p-0" @click="deletePostAction">
-                <Trash2Icon class="w-4 h-4 text-muted-foreground hover:text-destructive" />
-             </Button>
+            <h1 class="text-2xl font-bold text-foreground leading-tight flex-1">{{ post.title }}</h1>
+            <div class="flex items-center gap-1 shrink-0">
+               <!-- 수정/삭제 (본인일 때) -->
+               <div v-if="post.author" class="flex gap-1">
+                 <Button variant="ghost" size="sm" class="h-8 w-8 p-0" @click="editPost">
+                    <EditIcon class="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                 </Button>
+                 <Button variant="ghost" size="sm" class="h-8 w-8 p-0" @click="deletePostAction">
+                    <Trash2Icon class="w-4 h-4 text-muted-foreground hover:text-destructive" />
+                 </Button>
+               </div>
+               <!-- 신고 (본인 아닐 때) -->
+               <Button v-else variant="ghost" size="sm" class="h-8 w-8 p-0 text-red-400 hover:text-red-600 hover:bg-red-50" @click="handleReportBoard">
+                  <AlertTriangleIcon class="w-4 h-4" />
+               </Button>
+            </div>
           </div>
-      </div>
 
           <!-- Author Info -->
           <div class="flex items-center gap-3 pt-2 border-t border-border/50">
-            <div class="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-lg overflow-hidden">
-               <!-- Placeholder Avatar or BOJ ID -->
-               <span v-if="!post.userTier">👤</span>
-               <span v-else>{{ post.bojId || 'U' }}</span>
+            <!-- 프로필 아이콘을 랭크 아이콘으로 대체함 -->
+            <div class="w-10 h-10 flex items-center justify-center shrink-0">
+               <img 
+                 v-if="post.tierNumber !== undefined" 
+                 :src="`https://static.solved.ac/tier_small/${post.tierNumber}.svg`" 
+                 alt="Profile" 
+                 class="w-8 h-8 object-contain" 
+               />
+               <span v-else class="text-lg">👤</span>
             </div>
             <div class="flex-1">
               <div class="flex items-center gap-2">
                 <span class="font-semibold text-sm">{{ post.userName }}</span>
-                <img v-if="post.tierNumber" :src="`https://static.solved.ac/tier_small/${post.tierNumber}.svg`" alt="Tier Icon" class="w-4 h-4 inline-block" />
+                <!-- <img v-if="post.tierNumber !== undefined" :src="`https://static.solved.ac/tier_small/${post.tierNumber}.svg`" alt="Tier Icon" class="w-4 h-4 inline-block" /> -->
               </div>
               <p class="text-xs text-muted-foreground">
                 {{ post.formattedDate }}
@@ -50,7 +61,28 @@
 
       <!-- Post Content -->
       <Card class="border-border">
-        <CardContent class="p-6">
+        <CardContent class="p-6 space-y-4">
+          <!-- AI Summary Button & Section -->
+          <div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              class="gap-2 text-violet-600 border-violet-200 hover:bg-violet-50 hover:text-violet-700"
+              @click="fetchSummary"
+            >
+              <BotIcon class="w-4 h-4" />
+              {{ showSummary ? 'AI 요약 접기' : 'AI 요약 보기' }}
+            </Button>
+            
+            <div v-if="showSummary" class="mt-3 p-4 bg-violet-50/50 rounded-lg border border-violet-100 text-sm text-foreground/80 leading-relaxed">
+               <div v-if="isSummaryLoading" class="flex items-center gap-2 text-violet-500">
+                 <div class="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
+                 <span>요약 중입니다...</span>
+               </div>
+               <p v-else>{{ summaryText }}</p>
+            </div>
+          </div>
+
           <p class="text-foreground leading-relaxed whitespace-pre-wrap">{{ post.body }}</p>
         </CardContent>
       </Card>
@@ -59,18 +91,18 @@
       <div class="flex gap-2">
         <Button
           @click="toggleLikeAction"
-          :variant="post.isLiked ? 'default' : 'outline'"
-          :class="`flex-1 gap-2 rounded-lg h-11 ${post.isLiked ? 'bg-primary text-primary-foreground' : ''}`"
+          :variant="post.liked ? 'default' : 'outline'"
+          :class="`flex-1 gap-2 rounded-lg h-11 ${post.liked ? 'bg-primary text-primary-foreground' : ''}`"
         >
           <ThumbsUpIcon class="w-4 h-4" />
           {{ $t('post.like') }} ({{ post.likeCount }})
         </Button>
         <Button
           @click="toggleScrapAction"
-          :variant="post.isScrapped ? 'default' : 'outline'"
-          :class="`flex-1 gap-2 rounded-lg h-11 ${post.isScrapped ? 'bg-primary text-primary-foreground' : ''}`"
+          :variant="post.scrapped ? 'default' : 'outline'"
+          :class="`flex-1 gap-2 rounded-lg h-11 ${post.scrapped ? 'bg-primary text-primary-foreground' : ''}`"
         >
-          <StarIcon :class="`w-4 h-4 ${post.isScrapped ? 'fill-current' : ''}`" />
+          <StarIcon :class="`w-4 h-4 ${post.scrapped ? 'fill-current' : ''}`" />
           {{ $t('post.scrap') }}
         </Button>
       </div>
@@ -78,7 +110,7 @@
       <!-- Comment Section -->
       <Card class="border-border">
         <CardHeader>
-          <h2 class="font-bold text-lg">{{ $t('post.comments') }} ({{ post.commentCount || 0 }})</h2>
+          <h2 class="font-bold text-lg">{{ $t('post.comments') }} ({{ comments.length }})</h2>
         </CardHeader>
         <CardContent class="space-y-4">
           <!-- Comment Input -->
@@ -87,12 +119,16 @@
               :placeholder="$t('post.write_comment_placeholder')"
               v-model="commentText"
               class="bg-background border-input rounded-lg"
+              @keyup.enter="addComment"
             />
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <Checkbox
-                  id="anonymous"
-                  v-model:checked="anonymous"
+                <input 
+                  type="checkbox" 
+                  id="anonymous" 
+                  class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer accent-primary"
+                  :checked="anonymous"
+                  @change="(e) => anonymous = e.target.checked"
                 />
                 <label for="anonymous" class="text-sm cursor-pointer text-foreground">
                   {{ $t('post.write_anonymously') }}
@@ -102,18 +138,87 @@
                 class="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-9 px-4"
                 size="sm"
                 @click="addComment"
+                :disabled="!commentText.trim()"
               >
                 {{ $t('post.post_button') }}
               </Button>
             </div>
           </div>
 
-          <!-- Comments List (Empty for now) -->
+          <!-- Comments List -->
           <div class="space-y-4 pt-4 border-t border-border/50">
              <div v-if="comments.length === 0" class="text-center text-muted-foreground text-sm py-4">
                {{ $t('post.no_comments') || '아직 댓글이 없습니다.' }}
              </div>
-             <!-- TODO: Implement Comment List when API is ready -->
+             
+             <div v-for="comment in comments" :key="comment.commentId" class="flex gap-3 p-3 rounded-lg hover:bg-muted/30 transition-colors">
+                <!-- Avatar (프로필 아이콘을 랭크 아이콘으로 대체함) -->
+                <div class="w-8 h-8 flex items-center justify-center shrink-0">
+                   <img 
+                     v-if="getTierNumber(comment.userTier) !== undefined" 
+                     :src="`https://static.solved.ac/tier_small/${getTierNumber(comment.userTier)}.svg`" 
+                     alt="Profile" 
+                     class="w-6 h-6 object-contain" 
+                   />
+                   <span v-else class="text-xs">?</span>
+                </div>
+                
+                <div class="flex-1 space-y-1 w-full min-w-0">
+                   <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                         <span 
+                           class="text-sm font-semibold"
+                           :class="{ 'text-primary': comment.userName === '작성자' }"
+                         >
+                           {{ comment.userName }}
+                         </span>
+                         <!-- <img 
+                           v-if="getTierNumber(comment.userTier) !== undefined" 
+                           :src="`https://static.solved.ac/tier_small/${getTierNumber(comment.userTier)}.svg`" 
+                           alt="Tier Icon" 
+                           class="w-3 h-3 inline-block" 
+                         />  -->
+                         <span class="text-xs text-muted-foreground">{{ formatDate(comment.createdAt) }}</span>
+                      </div>
+                      
+                      <!-- Comment Actions -->
+                      <div class="flex items-center gap-1">
+                         <!-- 수정 모드일 때 -->
+                         <template v-if="editingCommentId === comment.commentId">
+                           <Button variant="ghost" size="sm" class="h-6 w-6 p-0 text-green-500 hover:text-green-600" @click="saveEditComment(comment.commentId)">
+                              <CheckIcon class="w-3 h-3" />
+                           </Button>
+                           <Button variant="ghost" size="sm" class="h-6 w-6 p-0 text-muted-foreground hover:text-destructive" @click="cancelEditComment">
+                              <XIcon class="w-3 h-3" />
+                           </Button>
+                         </template>
+                         
+                         <!-- 일반 모드일 때 -->
+                         <template v-else>
+                           <div v-if="comment.author" class="flex gap-1">
+                             <Button variant="ghost" size="sm" class="h-6 w-6 p-0 text-muted-foreground hover:text-foreground" @click="startEditComment(comment)">
+                                <EditIcon class="w-3 h-3" />
+                             </Button>
+                             <Button variant="ghost" size="sm" class="h-6 w-6 p-0 text-muted-foreground hover:text-destructive" @click="handleDeleteComment(comment.commentId)">
+                                <Trash2Icon class="w-3 h-3" />
+                             </Button>
+                           </div>
+                           <Button v-else variant="ghost" size="sm" class="h-6 w-6 p-0 text-muted-foreground hover:text-red-500" @click="handleReportComment(comment.commentId)">
+                              <AlertTriangleIcon class="w-3 h-3" />
+                           </Button>
+                         </template>
+                      </div>
+                   </div>
+                   
+                   <!-- 본문 or 수정 Input -->
+                   <div v-if="editingCommentId === comment.commentId">
+                      <Input v-model="editingCommentText" class="h-8 text-sm" @keyup.enter="saveEditComment(comment.commentId)" />
+                   </div>
+                   <p v-else class="text-sm text-foreground leading-relaxed break-words">
+                     {{ comment.body }}
+                   </p>
+                </div>
+             </div>
           </div>
         </CardContent>
       </Card>
@@ -126,7 +231,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { getBoardDetail, toggleLike, toggleScrap, deleteBoard } from '@/api/board'
+import { getBoardDetail, toggleLike, toggleScrap, deleteBoard, getAiSummary } from '@/api/board'
+import { getCommentList, writeComment, updateComment, deleteComment } from '@/api/comment'
+import { reportBoard, reportComment } from '@/api/report'
 import { getTierNumber } from '@/lib/utils'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -139,20 +246,56 @@ import {
   Reply as ReplyIcon,
   Trash2 as Trash2Icon,
   ChevronLeft as ChevronLeftIcon,
-  Edit as EditIcon
+  Edit as EditIcon,
+  AlertTriangle as AlertTriangleIcon,
+  Check as CheckIcon,
+  X as XIcon,
+  Bot as BotIcon
 } from 'lucide-vue-next'
 
 const router = useRouter()
 const route = useRoute()
 const post = ref(null)
 const loading = ref(false)
-const comments = ref([]) // Placeholder
+const comments = ref([])
 
 const commentText = ref('')
 const anonymous = ref(false)
 
+// 댓글 수정 상태
+const editingCommentId = ref(null)
+const editingCommentText = ref('')
+
+// AI 요약 상태
+const summaryText = ref('')
+const isSummaryLoading = ref(false)
+const showSummary = ref(false)
+
+const fetchSummary = async () => {
+  if (summaryText.value) {
+    showSummary.value = !showSummary.value
+    return
+  }
+  
+  isSummaryLoading.value = true
+  showSummary.value = true
+  
+  try {
+    const res = await getAiSummary(post.value.boardId)
+    summaryText.value = res.data
+  } catch (error) {
+    console.error("AI Summary failed", error)
+    summaryText.value = "요약 정보를 가져오지 못했습니다."
+  } finally {
+    isSummaryLoading.value = false
+  }
+}
+
 const formatDate = (dateString) => {
   if (!dateString) return '';
+  if (typeof dateString === 'string' && !dateString.endsWith('Z')) {
+    dateString += 'Z';
+  }
   const date = new Date(dateString);
   return new Intl.DateTimeFormat('ko-KR', {
     month: 'short',
@@ -177,12 +320,119 @@ const fetchPost = async () => {
          tierNumber: getTierNumber(data.userTier),
          formattedDate: formatDate(data.createdAt)
        };
+       fetchComments(boardId);
     }
   } catch (error) {
     console.error("Failed to fetch post detail:", error);
     post.value = null;
   } finally {
     loading.value = false;
+  }
+}
+
+const fetchComments = async (boardId) => {
+  try {
+    const res = await getCommentList(boardId);
+    comments.value = res.data;
+  } catch (error) {
+    console.error("Failed to fetch comments:", error);
+  }
+}
+
+const addComment = async () => {
+  console.log("Anonymous Checkbox Value:", anonymous.value);
+  if (!commentText.value.trim() || !post.value) return;
+  
+  try {
+    const payload = {
+      body: commentText.value,
+      visible: anonymous.value ? '0' : '1'
+    };
+    console.log("Sending Comment Payload:", payload);
+
+    await writeComment(post.value.boardId, payload);
+    commentText.value = '';
+    fetchComments(post.value.boardId);
+  } catch (error) {
+    console.error("Failed to write comment:", error);
+    alert("댓글 작성에 실패했습니다. (로그인 필요)");
+  }
+}
+
+const startEditComment = (comment) => {
+  editingCommentId.value = comment.commentId;
+  editingCommentText.value = comment.body;
+}
+
+const cancelEditComment = () => {
+  editingCommentId.value = null;
+  editingCommentText.value = '';
+}
+
+const saveEditComment = async (commentId) => {
+  if (!editingCommentText.value.trim()) {
+    alert("내용을 입력해주세요.");
+    return;
+  }
+
+  try {
+    // 댓글 수정 시 가시성(visible)은 유지하거나 변경 UI를 추가해야 함. 
+    // 현재 UI에는 수정 시 익명 여부 변경이 없으므로 기존 visible 값을 쓸 수 없음 (API에서 required라면 문제).
+    // 백엔드 Mapper를 보면 updateComment는 BODY만 수정함: UPDATE COMMENT SET BODY = #{body} ...
+    // 따라서 visible은 안 보내도 됨. DTO에는 필드가 있지만 null이면 MyBatis에서 무시되거나 에러? 
+    // Mapper XML을 보면 visible은 update 문에 없음. -> body만 보내면 됨.
+    await updateComment(post.value.boardId, commentId, {
+      body: editingCommentText.value
+    });
+    
+    // 수정 완료 후
+    cancelEditComment();
+    fetchComments(post.value.boardId);
+  } catch (error) {
+    console.error("Failed to update comment:", error);
+    alert("댓글 수정에 실패했습니다.");
+  }
+}
+
+const handleDeleteComment = async (commentId) => {
+  if (!confirm('댓글을 삭제하시겠습니까?')) return;
+  try {
+    await deleteComment(post.value.boardId, commentId);
+    fetchComments(post.value.boardId);
+  } catch (error) {
+    alert("댓글 삭제 실패");
+  }
+}
+
+const handleReportBoard = async () => {
+  const reason = prompt('신고 사유를 입력해주세요:');
+  if (!reason) return;
+  
+  try {
+    await reportBoard(post.value.boardId, reason);
+    alert("게시글이 신고되었습니다.");
+  } catch (error) {
+    if (error.response && error.response.status === 409) {
+      alert("이미 신고한 게시글입니다.");
+    } else {
+      alert("신고 실패: " + (error.response?.data || error.message));
+    }
+  }
+}
+
+const handleReportComment = async (commentId) => {
+  const reason = prompt('신고 사유를 입력해주세요:');
+  if (!reason) return;
+  
+  try {
+    await reportComment(post.value.boardId, commentId, reason);
+    alert("댓글이 신고되었습니다.");
+  } catch (error) {
+    if (error.response && error.response.status === 409) {
+      alert("이미 신고한 댓글입니다.");
+    } else {
+      alert("신고 실패: " + (error.response?.data || error.message));
+    }
   }
 }
 
@@ -208,10 +458,8 @@ const toggleLikeAction = async () => {
   if (!post.value) return;
   try {
     const res = await toggleLike(post.value.boardId);
-    // Optimistic update or refetch
-    // Assuming API returns { liked: true/false }
     if (res.data && typeof res.data.liked === 'boolean') {
-        post.value.isLiked = res.data.liked;
+        post.value.liked = res.data.liked;
         post.value.likeCount += res.data.liked ? 1 : -1;
     }
   } catch (e) {
@@ -224,22 +472,21 @@ const toggleScrapAction = async () => {
   try {
     const res = await toggleScrap(post.value.boardId);
      if (res.data && typeof res.data.scrapped === 'boolean') {
-        post.value.isScrapped = res.data.scrapped;
+        post.value.scrapped = res.data.scrapped;
     }
   } catch (e) {
     console.error("Scrap toggle failed", e);
   }
 }
 
-const addComment = () => {
-  console.log("Comment feature not implemented yet.");
-  // TODO: Implement write comment
-}
-
 onMounted(() => {
   fetchPost();
 });
 </script>
+
+<style scoped>
+/* Scoped styles for Post.vue */
+</style>
 
 <style scoped>
 /* Scoped styles for Post.vue */
