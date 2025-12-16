@@ -1,89 +1,54 @@
 <template>
   <div class="min-h-screen bg-background p-4 pb-12">
     <div class="max-w-2xl mx-auto space-y-6">
-      <!-- Profile Card -->
       <Card class="border-border text-center">
         <CardContent class="p-8 space-y-4">
           <div class="w-24 h-24 flex items-center justify-center mx-auto mb-4">
-             <img 
-               v-if="user.tierNumber !== undefined" 
-               :src="`https://static.solved.ac/tier_small/${user.tierNumber}.svg`" 
-               alt="Profile" 
-               class="w-full h-full object-contain animate-float" 
-             />
-             <span v-else class="text-6xl animate-float">👤</span>
+            <img
+              v-if="tierSvgUrl"
+              :src="tierSvgUrl"
+              alt="Profile"
+              class="w-full h-full object-contain animate-float"
+            />
+            <span v-else class="text-6xl animate-float">👤</span>
           </div>
+
           <div>
             <h1 class="text-2xl font-bold text-foreground">{{ user.nickname }}</h1>
-            <p class="text-sm text-muted-foreground">{{ user.campus ? user.campus + ' Campus' : '' }} {{ user.season }}기</p>
+            <p class="text-sm text-muted-foreground">{{ user.season }}기</p>
           </div>
         </CardContent>
       </Card>
 
-      <!-- Rank Section -->
       <Card class="border-border">
-        <CardHeader>
+        <CardHeader class="flex flex-row items-center justify-between">
           <h2 class="font-bold text-lg">{{ $t('profile.baekjoon_tier') }}</h2>
-        </CardHeader>
-        <CardContent class="space-y-4">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <!-- Tier Icon -->
-              <div class="w-12 h-12 flex items-center justify-center">
-                 <img 
-                   v-if="user.tierNumber !== undefined" 
-                   :src="`https://static.solved.ac/tier_small/${user.tierNumber}.svg`" 
-                   alt="Tier" 
-                   class="w-10 h-10 object-contain" 
-                 />
-              </div>
-              <div>
-                <p class="font-semibold text-lg">{{ user.tier || 'Unrated' }}</p>
-                <p class="text-xs text-muted-foreground">{{ $t('profile.algorithm_rank') }}</p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
-      <!-- Menu Grid -->
-      <div class="grid grid-cols-2 gap-3">
-        <Button
-          v-for="(item, i) in menuItems"
-          :key="i"
-          variant="outline"
-          class="h-24 flex flex-col items-start justify-between p-4 rounded-lg border-border hover:bg-muted hover:border-primary group bg-transparent"
-        >
-          <component :is="item.icon" class="w-6 h-6 text-primary group-hover:text-primary/80" />
-          <div class="text-left">
-            <p class="font-semibold text-sm text-foreground">{{ $t(item.label) }}</p>
-            <p v-if="item.count !== null" class="text-xs text-muted-foreground">{{ item.count }}</p>
-          </div>
-        </Button>
-      </div>
-
-      <!-- Scrapped Posts Preview -->
-      <Card class="border-border">
-        <CardHeader>
-          <h2 class="font-bold text-lg">{{ $t('profile.recently_scrapped') }}</h2>
-        </CardHeader>
-        <CardContent class="space-y-3">
-          <div
-            v-for="post in scrappedPosts"
-            :key="post.boardId"
-            @click="$router.push(`/post/${post.boardId}`)"
-            class="flex items-start justify-between p-3 hover:bg-muted rounded-lg transition-colors cursor-pointer group"
+          <Button
+            variant="outline"
+            class="bg-transparent"
+            :disabled="refreshingRank"
+            @click="handleRefreshRank"
           >
-            <div class="flex-1">
-              <h3 class="font-medium text-sm text-foreground line-clamp-2 group-hover:text-primary">
-                {{ post.title }}
-              </h3>
-              <p class="text-xs text-muted-foreground mt-1">{{ $t('profile.by_prefix') }} {{ post.userName }}</p>
+            {{ refreshingRank ? '갱신중...' : '랭크 갱신' }}
+          </Button>
+        </CardHeader>
+
+        <CardContent class="space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 flex items-center justify-center">
+              <img v-if="tierSvgUrl" :src="tierSvgUrl" alt="Tier" class="w-10 h-10 object-contain" />
             </div>
-            <ChevronRightIcon class="w-4 h-4 text-muted-foreground flex-shrink-0 mt-1" />
+            <div>
+              <p class="font-semibold text-lg">{{ user.tier || 'Unrated' }}</p>
+              <p class="text-xs text-muted-foreground">{{ $t('profile.algorithm_rank') }}</p>
+            </div>
           </div>
-          <div v-if="scrappedPosts.length === 0" class="text-center text-sm text-muted-foreground py-4">
-            스크랩한 게시글이 없습니다.
+
+          <div class="pt-2">
+            <Button variant="outline" class="bg-transparent w-full" @click="router.push('/profile/edit')">
+              회원정보 수정 / 탈퇴
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -92,68 +57,67 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getMyPage } from '@/api/mypage'
-import { getScrapList } from '@/api/board'
+import { getMyPage, refreshBojRank } from '@/api/mypage'
 import { getTierNumber } from '@/lib/utils'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import {
-  FileText as FileTextIcon,
-  MessageSquare as MessageSquareIcon,
-  Bookmark as BookmarkIcon,
-  Settings as SettingsIcon,
-  ChevronRight as ChevronRightIcon,
-} from 'lucide-vue-next'
 
 const router = useRouter()
 
 const user = ref({
   nickname: '',
   season: '',
-  campus: '',
-  tier: '',
-  tierNumber: 0,
+  tier: '',      // 여기엔 svgUrl이 들어올 수도 있고, 이름이 들어올 수도 있음
+  tierNumber: null,
 })
 
-const menuItems = ref([
-  { icon: FileTextIcon, label: 'My Posts', count: null },
-  { icon: MessageSquareIcon, label: 'My Comments', count: null },
-  { icon: BookmarkIcon, label: 'Scrapped Posts', count: null },
-  { icon: SettingsIcon, label: 'Edit Profile', count: null },
-])
+// ✅ solved.ac 티어 이미지는 "번호"로 쓸 수도 있고, 백엔드가 svgUrl을 주면 그걸 그대로 쓰는게 제일 확실
+const tierSvgUrl = computed(() => {
+  // 1) 백엔드가 svgUrl을 주는 경우
+  if (user.value.tier && user.value.tier.startsWith('http')) return user.value.tier
 
-const scrappedPosts = ref([])
+  // 2) 혹시 문자열이 tier 이름이면, 기존 util로 번호 계산해서 만든다(백엔드 응답 형태에 따라)
+  const num = getTierNumber(user.value.tier)
+  if (num) return `https://static.solved.ac/tier_small/${num}.svg`
+
+  return ''
+})
+
+const refreshingRank = ref(false)
 
 const fetchProfile = async () => {
-  try {
-    const res = await getMyPage()
-    user.value = {
-      nickname: res.data.name,
-      season: res.data.season,
-      campus: res.data.campus,
-      tier: res.data.baekjoon,
-      tierNumber: getTierNumber(res.data.baekjoon)
-    }
-  } catch (error) {
-    console.error("Failed to fetch profile:", error)
+  const res = await getMyPage()
+  user.value = {
+    nickname: res.data.name,
+    season: res.data.season,
+    tier: res.data.baekjoon, // 백엔드에서 저장된 BAEKJOON 값 (보통 svgUrl)
+    tierNumber: getTierNumber(res.data.baekjoon),
   }
 }
 
-const fetchScraps = async () => {
+const handleRefreshRank = async () => {
+  refreshingRank.value = true
   try {
-    const res = await getScrapList({ page: 1, size: 5 })
-    scrappedPosts.value = res.data
-    menuItems.value[2].count = res.data.length
-  } catch (error) {
-    console.error("Failed to fetch scraps:", error)
+    const res = await refreshBojRank()
+    // 백엔드: return ResponseEntity.ok(new BojValidateResponseDto(svgUrl))
+    // -> res.data.baekjoon 에 svgUrl 들어옴
+    const svgUrl = res?.data?.baekjoon
+    if (svgUrl) {
+      user.value.tier = svgUrl
+    }
+    alert('랭크가 갱신되었습니다.')
+  } catch (e) {
+    console.error(e)
+    alert('랭크 갱신에 실패했습니다.')
+  } finally {
+    refreshingRank.value = false
   }
 }
 
 onMounted(() => {
   fetchProfile()
-  fetchScraps()
 })
 </script>
 
@@ -162,7 +126,6 @@ onMounted(() => {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
 }
-
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
