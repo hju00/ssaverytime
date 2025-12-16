@@ -61,7 +61,28 @@
 
       <!-- Post Content -->
       <Card class="border-border">
-        <CardContent class="p-6">
+        <CardContent class="p-6 space-y-4">
+          <!-- AI Summary Button & Section -->
+          <div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              class="gap-2 text-violet-600 border-violet-200 hover:bg-violet-50 hover:text-violet-700"
+              @click="fetchSummary"
+            >
+              <BotIcon class="w-4 h-4" />
+              {{ showSummary ? 'AI 요약 접기' : 'AI 요약 보기' }}
+            </Button>
+            
+            <div v-if="showSummary" class="mt-3 p-4 bg-violet-50/50 rounded-lg border border-violet-100 text-sm text-foreground/80 leading-relaxed">
+               <div v-if="isSummaryLoading" class="flex items-center gap-2 text-violet-500">
+                 <div class="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
+                 <span>요약 중입니다...</span>
+               </div>
+               <p v-else>{{ summaryText }}</p>
+            </div>
+          </div>
+
           <p class="text-foreground leading-relaxed whitespace-pre-wrap">{{ post.body }}</p>
         </CardContent>
       </Card>
@@ -70,18 +91,18 @@
       <div class="flex gap-2">
         <Button
           @click="toggleLikeAction"
-          :variant="post.isLiked ? 'default' : 'outline'"
-          :class="`flex-1 gap-2 rounded-lg h-11 ${post.isLiked ? 'bg-primary text-primary-foreground' : ''}`"
+          :variant="post.liked ? 'default' : 'outline'"
+          :class="`flex-1 gap-2 rounded-lg h-11 ${post.liked ? 'bg-primary text-primary-foreground' : ''}`"
         >
           <ThumbsUpIcon class="w-4 h-4" />
           {{ $t('post.like') }} ({{ post.likeCount }})
         </Button>
         <Button
           @click="toggleScrapAction"
-          :variant="post.isScrapped ? 'default' : 'outline'"
-          :class="`flex-1 gap-2 rounded-lg h-11 ${post.isScrapped ? 'bg-primary text-primary-foreground' : ''}`"
+          :variant="post.scrapped ? 'default' : 'outline'"
+          :class="`flex-1 gap-2 rounded-lg h-11 ${post.scrapped ? 'bg-primary text-primary-foreground' : ''}`"
         >
-          <StarIcon :class="`w-4 h-4 ${post.isScrapped ? 'fill-current' : ''}`" />
+          <StarIcon :class="`w-4 h-4 ${post.scrapped ? 'fill-current' : ''}`" />
           {{ $t('post.scrap') }}
         </Button>
       </div>
@@ -102,9 +123,12 @@
             />
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <Checkbox
-                  id="anonymous"
-                  v-model:checked="anonymous"
+                <input 
+                  type="checkbox" 
+                  id="anonymous" 
+                  class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer accent-primary"
+                  :checked="anonymous"
+                  @change="(e) => anonymous = e.target.checked"
                 />
                 <label for="anonymous" class="text-sm cursor-pointer text-foreground">
                   {{ $t('post.write_anonymously') }}
@@ -142,13 +166,18 @@
                 <div class="flex-1 space-y-1 w-full min-w-0">
                    <div class="flex items-center justify-between">
                       <div class="flex items-center gap-2">
-                         <span class="text-sm font-semibold">{{ comment.userName }}</span>
+                         <span 
+                           class="text-sm font-semibold"
+                           :class="{ 'text-primary': comment.userName === '작성자' }"
+                         >
+                           {{ comment.userName }}
+                         </span>
                          <!-- <img 
                            v-if="getTierNumber(comment.userTier) !== undefined" 
                            :src="`https://static.solved.ac/tier_small/${getTierNumber(comment.userTier)}.svg`" 
                            alt="Tier Icon" 
                            class="w-3 h-3 inline-block" 
-                         /> -->
+                         />  -->
                          <span class="text-xs text-muted-foreground">{{ formatDate(comment.createdAt) }}</span>
                       </div>
                       
@@ -202,7 +231,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { getBoardDetail, toggleLike, toggleScrap, deleteBoard } from '@/api/board'
+import { getBoardDetail, toggleLike, toggleScrap, deleteBoard, getAiSummary } from '@/api/board'
 import { getCommentList, writeComment, updateComment, deleteComment } from '@/api/comment'
 import { reportBoard, reportComment } from '@/api/report'
 import { getTierNumber } from '@/lib/utils'
@@ -220,7 +249,8 @@ import {
   Edit as EditIcon,
   AlertTriangle as AlertTriangleIcon,
   Check as CheckIcon,
-  X as XIcon
+  X as XIcon,
+  Bot as BotIcon
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -235,6 +265,31 @@ const anonymous = ref(false)
 // 댓글 수정 상태
 const editingCommentId = ref(null)
 const editingCommentText = ref('')
+
+// AI 요약 상태
+const summaryText = ref('')
+const isSummaryLoading = ref(false)
+const showSummary = ref(false)
+
+const fetchSummary = async () => {
+  if (summaryText.value) {
+    showSummary.value = !showSummary.value
+    return
+  }
+  
+  isSummaryLoading.value = true
+  showSummary.value = true
+  
+  try {
+    const res = await getAiSummary(post.value.boardId)
+    summaryText.value = res.data
+  } catch (error) {
+    console.error("AI Summary failed", error)
+    summaryText.value = "요약 정보를 가져오지 못했습니다."
+  } finally {
+    isSummaryLoading.value = false
+  }
+}
 
 const formatDate = (dateString) => {
   if (!dateString) return '';
@@ -285,13 +340,17 @@ const fetchComments = async (boardId) => {
 }
 
 const addComment = async () => {
+  console.log("Anonymous Checkbox Value:", anonymous.value);
   if (!commentText.value.trim() || !post.value) return;
   
   try {
-    await writeComment(post.value.boardId, {
+    const payload = {
       body: commentText.value,
       visible: anonymous.value ? '0' : '1'
-    });
+    };
+    console.log("Sending Comment Payload:", payload);
+
+    await writeComment(post.value.boardId, payload);
     commentText.value = '';
     fetchComments(post.value.boardId);
   } catch (error) {
@@ -400,7 +459,7 @@ const toggleLikeAction = async () => {
   try {
     const res = await toggleLike(post.value.boardId);
     if (res.data && typeof res.data.liked === 'boolean') {
-        post.value.isLiked = res.data.liked;
+        post.value.liked = res.data.liked;
         post.value.likeCount += res.data.liked ? 1 : -1;
     }
   } catch (e) {
@@ -413,7 +472,7 @@ const toggleScrapAction = async () => {
   try {
     const res = await toggleScrap(post.value.boardId);
      if (res.data && typeof res.data.scrapped === 'boolean') {
-        post.value.isScrapped = res.data.scrapped;
+        post.value.scrapped = res.data.scrapped;
     }
   } catch (e) {
     console.error("Scrap toggle failed", e);

@@ -43,14 +43,12 @@ public class AuthController {
     /**
      * GET /api/v1/auth/boj/validate
      * 백준 계정 존재 여부 확인 및 티어 가져오기
-     * @param request
      * @return
      */
     @GetMapping("/boj/validate")
-    public ResponseEntity<?> validateBoj(@RequestBody BojValidateRequestDto request) {
+    public ResponseEntity<?> validateBoj(@RequestParam("bojId") String bojId) {
 
-        String bojId= request.getBojId();
-        if(bojId==null || bojId.isBlank()) {
+        if (bojId == null || bojId.isBlank()) {
             return ResponseEntity
                     .badRequest()
                     .body("bojId는 필수입니다.");
