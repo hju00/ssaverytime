@@ -20,34 +20,34 @@ public class SocialController {
     private final SocialService socialService;
 
     /**
-     * GET /api/v1/social/bojId
+     * GET /api/v1/social/bojId/{bojId}
      * 사용자 검색 (백준 아이디 활용)
-     * @param request
-     * @return
      */
-    @GetMapping("/bojId")
-    public ResponseEntity<?> getByBojId(@RequestBody SocialSearchByBojIdRequestDto request) {
-        try{
-            SocialUserResponseDto dto= socialService.findByBojId(request.getBojId());
+    @GetMapping("/bojId/{bojId}")
+    public ResponseEntity<?> getByBojId(@PathVariable String bojId) {
+        try {
+            SocialUserResponseDto dto = socialService.findByBojId(bojId);
             return ResponseEntity.ok(dto);
-        }catch(Exception e){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(e.getMessage());
         }
     }
 
     /**
-     * GET /api/v1/social/name
+     * GET /api/v1/social/name/{name}
      * 사용자 검색 (사용자 이름 활용)
-     * @param request
-     * @return
      */
-    @GetMapping("/name")
-    public ResponseEntity<?> getByName(@RequestBody SocialSearchByNameRequestDto request) {
-        try{
-            List<SocialUserResponseDto> list= socialService.findByName(request.getName());
+    @GetMapping("/name/{name}")
+    public ResponseEntity<?> getByName(@PathVariable String name) {
+        try {
+            List<SocialUserResponseDto> list = socialService.findByName(name);
             return ResponseEntity.ok(list);
-        }catch(Exception e){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(e.getMessage());
         }
     }
 
@@ -88,5 +88,34 @@ public class SocialController {
         }catch(Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
+    }
+
+
+    /**
+     * 내가 팔로우한 사람 목록
+     */
+    @GetMapping("/follow/to")
+    public ResponseEntity<?> getFollowingList() {
+
+        String myBojId = AuthUtil.getLoginUserId();
+
+        List<SocialUserResponseDto> list =
+                socialService.getFollowingList(myBojId);
+
+        return ResponseEntity.ok(list);
+    }
+
+    /**
+     * 나를 팔로우한 사람 목록
+     */
+    @GetMapping("/follow/from")
+    public ResponseEntity<?> getFollowerList() {
+
+        String myBojId = AuthUtil.getLoginUserId();
+
+        List<SocialUserResponseDto> list =
+                socialService.getFollowerList(myBojId);
+
+        return ResponseEntity.ok(list);
     }
 }

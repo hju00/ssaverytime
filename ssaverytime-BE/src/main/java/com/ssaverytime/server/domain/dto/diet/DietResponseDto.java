@@ -11,4 +11,5 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class DietResponseDto {
     private String menu;
+    private Integer calorie;
 }

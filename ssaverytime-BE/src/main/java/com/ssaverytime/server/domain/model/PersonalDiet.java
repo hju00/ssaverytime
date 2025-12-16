@@ -7,10 +7,9 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class Menu {
-
-    private Integer menuId;        // AUTO_INCREMENT
-    private Integer restaurantId;
+public class PersonalDiet {
+    private Integer dietId;
+    private Integer userId;
     private String menu;
     private Integer calorie;
     private LocalDateTime date;
