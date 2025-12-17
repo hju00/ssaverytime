@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssaverytime.server.mapper.DietListMapper">
+
+    <select id="findRestaurantDietByUserAndDate"
+            resultType="com.ssaverytime.server.domain.dto.diet.DailyDietItemResponseDto">
+
+        SELECT
+        m.MENU AS menu,
+        IFNULL(m.CALORIE, 0) AS calorie
+        FROM (
+        SELECT DISTINCT RESTAURANT_ID
+        FROM STAR
+        WHERE USER_ID = #{userId}
+        AND DATE BETWEEN #{start} AND #{end}
+        ) s
+        JOIN MENU m
+        ON s.RESTAURANT_ID = m.RESTAURANT_ID
+        WHERE m.DATE BETWEEN #{start} AND #{end}
+
+    </select>
+
+
+</mapper>
