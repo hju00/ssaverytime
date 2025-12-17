@@ -165,4 +165,26 @@ public class DietController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
         }
     }
+
+    /**
+     * GET /api/v1/diet/{DATE}/list
+     * 특정 날짜 섭취 음식 전체 목록 조회
+     */
+    @GetMapping("/{date}/list")
+    public ResponseEntity<?> getDailyDietList(@PathVariable("date") String date) {
+
+        String loginBojId = AuthUtil.getLoginUserId();
+
+        try {
+            return ResponseEntity.ok(
+                    dietService.getDailyDietList(loginBojId, date)
+            );
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("서버 오류가 발생했습니다.");
+        }
+    }
+
 }
