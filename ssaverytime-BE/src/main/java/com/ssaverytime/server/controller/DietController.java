@@ -1,6 +1,7 @@
 package com.ssaverytime.server.controller;
 
 import com.ssaverytime.server.domain.dto.diet.*;
+import com.ssaverytime.server.domain.enums.star.StarCategory;
 import com.ssaverytime.server.service.DietService;
 import com.ssaverytime.server.util.AuthUtil;
 import lombok.RequiredArgsConstructor;
@@ -97,14 +98,22 @@ public class DietController {
      * @param request
      * @return
      */
-    @GetMapping("/{date}/star/{restaurantId}")
+    @GetMapping("/{date}/star/{restaurantId}/{choice}")
     public ResponseEntity<?> getAverageScore(
             @PathVariable("date") String date,
             @PathVariable("restaurantId") Integer restaurantId,
-            @RequestBody StarCategoryRequestDto request) {
+            @PathVariable("choice") String request) {
 
         try{
-            double avg= dietService.getAverageScore(date, restaurantId, request.getCategory());
+            StarCategory choice;
+
+            if(request.equals("TASTE")){
+                choice= StarCategory.TASTE;
+            }else{
+                choice= StarCategory.AMOUNT;
+            }
+
+            double avg= dietService.getAverageScore(date, restaurantId, choice);
             return ResponseEntity.ok(
                     Map.of("averageScore", avg)
             );
