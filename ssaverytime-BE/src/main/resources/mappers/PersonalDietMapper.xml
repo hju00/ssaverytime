@@ -20,4 +20,17 @@
         AND DATE BETWEEN #{start} AND #{end}
     </select>
 
+    <select id="findPersonalDietList"
+            resultType="com.ssaverytime.server.domain.dto.diet.DailyDietItemResponseDto">
+
+        SELECT
+        MENU AS menu,
+        CALORIE AS calorie
+        FROM PERSONAL_DIET
+        WHERE USER_ID = #{userId}
+        AND DATE BETWEEN #{start} AND #{end}
+
+    </select>
+
+
 </mapper>

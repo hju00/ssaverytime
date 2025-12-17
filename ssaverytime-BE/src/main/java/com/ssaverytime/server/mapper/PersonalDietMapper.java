@@ -1,10 +1,12 @@
 package com.ssaverytime.server.mapper;
 
+import com.ssaverytime.server.domain.dto.diet.DailyDietItemResponseDto;
 import com.ssaverytime.server.domain.model.PersonalDiet;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Mapper
 public interface PersonalDietMapper {
@@ -15,4 +17,11 @@ public interface PersonalDietMapper {
     Integer sumPersonalCalorie(@Param("userId") int userId,
                                @Param("start") LocalDateTime start,
                                @Param("end") LocalDateTime end);
+
+    List<DailyDietItemResponseDto> findPersonalDietList(
+            @Param("userId") Integer userId,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
+
 }

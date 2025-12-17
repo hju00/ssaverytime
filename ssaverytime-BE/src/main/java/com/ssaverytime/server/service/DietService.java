@@ -1,9 +1,6 @@
 package com.ssaverytime.server.service;
 
-import com.ssaverytime.server.domain.dto.diet.DietResponseDto;
-import com.ssaverytime.server.domain.dto.diet.MenuCreateRequestDto;
-import com.ssaverytime.server.domain.dto.diet.PersonalDietRequestDto;
-import com.ssaverytime.server.domain.dto.diet.StarRequestDto;
+import com.ssaverytime.server.domain.dto.diet.*;
 import com.ssaverytime.server.domain.enums.star.StarCategory;
 import com.ssaverytime.server.domain.model.Menu;
 import com.ssaverytime.server.domain.model.PersonalDiet;
@@ -29,6 +26,7 @@ public class DietService {
     private final StarMapper starMapper;
     private final PersonalDietMapper personalDietMapper;
     private final DietCalorieMapper dietCalorieMapper;
+    private final DietListMapper dietListMapper;
 
     // 메뉴 등록
     public void createMenu(MenuCreateRequestDto dto) {
@@ -222,4 +220,39 @@ public class DietService {
 
         return personal+restaurant;
     }
+
+    // 특정 날짜 섭취 음식 전체 목록 조회
+    public List<DailyDietItemResponseDto> getDailyDietList(String loginBojId, String dateStr) {
+
+        User me = userMapper.findByBojId(loginBojId);
+        if (me == null) {
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다.");
+        }
+
+        LocalDate localDate;
+        try {
+            localDate = LocalDate.parse(dateStr);
+        } catch (Exception e) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "DATE 형식이 올바르지 않습니다. (yyyy-MM-dd)");
+        }
+
+        LocalDateTime start = localDate.atStartOfDay();
+        LocalDateTime end = localDate.atTime(23, 59, 59);
+
+        // 1️⃣ 식당 음식 (별점 기준)
+        List<DailyDietItemResponseDto> restaurantList =
+                dietListMapper.findRestaurantDietByUserAndDate(
+                        me.getUserId(), start, end
+                );
+
+        // 2️⃣ 개인 섭취 음식
+        List<DailyDietItemResponseDto> personalList =
+                personalDietMapper.findPersonalDietList(
+                        me.getUserId(), start, end
+                );
+
+        restaurantList.addAll(personalList);
+        return restaurantList;
+    }
+
 }

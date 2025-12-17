@@ -1,0 +1,14 @@
+<select id="findRestaurantDietByUserAndDate"
+        resultType="com.ssaverytime.server.domain.dto.diet.DailyDietItemResponseDto">
+
+    SELECT
+    m.menu AS menu,
+    IFNULL(m.calorie, 0) AS calorie
+    FROM STAR s
+    JOIN MENU m
+    ON s.RESTAURANT_ID = m.RESTAURANT_ID
+    WHERE s.USER_ID = #{userId}
+    AND s.DATE BETWEEN #{start} AND #{end}
+    AND m.DATE BETWEEN #{start} AND #{end}
+
+</select>
