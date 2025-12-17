@@ -1,243 +1,605 @@
 <template>
-  <div class="min-h-screen bg-background p-4 pb-24">
-    <div class="max-w-2xl mx-auto space-y-6">
+  <div class="min-h-screen bg-background p-4 pb-12">
+    <div class="max-w-6xl mx-auto space-y-6">
       <!-- Header -->
-      <div class="space-y-2">
-        <h1 class="text-3xl font-bold text-foreground">{{ $t('diet.title') }}</h1>
-        <p class="text-muted-foreground">{{ $t('diet.description') }}</p>
-      </div>
-
-      <!-- Weekly Calendar -->
       <Card class="border-border">
-        <CardContent class="p-4">
-          <div class="flex items-center justify-between mb-4">
-            <Button variant="ghost" size="sm" class="p-2" @click="changeWeek(-1)">
-              <ChevronLeftIcon class="w-4 h-4" />
-            </Button>
-            <span class="font-semibold text-sm">
-              {{ selectedDate.toLocaleDateString("en-US", { month: "short", year: "numeric" }) }}
-            </span>
-            <Button variant="ghost" size="sm" class="p-2" @click="changeWeek(1)">
-              <ChevronRightIcon class="w-4 h-4" />
-            </Button>
-          </div>
-          <div class="grid grid-cols-7 gap-2">
-            <button
-              v-for="(date, i) in weekDates"
-              :key="i"
-              :class="[
-                'p-3 rounded-lg text-center transition-all text-sm',
-                date.toDateString() === selectedDate.toDateString()
-                  ? 'bg-primary text-primary-foreground font-semibold'
-                  : 'bg-muted text-foreground hover:bg-input',
-              ]"
-              @click="setSelectedDate(date)"
-            >
-              <div class="text-xs mb-1">{{ ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()] }}</div>
-              <div>{{ date.getDate() }}</div>
-            </button>
-          </div>
-        </CardContent>
-      </Card>
+        <CardHeader class="flex flex-row items-center justify-between">
+          <div class="flex items-center gap-3">
+            <h1 class="text-xl font-bold">오늘의 식단</h1>
 
-      <!-- Daily Intake Summary -->
-      <Card class="border-border">
-        <CardHeader>
-          <CardTitle class="text-lg">{{ $t('diet.daily_intake_vs_goal') }}</CardTitle>
-        </CardHeader>
-        <CardContent class="space-y-4">
-          <div class="space-y-2">
-            <div class="flex items-center justify-between text-sm">
-              <span class="text-muted-foreground">{{ $t('diet.total_calories') }}</span>
-              <span class="font-semibold">
-                {{ totalCalories }} / {{ calorieGoal }} kcal
+            <div class="flex items-center gap-2">
+              <Button
+                variant="outline"
+                class="bg-transparent h-9 px-3"
+                :disabled="pageLoading"
+                @click="moveDate(-1)"
+                aria-label="어제로"
+              >
+                ◀
+              </Button>
+
+              <span class="text-sm text-muted-foreground min-w-[110px] text-center">
+                {{ selectedDate }}
               </span>
-            </div>
-            <Progress :model-value="caloriePercentage" class="h-2 rounded-full" />
-          </div>
-          <div class="bg-primary/10 border border-primary/20 rounded-lg p-4">
-            <p class="text-sm text-foreground">
-              <span class="font-semibold">{{ $t('diet.ai_analysis_prefix') }}</span> {{ $t('diet.ai_analysis_message') }}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
 
-      <!-- Foods Timeline -->
-      <Card class="border-border">
-        <CardHeader>
-          <CardTitle class="text-lg">{{ $t('diet.today_meals') }}</CardTitle>
-        </CardHeader>
-        <CardContent class="space-y-3">
-          <p v-if="foods.length === 0" class="text-center text-muted-foreground text-sm py-8">{{ $t('diet.no_meals_logged') }}</p>
-          <div
-            v-else
-            v-for="(food, i) in foods"
-            :key="i"
-            class="flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-input transition-colors"
-          >
-            <div class="flex-1">
-              <div class="flex items-center gap-3">
-                <span class="font-mono text-sm font-semibold text-primary w-12">{{ food.time }}</span>
-                <div>
-                  <p class="font-medium text-sm text-foreground">{{ food.name }}</p>
-                  <p class="text-xs text-muted-foreground">{{ food.calories }} kcal</p>
-                </div>
-              </div>
+              <Button
+                variant="outline"
+                class="bg-transparent h-9 px-3"
+                :disabled="pageLoading"
+                @click="moveDate(1)"
+                aria-label="내일로"
+              >
+                ▶
+              </Button>
             </div>
-            <Button variant="ghost" size="sm" class="p-2 text-destructive hover:bg-destructive/10">
-              <Trash2Icon class="w-4 h-4" />
+          </div>
+
+          <div class="flex items-center gap-2">
+            <div v-if="pageError" class="text-sm text-red-500">
+              {{ pageError }}
+            </div>
+
+            <Button
+              variant="outline"
+              class="bg-transparent"
+              :disabled="pageLoading"
+              @click="loadAll(selectedDate)"
+            >
+              {{ pageLoading ? '불러오는 중...' : '새로고침' }}
             </Button>
           </div>
-        </CardContent>
+        </CardHeader>
+
+        <!-- ✅ 설명 문구 삭제 (요청사항) -->
       </Card>
 
-      <!-- Floating Action Buttons -->
-      <div class="fixed bottom-6 right-6 flex flex-col gap-3 sm:flex-row sm:bottom-6 sm:left-1/2 sm:transform sm:-translate-x-1/2">
-        <Button
-          @click="showLunchModal = true"
-          class="rounded-full shadow-lg h-14 gap-2 bg-primary text-primary-foreground hover:bg-primary/90 sm:rounded-lg sm:h-11 sm:w-auto"
-        >
-          <UtensilsIcon class="w-5 h-5" />
-          <span class="hidden sm:inline">{{ $t('diet.import_ssafy_lunch') }}</span>
-        </Button>
-        <Button variant="secondary" class="rounded-full shadow-lg h-14 gap-2 sm:rounded-lg sm:h-11 sm:w-auto">
-          <PencilIcon class="w-5 h-5" />
-          <span class="hidden sm:inline">{{ $t('diet.add_manually') }}</span>
-        </Button>
+      <!-- 내 섭취 칼로리 / 직접 먹은 음식 추가 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <!-- Calorie Summary -->
+        <Card class="border-border">
+          <CardHeader class="flex flex-row items-center justify-between">
+            <div class="space-y-1">
+              <h2 class="font-bold text-lg">내 섭취 칼로리</h2>
+            </div>
+
+            <div class="text-xs text-muted-foreground" v-if="calorieLoading">불러오는 중...</div>
+          </CardHeader>
+
+          <CardContent class="space-y-3">
+            <div v-if="calorieError" class="text-sm text-red-500">
+              {{ calorieError }}
+            </div>
+
+            <div class="flex items-end justify-between rounded-lg border border-border p-4">
+              <div>
+                <p class="text-sm text-muted-foreground">총 섭취 칼로리</p>
+                <p class="text-2xl font-bold mt-1">
+                  {{ totalCaloriesDisplay }}
+                </p>
+              </div>
+              <p class="text-xs text-muted-foreground">kcal</p>
+            </div>
+
+            <p class="text-[11px] text-muted-foreground leading-snug">
+              * 날짜는 상단 ◀▶ 버튼으로 이동하며, 해당 날짜의 섭취 칼로리가 갱신됩니다.
+            </p>
+          </CardContent>
+        </Card>
+
+        <!-- Add Personal Intake -->
+        <Card class="border-border">
+          <CardHeader class="flex flex-row items-center justify-between">
+            <div class="space-y-1">
+              <h2 class="font-bold text-lg">직접 먹은 음식 추가</h2>
+            </div>
+
+            <Button
+              variant="outline"
+              class="bg-transparent"
+              :disabled="addLoading"
+              @click="toggleAddPanel"
+            >
+              {{ addPanelOpen ? '닫기' : '추가하기' }}
+            </Button>
+          </CardHeader>
+
+          <CardContent class="space-y-3">
+            <div v-if="addPanelOpen" class="space-y-3">
+              <div class="rounded-lg border border-border p-3 space-y-2">
+                <p class="text-xs text-muted-foreground">메뉴명</p>
+                <input
+                  v-model="addForm.menu"
+                  class="w-full h-10 px-3 rounded-md border border-border bg-transparent text-sm"
+                  placeholder="예) 초콜릿"
+                />
+              </div>
+
+              <div class="rounded-lg border border-border p-3 space-y-2">
+                <p class="text-xs text-muted-foreground">칼로리(kcal)</p>
+                <input
+                  v-model="addForm.calorie"
+                  type="number"
+                  min="0"
+                  class="w-full h-10 px-3 rounded-md border border-border bg-transparent text-sm"
+                  placeholder="예) 700"
+                />
+              </div>
+
+              <div v-if="addError" class="text-sm text-red-500">
+                {{ addError }}
+              </div>
+
+              <Button
+                class="w-full"
+                :disabled="addLoading"
+                @click="submitPersonalDiet"
+              >
+                {{ addLoading ? '등록 중...' : '등록' }}
+              </Button>
+
+              <p class="text-[11px] text-muted-foreground leading-snug">
+                * 등록 후, 현재 선택된 날짜({{ selectedDate }})의 섭취 칼로리를 다시 불러옵니다.
+              </p>
+            </div>
+
+            <div v-else class="text-sm text-muted-foreground">
+              식당 메뉴가 아닌, 개인 섭취 음식을 기록할 수 있습니다.
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <!-- Lunch Modal -->
-      <Dialog :open="showLunchModal" @update:open="showLunchModal = $event">
-        <DialogContent class="rounded-2xl">
-          <DialogHeader>
-            <DialogTitle>{{ $t('diet.modal_title') }}</DialogTitle>
-            <DialogDescription>{{ $t('diet.modal_description') }}</DialogDescription>
-          </DialogHeader>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            <div
-              v-for="menu in menus"
-              :key="menu.id"
-              :class="[
-                'border-2 border-input rounded-lg p-4 cursor-pointer transition-all',
-                selectedMenus.includes(menu.id) ? 'border-primary bg-primary/5' : 'hover:border-primary hover:bg-primary/5',
-              ]"
-              @click="handleMenuSelect(menu.id)"
-            >
-              <div class="flex items-start gap-3 mb-3">
-                <Checkbox
-                  :checked="selectedMenus.includes(menu.id)"
-                  @update:checked="handleMenuSelect(menu.id)"
-                />
-                <div>
-                  <h3 class="font-semibold text-sm">{{ menu.name }}</h3>
+      <!-- Restaurants (1 row, 5 columns) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        <Card
+          v-for="r in restaurants"
+          :key="r.restaurantId"
+          class="border-border"
+        >
+          <CardHeader class="space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="space-y-1">
+                <!-- ✅ 식당명으로 표시 -->
+                <h2 class="font-bold text-base">{{ r.restaurantName }}</h2>
+              </div>
+
+              <div v-if="r.loading || r.starLoading" class="text-xs text-muted-foreground">
+                로딩...
+              </div>
+            </div>
+
+            <!-- 평균 별점 숫자 -->
+            <div class="grid grid-cols-2 gap-2">
+              <div class="rounded-lg border border-border p-2">
+                <p class="text-[11px] text-muted-foreground">양 평균</p>
+                <p class="text-sm font-semibold mt-1">{{ formatAvg(r.avg.AMOUNT) }}</p>
+              </div>
+
+              <div class="rounded-lg border border-border p-2">
+                <p class="text-[11px] text-muted-foreground">맛 평균</p>
+                <p class="text-sm font-semibold mt-1">{{ formatAvg(r.avg.TASTE) }}</p>
+              </div>
+            </div>
+
+            <div v-if="r.starError" class="text-xs text-red-500">
+              {{ r.starError }}
+            </div>
+          </CardHeader>
+
+          <CardContent class="space-y-3">
+            <!-- 메뉴 -->
+            <div class="space-y-2">
+              <p class="text-sm font-semibold">메뉴</p>
+
+              <div v-if="r.error" class="text-sm text-red-500">
+                {{ r.error }}
+              </div>
+
+              <div v-else-if="!r.loading && r.menus.length === 0" class="text-sm text-muted-foreground">
+                메뉴 없음
+              </div>
+
+              <div v-else class="space-y-2">
+                <div
+                  v-for="(m, idx) in r.menus"
+                  :key="`${r.restaurantId}-${idx}-${m.menu}`"
+                  class="p-2 rounded-lg border border-border"
+                >
+                  <p class="text-sm font-medium leading-snug line-clamp-2">
+                    {{ m.menu }}
+                  </p>
+                  <p class="text-xs text-muted-foreground mt-1">
+                    {{ m.calorie }} kcal
+                  </p>
                 </div>
               </div>
-              <ul class="space-y-1 text-xs text-muted-foreground">
-                <li v-for="(item, i) in menu.items" :key="i"> • {{ item }}</li>
-              </ul>
             </div>
-          </div>
-          <div class="flex gap-2 mt-6 justify-end">
-            <Button variant="outline" @click="showLunchModal = false">
-              {{ $t('diet.cancel_button') }}
-            </Button>
-            <Button
-              class="bg-primary text-primary-foreground hover:bg-primary/90"
-              @click="addSelectedMenus"
-            >
-              {{ $t('diet.add_selected_button') }}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+
+            <!-- 별점 주기 -->
+            <div class="pt-2 border-t border-border space-y-2">
+              <Button
+                variant="outline"
+                class="bg-transparent w-full"
+                :disabled="pageLoading || r.starPosting"
+                @click="toggleRatingPanel(r.restaurantId)"
+              >
+                {{ r.showRatingPanel ? '별점 닫기' : '별점 주기' }}
+              </Button>
+
+              <div v-if="r.showRatingPanel" class="space-y-3">
+                <div class="rounded-lg border border-border p-2 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <p class="text-sm font-semibold">양</p>
+                    <p class="text-xs text-muted-foreground">1~5점</p>
+                  </div>
+
+                  <div class="flex gap-1">
+                    <Button
+                      v-for="s in [1,2,3,4,5]"
+                      :key="`pick-amount-${r.restaurantId}-${s}`"
+                      variant="outline"
+                      class="bg-transparent h-8 w-8 p-0 text-xs"
+                      :disabled="pageLoading || r.starPosting"
+                      :class="r.pending.AMOUNT === s ? 'border-primary text-primary' : ''"
+                      @click="r.pending.AMOUNT = s"
+                    >
+                      {{ s }}
+                    </Button>
+                  </div>
+
+                  <Button
+                    class="w-full"
+                    :disabled="pageLoading || r.starPosting || !r.pending.AMOUNT"
+                    @click="submitStar(r.restaurantId, 'AMOUNT', r.pending.AMOUNT)"
+                  >
+                    양 별점 등록
+                  </Button>
+                </div>
+
+                <div class="rounded-lg border border-border p-2 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <p class="text-sm font-semibold">맛</p>
+                    <p class="text-xs text-muted-foreground">1~5점</p>
+                  </div>
+
+                  <div class="flex gap-1">
+                    <Button
+                      v-for="s in [1,2,3,4,5]"
+                      :key="`pick-taste-${r.restaurantId}-${s}`"
+                      variant="outline"
+                      class="bg-transparent h-8 w-8 p-0 text-xs"
+                      :disabled="pageLoading || r.starPosting"
+                      :class="r.pending.TASTE === s ? 'border-primary text-primary' : ''"
+                      @click="r.pending.TASTE = s"
+                    >
+                      {{ s }}
+                    </Button>
+                  </div>
+
+                  <Button
+                    class="w-full"
+                    :disabled="pageLoading || r.starPosting || !r.pending.TASTE"
+                    @click="submitStar(r.restaurantId, 'TASTE', r.pending.TASTE)"
+                  >
+                    맛 별점 등록
+                  </Button>
+                </div>
+
+                <p class="text-[11px] text-muted-foreground leading-snug">
+                  * 별점은 중복 입력 가능하며, 등록 후 평균 점수가 갱신됩니다.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { ref, computed, onMounted } from 'vue'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { Checkbox } from '@/components/ui/checkbox'
-import {
-  ChevronLeft as ChevronLeftIcon,
-  ChevronRight as ChevronRightIcon,
-  Pencil as PencilIcon,
-  Utensils as UtensilsIcon,
-  Trash2 as Trash2Icon,
-} from 'lucide-vue-next'
+  getDietByDateAndRestaurant,
+  getDietStar,
+  postDietStar,
+  getMyCaloriesByDate,
+  addPersonalDiet,
+} from '@/api/diet'
 
-const selectedDate = ref(new Date(2024, 10, 20)) // Month is 0-indexed in JS
-const showLunchModal = ref(false)
-const selectedMenus = ref([])
+/** ✅ 식당명 매핑 (요청사항) */
+const RESTAURANT_NAME_MAP = {
+  1: '육수고집',
+  2: '소담상',
+  3: '더고메',
+  4: '차이나호',
+  5: '속이찬새참',
+}
 
-const weekDates = computed(() => {
-  const dates = []
-  const startOfWeek = new Date(selectedDate.value)
-  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay()) // Go to Sunday
+/** 로컬 기준 YYYY-MM-DD */
+const formatDateYYYYMMDD = (d = new Date()) => {
+  const yyyy = d.getFullYear()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}`
+}
 
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(startOfWeek)
-    d.setDate(startOfWeek.getDate() + i)
-    dates.push(d)
+/** YYYY-MM-DD -> Date */
+const parseYYYYMMDD = (s) => {
+  const [y, m, d] = s.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
+
+/** dateStr(YYYY-MM-DD)에 dayDelta 더하기 */
+const addDays = (dateStr, dayDelta) => {
+  const dt = parseYYYYMMDD(dateStr)
+  dt.setDate(dt.getDate() + dayDelta)
+  return formatDateYYYYMMDD(dt)
+}
+
+const pageLoading = ref(false)
+const pageError = ref('')
+const selectedDate = ref(formatDateYYYYMMDD())
+
+/** -------------------- 섭취 칼로리 -------------------- **/
+const calorieLoading = ref(false)
+const calorieError = ref('')
+const totalCalories = ref(null)
+
+const extractTotalCalories = (data) => {
+  if (data == null) return null
+  if (typeof data === 'number') return data
+
+  if (typeof data === 'object' && !Array.isArray(data)) {
+    const candidates = ['totalCalorie', 'totalCalories', 'calorie', 'total', 'sum', 'kcal']
+    for (const key of candidates) {
+      if (key in data && data[key] != null && !Number.isNaN(Number(data[key]))) {
+        return Number(data[key])
+      }
+    }
+    if ('data' in data && data.data) return extractTotalCalories(data.data)
   }
-  return dates
+
+  if (Array.isArray(data)) {
+    const sum = data.reduce((acc, cur) => {
+      const c = cur?.calorie
+      if (c == null) return acc
+      const n = Number(c)
+      return Number.isNaN(n) ? acc : acc + n
+    }, 0)
+    return sum
+  }
+
+  return null
+}
+
+const totalCaloriesDisplay = computed(() => {
+  if (totalCalories.value == null) return '-'
+  const n = Number(totalCalories.value)
+  if (Number.isNaN(n)) return '-'
+  return Math.round(n).toLocaleString()
 })
 
-const changeWeek = (direction) => {
-  selectedDate.value = new Date(selectedDate.value.setDate(selectedDate.value.getDate() + (direction * 7)))
-}
+const loadMyCalories = async (date) => {
+  calorieLoading.value = true
+  calorieError.value = ''
+  totalCalories.value = null
 
-const setSelectedDate = (date) => {
-  selectedDate.value = date
-}
-
-const foods = ref([
-  { time: '08:30', name: 'Oatmeal with berries', calories: 320 },
-  { time: '12:15', name: 'Grilled chicken salad', calories: 450 },
-  { time: '15:45', name: 'Greek yogurt', calories: 150 },
-  { time: '19:00', name: 'Salmon with rice', calories: 580 },
-])
-
-const menus = ref([
-  { id: 'sodamsang', name: 'Sodamsang', items: ['Bibimbap', 'Kimchi stew', 'Steamed vegetables'] },
-  { id: 'gourmet', name: 'The Gourmet', items: ['Pasta carbonara', 'Caesar salad', 'Tiramisu'] },
-  { id: 'bbq', name: 'BBQ House', items: ['Grilled beef', 'Charcoal grilled chicken', 'Korean side dishes'] },
-])
-
-const handleMenuSelect = (menuId) => {
-  if (selectedMenus.value.includes(menuId)) {
-    selectedMenus.value = selectedMenus.value.filter((id) => id !== menuId)
-  } else {
-    selectedMenus.value = [...selectedMenus.value, menuId]
+  try {
+    const res = await getMyCaloriesByDate(date)
+    totalCalories.value = extractTotalCalories(res?.data)
+  } catch (e) {
+    console.error(e)
+    calorieError.value = '섭취 칼로리를 불러오지 못했습니다.'
+  } finally {
+    calorieLoading.value = false
   }
 }
 
-const totalCalories = computed(() => foods.value.reduce((sum, food) => sum + food.calories, 0))
-const calorieGoal = 2000
-const caloriePercentage = computed(() => (totalCalories.value / calorieGoal) * 100)
+/** -------------------- 직접 섭취 추가 -------------------- **/
+const addPanelOpen = ref(false)
+const addLoading = ref(false)
+const addError = ref('')
+const addForm = ref({
+  menu: '',
+  calorie: '',
+})
 
-const addSelectedMenus = () => {
-  console.log('Selected menus:', selectedMenus.value)
-  showLunchModal.value = false
-  // Logic to add selected menus to foods array would go here
+const toggleAddPanel = () => {
+  addPanelOpen.value = !addPanelOpen.value
+  addError.value = ''
 }
-</script>
 
-<style scoped>
-/* Scoped styles for Diet.vue */
-</style>
+const submitPersonalDiet = async () => {
+  addError.value = ''
+  const menu = (addForm.value.menu || '').trim()
+  const calorieNum = Number(addForm.value.calorie)
+
+  if (!menu) {
+    addError.value = '메뉴명을 입력해주세요.'
+    return
+  }
+  if (!Number.isFinite(calorieNum) || calorieNum <= 0) {
+    addError.value = '칼로리는 1 이상의 숫자로 입력해주세요.'
+    return
+  }
+
+  addLoading.value = true
+  try {
+    await addPersonalDiet({
+      menu,
+      calorie: Math.round(calorieNum),
+    })
+
+    addForm.value.menu = ''
+    addForm.value.calorie = ''
+
+    await loadMyCalories(selectedDate.value)
+    alert('추가되었습니다.')
+  } catch (e) {
+    console.error(e)
+    addError.value = '추가에 실패했습니다.'
+  } finally {
+    addLoading.value = false
+  }
+}
+
+/** -------------------- 식당 메뉴/별점 -------------------- **/
+const restaurants = ref(
+  Array.from({ length: 5 }, (_, i) => {
+    const id = i + 1
+    return {
+      restaurantId: id,
+      restaurantName: RESTAURANT_NAME_MAP[id] ?? `식당 ${id}`,
+
+      loading: false,
+      error: '',
+      menus: [],
+
+      starLoading: false,
+      starError: '',
+      starPosting: false,
+
+      avg: {
+        AMOUNT: null,
+        TASTE: null,
+      },
+
+      showRatingPanel: false,
+      pending: {
+        AMOUNT: null,
+        TASTE: null,
+      },
+    }
+  })
+)
+
+const clampScore = (n) => {
+  const x = Number(n)
+  if (Number.isNaN(x)) return null
+  return Math.max(0, Math.min(5, x))
+}
+
+const formatAvg = (v) => {
+  const x = clampScore(v)
+  if (x == null) return '-'
+  return x.toFixed(1)
+}
+
+const loadMenus = async (date, restaurantId) => {
+  const target = restaurants.value.find((x) => x.restaurantId === restaurantId)
+  if (!target) return
+
+  target.loading = true
+  target.error = ''
+  target.menus = []
+
+  try {
+    const res = await getDietByDateAndRestaurant(date, restaurantId)
+    target.menus = Array.isArray(res.data) ? res.data : []
+  } catch (e) {
+    console.error(e)
+    target.error = '식단(메뉴)을 불러오지 못했습니다.'
+    target.menus = []
+  } finally {
+    target.loading = false
+  }
+}
+
+const loadStars = async (date, restaurantId) => {
+  const target = restaurants.value.find((x) => x.restaurantId === restaurantId)
+  if (!target) return
+
+  target.starLoading = true
+  target.starError = ''
+  target.avg.AMOUNT = null
+  target.avg.TASTE = null
+  target.pending.AMOUNT = null
+  target.pending.TASTE = null
+
+  try {
+    const [amountRes, tasteRes] = await Promise.all([
+      getDietStar(date, restaurantId, 'AMOUNT'),
+      getDietStar(date, restaurantId, 'TASTE'),
+    ])
+
+    target.avg.AMOUNT = clampScore(amountRes?.data?.averageScore)
+    target.avg.TASTE = clampScore(tasteRes?.data?.averageScore)
+  } catch (e) {
+    console.error(e)
+    target.starError = '평균 별점을 불러오지 못했습니다.'
+  } finally {
+    target.starLoading = false
+  }
+}
+
+const loadOneRestaurant = async (date, restaurantId) => {
+  await Promise.all([loadMenus(date, restaurantId), loadStars(date, restaurantId)])
+}
+
+const toggleRatingPanel = (restaurantId) => {
+  const target = restaurants.value.find((x) => x.restaurantId === restaurantId)
+  if (!target) return
+  target.showRatingPanel = !target.showRatingPanel
+}
+
+const submitStar = async (restaurantId, category, score) => {
+  const target = restaurants.value.find((x) => x.restaurantId === restaurantId)
+  if (!target) return
+
+  const s = Number(score)
+  if (!Number.isInteger(s) || s < 1 || s > 5) {
+    alert('별점은 1~5점만 가능합니다.')
+    return
+  }
+
+  target.starPosting = true
+  try {
+    await postDietStar(selectedDate.value, restaurantId, { category, score: s })
+    await loadStars(selectedDate.value, restaurantId)
+    alert('별점이 등록되었습니다.')
+  } catch (e) {
+    console.error(e)
+    alert('별점 등록에 실패했습니다.')
+  } finally {
+    target.starPosting = false
+  }
+}
+
+/** -------------------- 전체 로드 -------------------- **/
+const loadAll = async (date) => {
+  pageLoading.value = true
+  pageError.value = ''
+
+  try {
+    await loadMyCalories(date)
+    const ids = [1, 2, 3, 4, 5]
+    await Promise.all(ids.map((id) => loadOneRestaurant(date, id)))
+  } catch (e) {
+    console.error(e)
+    pageError.value = '식단 정보를 불러오지 못했습니다.'
+  } finally {
+    pageLoading.value = false
+  }
+}
+
+const moveDate = async (delta) => {
+  selectedDate.value = addDays(selectedDate.value, delta)
+
+  restaurants.value.forEach((r) => {
+    r.showRatingPanel = false
+    r.pending.AMOUNT = null
+    r.pending.TASTE = null
+  })
+  addPanelOpen.value = false
+  addError.value = ''
+
+  await loadAll(selectedDate.value)
+}
+
+onMounted(() => {
+  loadAll(selectedDate.value)
+})
+</script>

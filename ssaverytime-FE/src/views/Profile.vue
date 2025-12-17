@@ -184,7 +184,7 @@
             </div>
           </div>
 
-          <!-- Followers list -->
+          <!-- ✅ Followers list (나를 팔로우한 사람) : 버튼 없음 -->
           <div class="space-y-2">
             <div class="flex items-center justify-between">
               <p class="font-semibold">팔로워 목록</p>
@@ -204,29 +204,11 @@
                 <p class="text-xs text-muted-foreground truncate">bojId: {{ u.bojId }}</p>
               </div>
 
-              <Button
-                variant="outline"
-                class="bg-transparent"
-                :disabled="togglingBojIds.has(u.bojId)"
-                v-if="isFollowing(u.bojId)"
-                @click="handleUnfollow(u.bojId)"
-              >
-                언팔
-              </Button>
-
-              <Button
-                variant="outline"
-                class="bg-transparent"
-                :disabled="togglingBojIds.has(u.bojId)"
-                v-else
-                @click="handleFollow(u.bojId)"
-              >
-                맞팔
-              </Button>
+              <!-- ✅ 팔로워 목록에서는 아무 버튼도 없음 -->
             </div>
           </div>
 
-          <!-- Followings list -->
+          <!-- ✅ Followings list (내가 팔로우한 사람) : 언팔로우 가능 -->
           <div class="space-y-2">
             <div class="flex items-center justify-between">
               <p class="font-semibold">팔로잉 목록</p>
@@ -343,8 +325,8 @@ const fetchScraps = async () => {
 }
 
 /** -------------------- Social -------------------- **/
-const followers = ref([])
-const followings = ref([])
+const followers = ref([])   // ✅ 나를 팔로우한 사람 (GET /follow/from)
+const followings = ref([])  // ✅ 내가 팔로우한 사람 (GET /follow/to)
 const loadingSocial = ref(false)
 
 const searchMode = ref('bojId')
@@ -369,9 +351,12 @@ const normalizeUsers = (arr) => {
 const reloadSocial = async () => {
   loadingSocial.value = true
   try {
-    const [toRes, fromRes] = await Promise.all([getFollowers(), getFollowings()])
-    followers.value = normalizeUsers(toRes.data)
-    followings.value = normalizeUsers(fromRes.data)
+    // ✅ 요구사항 반영:
+    // - /follow/to = 내가 팔로우한 사람(팔로잉)
+    // - /follow/from = 나를 팔로우한 사람(팔로워)
+    const [toRes, fromRes] = await Promise.all([getFollowings(), getFollowers()])
+    followings.value = normalizeUsers(toRes.data)
+    followers.value = normalizeUsers(fromRes.data)
   } catch (e) {
     console.error(e)
     alert('소셜 정보를 불러오지 못했습니다.')
@@ -430,6 +415,7 @@ const handleUnfollow = async (bojId) => {
   if (!bojId) return
   togglingBojIds.value.add(bojId)
   try {
+    // ✅ DELETE /v1/social/unfollow/{boj_id}
     await unfollowUser(bojId)
     await reloadSocial()
   } catch (e) {
