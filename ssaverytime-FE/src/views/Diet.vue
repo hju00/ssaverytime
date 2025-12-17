@@ -49,25 +49,28 @@
             </Button>
           </div>
         </CardHeader>
-
-        <!-- ✅ 설명 문구 삭제 (요청사항) -->
       </Card>
 
       <!-- 내 섭취 칼로리 / 직접 먹은 음식 추가 -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        <!-- Calorie Summary -->
+        <!-- Calorie Summary + ✅ Diet List -->
         <Card class="border-border">
           <CardHeader class="flex flex-row items-center justify-between">
             <div class="space-y-1">
               <h2 class="font-bold text-lg">내 섭취 칼로리</h2>
             </div>
 
-            <div class="text-xs text-muted-foreground" v-if="calorieLoading">불러오는 중...</div>
+            <div class="text-xs text-muted-foreground" v-if="calorieLoading || listLoading">
+              불러오는 중...
+            </div>
           </CardHeader>
 
-          <CardContent class="space-y-3">
+          <CardContent class="space-y-4">
             <div v-if="calorieError" class="text-sm text-red-500">
               {{ calorieError }}
+            </div>
+            <div v-if="listError" class="text-sm text-red-500">
+              {{ listError }}
             </div>
 
             <div class="flex items-end justify-between rounded-lg border border-border p-4">
@@ -80,8 +83,35 @@
               <p class="text-xs text-muted-foreground">kcal</p>
             </div>
 
+            <!-- ✅ 섭취 음식 전체 목록 -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <p class="text-sm font-semibold">섭취 목록</p>
+                <p class="text-xs text-muted-foreground">
+                  {{ dietList.length }}개
+                </p>
+              </div>
+
+              <div v-if="!listLoading && dietList.length === 0" class="text-sm text-muted-foreground">
+                섭취 기록이 없습니다.
+              </div>
+
+              <div v-else class="space-y-2">
+                <div
+                  v-for="(item, idx) in dietList"
+                  :key="`diet-${idx}-${item.menu}`"
+                  class="flex items-center justify-between rounded-lg border border-border p-3"
+                >
+                  <div class="min-w-0">
+                    <p class="text-sm font-medium truncate">{{ item.menu }}</p>
+                    <p class="text-xs text-muted-foreground mt-1">{{ item.calorie }} kcal</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <p class="text-[11px] text-muted-foreground leading-snug">
-              * 날짜는 상단 ◀▶ 버튼으로 이동하며, 해당 날짜의 섭취 칼로리가 갱신됩니다.
+              * 날짜는 상단 ◀▶ 버튼으로 이동하며, 해당 날짜의 섭취 칼로리/목록이 갱신됩니다.
             </p>
           </CardContent>
         </Card>
@@ -138,7 +168,7 @@
               </Button>
 
               <p class="text-[11px] text-muted-foreground leading-snug">
-                * 등록 후, 현재 선택된 날짜({{ selectedDate }})의 섭취 칼로리를 다시 불러옵니다.
+                * 등록 후, 현재 날짜({{ selectedDate }})의 섭취 칼로리/목록을 갱신합니다.
               </p>
             </div>
 
@@ -149,7 +179,7 @@
         </Card>
       </div>
 
-      <!-- Restaurants (1 row, 5 columns) -->
+      <!-- Restaurants -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
         <Card
           v-for="r in restaurants"
@@ -159,7 +189,6 @@
           <CardHeader class="space-y-2">
             <div class="flex items-center justify-between">
               <div class="space-y-1">
-                <!-- ✅ 식당명으로 표시 -->
                 <h2 class="font-bold text-base">{{ r.restaurantName }}</h2>
               </div>
 
@@ -168,7 +197,6 @@
               </div>
             </div>
 
-            <!-- 평균 별점 숫자 -->
             <div class="grid grid-cols-2 gap-2">
               <div class="rounded-lg border border-border p-2">
                 <p class="text-[11px] text-muted-foreground">양 평균</p>
@@ -187,7 +215,6 @@
           </CardHeader>
 
           <CardContent class="space-y-3">
-            <!-- 메뉴 -->
             <div class="space-y-2">
               <p class="text-sm font-semibold">메뉴</p>
 
@@ -215,7 +242,6 @@
               </div>
             </div>
 
-            <!-- 별점 주기 -->
             <div class="pt-2 border-t border-border space-y-2">
               <Button
                 variant="outline"
@@ -306,10 +332,10 @@ import {
   getDietStar,
   postDietStar,
   getMyCaloriesByDate,
+  getMyDietListByDate,
   addPersonalDiet,
 } from '@/api/diet'
 
-/** ✅ 식당명 매핑 (요청사항) */
 const RESTAURANT_NAME_MAP = {
   1: '육수고집',
   2: '소담상',
@@ -318,7 +344,6 @@ const RESTAURANT_NAME_MAP = {
   5: '속이찬새참',
 }
 
-/** 로컬 기준 YYYY-MM-DD */
 const formatDateYYYYMMDD = (d = new Date()) => {
   const yyyy = d.getFullYear()
   const mm = String(d.getMonth() + 1).padStart(2, '0')
@@ -326,13 +351,11 @@ const formatDateYYYYMMDD = (d = new Date()) => {
   return `${yyyy}-${mm}-${dd}`
 }
 
-/** YYYY-MM-DD -> Date */
 const parseYYYYMMDD = (s) => {
   const [y, m, d] = s.split('-').map(Number)
   return new Date(y, m - 1, d)
 }
 
-/** dateStr(YYYY-MM-DD)에 dayDelta 더하기 */
 const addDays = (dateStr, dayDelta) => {
   const dt = parseYYYYMMDD(dateStr)
   dt.setDate(dt.getDate() + dayDelta)
@@ -343,7 +366,7 @@ const pageLoading = ref(false)
 const pageError = ref('')
 const selectedDate = ref(formatDateYYYYMMDD())
 
-/** -------------------- 섭취 칼로리 -------------------- **/
+/** (1) 섭취 칼로리 */
 const calorieLoading = ref(false)
 const calorieError = ref('')
 const totalCalories = ref(null)
@@ -351,7 +374,6 @@ const totalCalories = ref(null)
 const extractTotalCalories = (data) => {
   if (data == null) return null
   if (typeof data === 'number') return data
-
   if (typeof data === 'object' && !Array.isArray(data)) {
     const candidates = ['totalCalorie', 'totalCalories', 'calorie', 'total', 'sum', 'kcal']
     for (const key of candidates) {
@@ -361,17 +383,12 @@ const extractTotalCalories = (data) => {
     }
     if ('data' in data && data.data) return extractTotalCalories(data.data)
   }
-
   if (Array.isArray(data)) {
-    const sum = data.reduce((acc, cur) => {
-      const c = cur?.calorie
-      if (c == null) return acc
-      const n = Number(c)
+    return data.reduce((acc, cur) => {
+      const n = Number(cur?.calorie)
       return Number.isNaN(n) ? acc : acc + n
     }, 0)
-    return sum
   }
-
   return null
 }
 
@@ -386,7 +403,6 @@ const loadMyCalories = async (date) => {
   calorieLoading.value = true
   calorieError.value = ''
   totalCalories.value = null
-
   try {
     const res = await getMyCaloriesByDate(date)
     totalCalories.value = extractTotalCalories(res?.data)
@@ -398,14 +414,32 @@ const loadMyCalories = async (date) => {
   }
 }
 
-/** -------------------- 직접 섭취 추가 -------------------- **/
+/** ✅ (1-추가) 섭취 음식 전체 리스트 */
+const listLoading = ref(false)
+const listError = ref('')
+const dietList = ref([])
+
+const loadMyDietList = async (date) => {
+  listLoading.value = true
+  listError.value = ''
+  dietList.value = []
+  try {
+    const res = await getMyDietListByDate(date)
+    dietList.value = Array.isArray(res.data) ? res.data : []
+  } catch (e) {
+    console.error(e)
+    listError.value = '섭취 목록을 불러오지 못했습니다.'
+    dietList.value = []
+  } finally {
+    listLoading.value = false
+  }
+}
+
+/** (2) 직접 섭취 추가 */
 const addPanelOpen = ref(false)
 const addLoading = ref(false)
 const addError = ref('')
-const addForm = ref({
-  menu: '',
-  calorie: '',
-})
+const addForm = ref({ menu: '', calorie: '' })
 
 const toggleAddPanel = () => {
   addPanelOpen.value = !addPanelOpen.value
@@ -428,15 +462,17 @@ const submitPersonalDiet = async () => {
 
   addLoading.value = true
   try {
-    await addPersonalDiet({
-      menu,
-      calorie: Math.round(calorieNum),
-    })
+    await addPersonalDiet({ menu, calorie: Math.round(calorieNum) })
 
     addForm.value.menu = ''
     addForm.value.calorie = ''
 
-    await loadMyCalories(selectedDate.value)
+    // ✅ 등록 후 칼로리 + 목록 갱신
+    await Promise.all([
+      loadMyCalories(selectedDate.value),
+      loadMyDietList(selectedDate.value),
+    ])
+
     alert('추가되었습니다.')
   } catch (e) {
     console.error(e)
@@ -446,7 +482,7 @@ const submitPersonalDiet = async () => {
   }
 }
 
-/** -------------------- 식당 메뉴/별점 -------------------- **/
+/** 식당 메뉴/별점 */
 const restaurants = ref(
   Array.from({ length: 5 }, (_, i) => {
     const id = i + 1
@@ -462,16 +498,10 @@ const restaurants = ref(
       starError: '',
       starPosting: false,
 
-      avg: {
-        AMOUNT: null,
-        TASTE: null,
-      },
+      avg: { AMOUNT: null, TASTE: null },
 
       showRatingPanel: false,
-      pending: {
-        AMOUNT: null,
-        TASTE: null,
-      },
+      pending: { AMOUNT: null, TASTE: null },
     }
   })
 )
@@ -491,11 +521,9 @@ const formatAvg = (v) => {
 const loadMenus = async (date, restaurantId) => {
   const target = restaurants.value.find((x) => x.restaurantId === restaurantId)
   if (!target) return
-
   target.loading = true
   target.error = ''
   target.menus = []
-
   try {
     const res = await getDietByDateAndRestaurant(date, restaurantId)
     target.menus = Array.isArray(res.data) ? res.data : []
@@ -511,20 +539,17 @@ const loadMenus = async (date, restaurantId) => {
 const loadStars = async (date, restaurantId) => {
   const target = restaurants.value.find((x) => x.restaurantId === restaurantId)
   if (!target) return
-
   target.starLoading = true
   target.starError = ''
   target.avg.AMOUNT = null
   target.avg.TASTE = null
   target.pending.AMOUNT = null
   target.pending.TASTE = null
-
   try {
     const [amountRes, tasteRes] = await Promise.all([
       getDietStar(date, restaurantId, 'AMOUNT'),
       getDietStar(date, restaurantId, 'TASTE'),
     ])
-
     target.avg.AMOUNT = clampScore(amountRes?.data?.averageScore)
     target.avg.TASTE = clampScore(tasteRes?.data?.averageScore)
   } catch (e) {
@@ -568,13 +593,18 @@ const submitStar = async (restaurantId, category, score) => {
   }
 }
 
-/** -------------------- 전체 로드 -------------------- **/
+/** 전체 로드 */
 const loadAll = async (date) => {
   pageLoading.value = true
   pageError.value = ''
-
   try {
-    await loadMyCalories(date)
+    // ✅ 칼로리 + 목록
+    await Promise.all([
+      loadMyCalories(date),
+      loadMyDietList(date),
+    ])
+
+    // 식당 1~5
     const ids = [1, 2, 3, 4, 5]
     await Promise.all(ids.map((id) => loadOneRestaurant(date, id)))
   } catch (e) {
