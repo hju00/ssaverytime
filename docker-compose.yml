@@ -44,5 +44,30 @@ services:
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
 
+  prometheus:
+    image: prom/prometheus
+    container_name: ssaverytime-prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on:
+      - backend
+
+  grafana:
+    image: grafana/grafana
+    container_name: ssaverytime-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/etc/grafana/dashboards
+
 volumes:
   db-data:
+  grafana-data:

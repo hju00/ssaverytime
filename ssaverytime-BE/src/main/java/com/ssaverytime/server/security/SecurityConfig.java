@@ -43,7 +43,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/v1/auth/login",
                                 "/api/v1/auth/regist",
-                                "/api/v1/auth/boj/validate"
+                                "/api/v1/auth/boj/validate",
+                                "/actuator/**"
                         ).permitAll()
                         .anyRequest().authenticated() // 나머지는 JWT 필요
                 )

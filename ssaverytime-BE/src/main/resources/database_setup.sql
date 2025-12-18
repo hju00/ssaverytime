@@ -185,11 +185,12 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 -- 1) USER
 INSERT INTO USER (USER_ID, BOJ_ID, PASSWORD, NAME, ROLE, SEASON, BAEKJOON, VALID) VALUES
-                                                                                      (1, 'kinguser', 'hashed_pw_01', '유저왕', 'USER', 14, 'GOLD V', 'VALID'),
-                                                                                      (2, 'admin_guy', 'hashed_pw_admin', '최고관리자', 'ADMIN', NULL, NULL, 'VALID'),
-                                                                                      (3, 'season_2_user', 'hashed_pw_03', '계절이', 'USER', 13, 'SILVER III', 'VALID'),
-                                                                                      (4, 'temp_disabled', 'hashed_pw_04', '잠시휴식', 'USER', 15, 'PATINUM V', 'INVALID'),
-                                                                                      (5, 'active_member', 'hashed_pw_05', '활동회원', 'USER', 15, 'BRONZE I', 'VALID');
+(1, 'user1', '$2b$12$eSZpjmFn39nQ0D4JOBm9LeSTVdVt622kblRURpSl7g4.erPx29sAK', '사용자1', 'USER', 14, 'GOLD V', 'VALID'),
+(2, 'admin', '$2b$12$3dNqdLQq79pLGPRFIVZYU.TfG5ckq87FDhkPM3i57KRgn30mq2QLO', '관리자', 'ADMIN', NULL, NULL, 'VALID'),
+(3, 'user2', '$2b$12$APevtl5nAKpcECKMDQCXwuXZNv8sPPNg0CHkavZntFdY8IwksD8j6', '사용자2', 'USER', 13, 'SILVER III', 'VALID'),
+(4, 'user3', '$2b$12$IRwkimGsBKz2GrLbtDMcteXRxdOyzl2ttCCT6voqvJIpiFc.br/vS', '사용자3', 'USER', 15, 'PLATINUM V', 'VALID'),
+(5, 'user4', '$2b$12$IJi0SslqBYqkgl7liP7ZsOb4YXGd0NhlPOfjCGZ7y1Y0vmtQ/xZ.G', '사용자4', 'USER', 15, 'BRONZE I', 'VALID'),
+(6, 'user5', '$2b$12$vNvNSlarxuBX/dBIdaHtzOWDx6Ag9WAu8ephfAty7wzI0Pu6Ud462', '사용자5', 'USER', 15, 'GOLD I', 'VALID');
 
 -- 2) RESTAURANT
 INSERT INTO RESTAURANT (RESTAURANT_ID, NAME) VALUES
@@ -201,19 +202,19 @@ INSERT INTO RESTAURANT (RESTAURANT_ID, NAME) VALUES
 
 -- 3) BOARD (수정됨: 컬럼 7개, 값 7개 맞춤)
 INSERT INTO BOARD (BOARD_ID, USER_ID, TITLE, BODY, VISIBLE, WARNING_CNT, AUTHOR_TIER) VALUES
-                                                                                          (1, 1, '백반집 점심 후기', '오늘 백반집 가봤는데 가성비 최고예요.', '1', 0, NULL),
-                                                                                          (2, 5, '이번 시즌 알고리즘 질문', '다들 백준 문제 푸시나요?', '1', 0, NULL),
-                                                                                          (3, 3, '솔직히 실버들은 발언 허락 받고 해야한다 생각합니다.', '광주캠퍼스 노트북 쓰기 좋은 카페 아시는 분?', '1', 0, NULL),
-                                                                                          (4, 2, '운영 공지: 서비스 업데이트 안내', '새로운 기능이 추가될 예정입니다.', '1', 0, NULL),
-                                                                                          (5, NULL, '숨김 테스트 게시글', '이 글은 관리자가 숨길 수 있습니다.',  '0', 0, 'GOLD V');
+(1, 1, '백반집 점심 후기', '오늘 백반집 가봤는데 가성비 최고예요.', '1', 0, NULL),
+(2, 5, '이번 시즌 알고리즘 질문', '다들 백준 문제 푸시나요?', '1', 0, NULL),
+(3, 3, '솔직히 실버들은 발언 허락 받고 해야한다 생각합니다.', '광주캠퍼스 노트북 쓰기 좋은 카페 아시는 분?', '1', 0, NULL),
+(4, 2, '운영 공지: 서비스 업데이트 안내', '새로운 기능이 추가될 예정입니다.', '1', 0, NULL),
+(5, NULL, '숨김 테스트 게시글', '이 글은 관리자가 숨길 수 있습니다.',  '0', 0, 'GOLD V');
 
 -- 4) COMMENT
 INSERT INTO COMMENT (COMMENT_ID, BOARD_ID, USER_ID, BODY, VISIBLE, WARNING_CNT) VALUES
-                                                                                    (1, 1, 3, '메뉴가 궁금해요!', '1', 0),
-                                                                                    (2, 2, 5, '저는 요즘 DP 문제 풀고 있습니다.', '1', 0),
-                                                                                    (3, 3, 1, '프리미엄 로스터리 추천합니다.', '1', 0),
-                                                                                    (4, 4, 5, '업데이트 기대하겠습니다!', '1', 0),
-                                                                                    (5, 1, 4, '혼밥하기 괜찮은가요?', '1', 0);
+(1, 1, 3, '메뉴가 궁금해요!', '1', 0),
+(2, 2, 5, '저는 요즘 DP 문제 풀고 있습니다.', '1', 0),
+(3, 3, 1, '프리미엄 로스터리 추천합니다.', '1', 0),
+(4, 4, 5, '업데이트 기대하겠습니다!', '1', 0),
+(5, 1, 4, '혼밥하기 괜찮은가요?', '1', 0);
 
 -- 5) LIKES
 INSERT INTO LIKES (LIKES_ID, BOARD_ID, USER_ID) VALUES
