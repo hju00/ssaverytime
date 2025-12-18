@@ -162,8 +162,55 @@ watch(() => signupData.value.id, () => {
   signupData.value.baekjoon = ''
 })
 
-/* ================= 기수 목록 ================= */
-const seasonList = Array.from({ length: 20 }, (_, i) => i + 1).reverse()
+/* ================= 기수 계산 로직 =================
+  요구사항:
+  - 지금(2025년 12월)은 14기까지만
+  - 2026-01-01부터 15기
+  - 2026-07-01부터 16기
+  - 이후에도 매년 1월/7월마다 +1
+=================================================== */
+
+const BASE_SEASON = 14
+
+// ✅ 14기가 마지막으로 “고정”되는 기준 시점: 2025-07-01
+// 이 이후 증가 시점은 2026-01-01, 2026-07-01 ...
+const ANCHOR_DATE = new Date(2025, 6, 1) // 월은 0-index라 6 = 7월
+
+const calculateMaxSeason = () => {
+  const now = new Date()
+
+  // anchor 이전이면 무조건 14기
+  if (now < ANCHOR_DATE) return BASE_SEASON
+
+  let count = 0
+  let year = ANCHOR_DATE.getFullYear()
+  let month = ANCHOR_DATE.getMonth() + 1 // 1~12
+
+  while (true) {
+    // 다음 증가 시점(1월 or 7월)
+    if (month < 7) {
+      month = 7
+    } else {
+      year += 1
+      month = 1
+    }
+
+    const nextPoint = new Date(year, month - 1, 1)
+
+    if (nextPoint <= now) {
+      count += 1
+    } else {
+      break
+    }
+  }
+
+  return BASE_SEASON + count
+}
+
+const maxSeason = calculateMaxSeason()
+
+// maxSeason부터 1까지 역순
+const seasonList = Array.from({ length: maxSeason }, (_, i) => maxSeason - i)
 
 /* ================= 가입 가능 여부 ================= */
 const canSignup = computed(() => {
