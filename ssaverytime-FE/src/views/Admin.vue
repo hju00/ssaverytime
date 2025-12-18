@@ -47,19 +47,19 @@
                       </Badge>
                     </td>
                     <td class="p-4 align-middle text-right space-x-2">
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="sm"
                         @click="handleDeactivateBoard(board.boardId)"
                         :disabled="board.visible === '0'"
                       >
                         비활성화
                       </Button>
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="sm"
                         class="text-red-500 hover:text-red-600"
-                        @click="handleDeactivateUser(board.bojId)" 
+                        @click="handleDeactivateUser(board.bojId)"
                       >
                         유저 정지
                       </Button>
@@ -116,19 +116,19 @@
                       </Badge>
                     </td>
                     <td class="p-4 align-middle text-right space-x-2">
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="sm"
                         @click="handleDeactivateComment(comment.commentId)"
                         :disabled="comment.visible === '0'"
                       >
                         비활성화
                       </Button>
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="sm"
                         class="text-red-500 hover:text-red-600"
-                        @click="handleDeactivateUser(comment.bojId)" 
+                        @click="handleDeactivateUser(comment.bojId)"
                       >
                         유저 정지
                       </Button>
@@ -146,16 +146,93 @@
         </Card>
       </TabsContent>
     </Tabs>
+
+    <!-- ✅ 메뉴 추가 섹션 -->
+    <Card>
+      <CardHeader>
+        <CardTitle>식당 메뉴 추가</CardTitle>
+        <CardDescription>
+          식당별로 메뉴/칼로리/날짜를 입력하고 한 번에 여러 메뉴를 등록할 수 있습니다.
+        </CardDescription>
+      </CardHeader>
+
+      <CardContent class="space-y-6">
+        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+          <Card
+            v-for="r in restaurants"
+            :key="r.id"
+            class="border"
+          >
+            <CardHeader class="pb-3">
+              <CardTitle class="text-base">{{ r.name }}</CardTitle>
+              <CardDescription class="text-xs">restaurantId: {{ r.id }}</CardDescription>
+            </CardHeader>
+
+            <CardContent class="space-y-3">
+              <!-- rows -->
+              <div v-for="(row, idx) in menuForms[r.id]" :key="idx" class="space-y-2 p-3 rounded-md border bg-background">
+                <div class="space-y-2">
+                  <Input v-model="row.menu" placeholder="메뉴명" class="h-9" />
+                  <Input v-model="row.calorie" type="number" placeholder="칼로리" class="h-9" />
+                  <!-- ✅ 날짜/시간 row별 입력 -->
+                  <Input v-model="row.dateLocal" type="datetime-local" class="h-9" />
+                </div>
+
+                <div class="flex justify-end">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    class="text-red-500 hover:text-red-600"
+                    @click="removeRow(r.id, idx)"
+                    :disabled="menuForms[r.id].length <= 1 || savingRestaurantId === r.id"
+                  >
+                    삭제
+                  </Button>
+                </div>
+              </div>
+
+              <div class="flex gap-2 pt-1">
+                <Button
+                  variant="outline"
+                  class="w-full"
+                  @click="addRow(r.id)"
+                  :disabled="savingRestaurantId === r.id"
+                >
+                  + 메뉴 추가
+                </Button>
+              </div>
+
+              <div class="pt-2">
+                <Button
+                  class="w-full"
+                  @click="submitRestaurantMenus(r.id)"
+                  :disabled="savingRestaurantId === r.id"
+                >
+                  {{ savingRestaurantId === r.id ? '저장 중...' : '해당 식당 메뉴 저장' }}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <p class="text-xs text-muted-foreground">
+          * 날짜는 관리자 입력값을 그대로 저장합니다. (예: 2025-11-07 12:00:00)
+        </p>
+      </CardContent>
+    </Card>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getReportedBoards, getReportedComments, deactivateBoard, deactivateComment, deactivateUser } from '@/api/admin'
+import http from '@/api/http'
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 
 const boards = ref([])
 const comments = ref([])
@@ -203,12 +280,104 @@ const handleDeactivateComment = async (commentId) => {
 const handleDeactivateUser = async (userId) => {
   if (!confirm('해당 유저를 비활성화(정지) 처리하시겠습니까?')) return
   try {
-    await deactivateUser(userId) 
+    await deactivateUser(userId)
     alert('유저가 정지되었습니다.')
   } catch (err) {
     alert('처리 실패')
   }
 }
+
+/* ====================== 메뉴 추가 로직 ====================== */
+
+const restaurants = ref([
+  { id: 1, name: '육수고집' },
+  { id: 2, name: '소담상' },
+  { id: 3, name: '더고메' },
+  { id: 4, name: '차이나호' },
+  { id: 5, name: '속이찬새참' },
+])
+
+// restaurantId별 입력 폼들
+const menuForms = ref({
+  1: [createEmptyRow()],
+  2: [createEmptyRow()],
+  3: [createEmptyRow()],
+  4: [createEmptyRow()],
+  5: [createEmptyRow()],
+})
+
+function createEmptyRow() {
+  return {
+    menu: '',
+    calorie: '',
+    dateLocal: '', // datetime-local (YYYY-MM-DDTHH:mm)
+  }
+}
+
+const addRow = (restaurantId) => {
+  menuForms.value[restaurantId].push(createEmptyRow())
+}
+
+const removeRow = (restaurantId, idx) => {
+  if (menuForms.value[restaurantId].length <= 1) return
+  menuForms.value[restaurantId].splice(idx, 1)
+}
+
+// datetime-local -> "YYYY-MM-DD HH:mm:00"
+const toServerDateTime = (dateLocal) => {
+  if (!dateLocal) return ''
+  // dateLocal: "2025-11-07T12:00"
+  const [d, t] = dateLocal.split('T')
+  if (!d || !t) return ''
+  return `${d} ${t}:00`
+}
+
+const savingRestaurantId = ref(null)
+
+const submitRestaurantMenus = async (restaurantId) => {
+  const rows = menuForms.value[restaurantId]
+
+  // 유효성 검사
+  const invalid = rows.some((r) => {
+    const menuOk = (r.menu || '').trim().length > 0
+    const calOk = r.calorie !== '' && !Number.isNaN(Number(r.calorie))
+    const dateOk = (r.dateLocal || '').trim().length > 0
+    return !(menuOk && calOk && dateOk)
+  })
+
+  if (invalid) {
+    alert('메뉴명/칼로리/날짜(시간)를 모두 입력해주세요.')
+    return
+  }
+
+  savingRestaurantId.value = restaurantId
+
+  try {
+    const requests = rows.map((r) => {
+      return http.post('/v1/diet/menu', {
+        restaurantId,
+        menu: r.menu.trim(),
+        calorie: Number(r.calorie),
+        date: toServerDateTime(r.dateLocal),
+      })
+    })
+
+    // ✅ 한 식당의 여러 메뉴를 동시에 요청
+    await Promise.all(requests)
+
+    alert('메뉴가 등록되었습니다.')
+
+    // 해당 식당 폼 초기화
+    menuForms.value[restaurantId] = [createEmptyRow()]
+  } catch (e) {
+    console.error(e)
+    alert('메뉴 등록에 실패했습니다.')
+  } finally {
+    savingRestaurantId.value = null
+  }
+}
+
+/* ============================================================ */
 
 onMounted(() => {
   fetchBoards()
