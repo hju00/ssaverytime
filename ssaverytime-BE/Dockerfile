@@ -9,6 +9,8 @@ RUN ./mvnw package -DskipTests
 
 # Run stage
 FROM amazoncorretto:17-alpine-jdk
+# 필수 패키지 설치: ca-certificates (HTTPS 인증서 문제 해결)
+RUN apk add --no-cache ca-certificates && update-ca-certificates
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080

@@ -4,6 +4,7 @@ import com.ssaverytime.server.domain.dto.auth.*;
 import com.ssaverytime.server.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.javassist.bytecode.DuplicateMemberException;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -59,7 +60,14 @@ public class AuthController {
             String url= "https://solved.ac/profile/" + encodedId;
 
             RestTemplate restTemplate= new RestTemplate();
-            String html= restTemplate.getForObject(url, String.class);
+            
+            // User-Agent 헤더 추가 (봇 차단 방지)
+            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+            headers.add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
+            org.springframework.http.HttpEntity<String> entity = new org.springframework.http.HttpEntity<>(headers);
+
+            org.springframework.http.ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+            String html = response.getBody();
 
             // solved.ac에서 추출
             Pattern pattern= Pattern.compile("https://static\\.solved\\.ac/tier_small/\\d+\\.svg");
@@ -70,13 +78,11 @@ public class AuthController {
                 return ResponseEntity.ok(new BojValidateResponseDto(svgUrl));
 
             }else{
-                // 페이지는 있는데 티어 이미지를 못 찾은 경우
                 return ResponseEntity
                         .status(HttpStatus.NOT_FOUND)
                         .body("존재하지 않는 BOJ 아이디입니다.");
             }
         } catch (RestClientException e) {
-            // solved.ac 쪽 문제 또는 네트워크 오류
             return ResponseEntity
                     .status(HttpStatus.BAD_GATEWAY)
                     .body("solved.ac 호출 중 오류가 발생했습니다.");
