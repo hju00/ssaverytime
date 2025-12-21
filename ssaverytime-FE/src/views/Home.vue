@@ -3,9 +3,14 @@
     <!-- Header Section -->
     <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
       <div>
-        <!-- ✅ 싸피인님 → 로그인한 사용자 이름 -->
+        <!-- ✅ 로그인: "환영합니다, OOO님!" / 로그아웃: "환영합니다." -->
         <h1 class="text-3xl font-bold tracking-tight">
-          환영합니다, {{ user.nickname || '싸피인' }}님!
+          <template v-if="isLoggedIn">
+            환영합니다, {{ user.nickname || '싸피인' }}님!
+          </template>
+          <template v-else>
+            환영합니다.
+          </template>
         </h1>
         <p class="text-muted-foreground">오늘의 싸피 소식을 확인해보세요.</p>
       </div>
@@ -142,14 +147,20 @@ const user = ref({
   nickname: '',
 })
 
+/** ✅ 로그인 여부 */
+const isLoggedIn = ref(false)
+
 const fetchMe = async () => {
   try {
     const res = await getMyPage()
-    // 프로필에서 res.data.name을 nickname으로 쓰고 있으니 동일하게
     user.value.nickname = res?.data?.name ?? ''
+    // ✅ getMyPage 성공 = 로그인 상태로 간주
+    isLoggedIn.value = true
   } catch (e) {
     console.error(e)
     user.value.nickname = ''
+    // ✅ 실패(401 등) = 로그아웃 상태로 간주
+    isLoggedIn.value = false
   }
 }
 
