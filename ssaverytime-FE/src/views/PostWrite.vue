@@ -2,12 +2,21 @@
   <div class="min-h-screen bg-background p-4">
     <div class="max-w-3xl mx-auto space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle>{{ user.name }}</CardTitle>
-          <CardDescription class="flex items-center">
-            <img :src="`https://static.solved.ac/tier_small/${user.tierNumber}.svg`" alt="Tier Icon" class="w-4 h-4 mr-1" />
-            {{ user.tier }}
-          </CardDescription>
+        <CardHeader class="flex flex-row items-center gap-4 space-y-0 pb-2">
+          <!-- Avatar (Tier Image) -->
+          <div class="h-12 w-12 rounded-full bg-muted flex items-center justify-center border shrink-0">
+             <img 
+               v-if="user.userTierSrc" 
+               :src="user.userTierSrc" 
+               alt="Tier" 
+               class="h-8 w-8 object-contain" 
+             />
+             <span v-else class="text-xl">👤</span>
+          </div>
+          
+          <div class="flex flex-col">
+            <CardTitle class="text-lg">{{ user.name }}</CardTitle>
+          </div>
         </CardHeader>
         <CardContent class="space-y-4">
           <div class="space-y-2">
@@ -60,7 +69,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { writeBoard, getBoardDetail, updateBoard } from '@/api/board'
 import http from '@/api/http'
-import { getTierNumber } from '@/lib/utils'
+import { getTierImageSrc, getTierName } from '@/lib/utils'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -71,15 +80,15 @@ const router = useRouter()
 const route = useRoute()
 
 // 사용자 정보 초기화
-const user = ref({ name: '', tier: '', tierNumber: 0 })
+const user = ref({ name: '', tier: '', userTierSrc: null })
 
 const fetchUserInfo = async () => {
   try {
     const res = await http.get('/v1/mypage')
     user.value = {
       name: res.data.name,
-      tier: res.data.baekjoon,
-      tierNumber: getTierNumber(res.data.baekjoon)
+      tier: getTierName(res.data.baekjoon),
+      userTierSrc: getTierImageSrc(res.data.baekjoon)
     }
   } catch (error) {
     console.error("Failed to fetch user info:", error)
@@ -135,8 +144,6 @@ const submitPost = async () => {
   isSubmitting.value = true
   try {
     if (isEditMode.value) {
-      // TODO: 현재 백엔드는 수정 시 작성자 본인 확인을 위해 토큰 대신 하드코딩된 ID(1)를 사용 중입니다.
-      // 로그인이 구현되면 이 부분은 토큰을 통해 자동으로 처리되어야 합니다.
       await updateBoard({
         boardId: form.boardId,
         title: form.title,

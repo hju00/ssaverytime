@@ -63,8 +63,8 @@
                 <div class="flex items-center gap-2">
                   <span class="text-xs font-medium text-foreground">{{ post.userName }}</span>
                   <img 
-                    v-if="post.tierNumber !== undefined"
-                    :src="`https://static.solved.ac/tier_small/${post.tierNumber}.svg`" 
+                    v-if="post.userTierSrc"
+                    :src="post.userTierSrc" 
                     alt="Tier Icon" 
                     class="w-4 h-4 inline-block" 
                   />
@@ -101,7 +101,7 @@
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getBoardList } from '@/api/board'
-import { getTierNumber } from '@/lib/utils'
+import { getTierImageSrc } from '@/lib/utils'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -159,7 +159,7 @@ const fetchPosts = async (reset = false) => {
 
     const newPosts = response.data.map(p => ({
       ...p,
-      tierNumber: getTierNumber(p.userTier),
+      userTierSrc: getTierImageSrc(p.userTier),
       // Backend DTO uses camelCase: boardId, title, summary, etc.
     }));
 
