@@ -8,11 +8,11 @@ USE ssaverytime;
 -- 1. 익명 게시글 (5개) - 원래 User 1, 3, 5 등이 작성했으나 익명 처리
 -- BOARD_ID: 6 ~ 10 (database_setup.sql에서 1~5 사용함)
 INSERT INTO BOARD (USER_ID, TITLE, BODY, SUMMARY, VISIBLE, AUTHOR_TIER) VALUES
-(NULL, '알고리즘 스터디 모집합니다 (광주)', '아침 8시부터 1시간 동안 진행할 알고리즘 스터디원 모집합니다. 언어는 Java입니다.', '아침 8시부터 1시간 동안 진행할 알고리즘 스터디원 모집합니다.', '0', 'GOLD V'),
-(NULL, '오늘 점심 A코너 드신 분?', '맛 어떤가요? B코너랑 고민중입니다.', '맛 어떤가요? B코너랑 고민중입니다.', '0', 'SILVER III'),
-(NULL, 'Spring Boot JPA N+1 문제 해결법', 'Fetch Join 사용해서 해결했는데, EntityGraph랑 차이점이 뭔가요?', 'Fetch Join 사용해서 해결했는데, EntityGraph랑 차이점이 뭔가요.', '0', 'BRONZE I'),
-(NULL, '싸피 인근 카페 추천 리스트 정리', '1. 스타벅스 2. 투썸 3. 개인카페... 공부하기 좋은 곳 위주입니다.', '1. 스타벅스 2. 투썸 3. 개인카페... 공부하기 좋은 곳 위주입니다.', '0', 'GOLD V'),
-(NULL, '백준 골드 달성했습니다!!', '드디어 골드네요. 실버 탈출해서 너무 기쁩니다.', '드디어 골드네요. 실버 탈출해서 너무 기쁩니다.', '0', 'SILVER III');
+(NULL, '알고리즘 스터디 모집합니다 (광주)', '아침 8시부터 1시간 동안 진행할 알고리즘 스터디원 모집합니다. 언어는 Java입니다.', '아침 8시부터 1시간 동안 진행할 알고리즘 스터디원 모집합니다.', '0', 'https://static.solved.ac/tier_small/11.svg'),
+(NULL, '오늘 점심 A코너 드신 분?', '맛 어떤가요? B코너랑 고민중입니다.', '맛 어떤가요? B코너랑 고민중입니다.', '0', 'https://static.solved.ac/tier_small/8.svg'),
+(NULL, 'Spring Boot JPA N+1 문제 해결법', 'Fetch Join 사용해서 해결했는데, EntityGraph랑 차이점이 뭔가요?', 'Fetch Join 사용해서 해결했는데, EntityGraph랑 차이점이 뭔가요.', '0', 'https://static.solved.ac/tier_small/5.svg'),
+(NULL, '싸피 인근 카페 추천 리스트 정리', '1. 스타벅스 2. 투썸 3. 개인카페... 공부하기 좋은 곳 위주입니다.', '1. 스타벅스 2. 투썸 3. 개인카페... 공부하기 좋은 곳 위주입니다.', '0', 'https://static.solved.ac/tier_small/11.svg'),
+(NULL, '백준 골드 달성했습니다!!', '드디어 골드네요. 실버 탈출해서 너무 기쁩니다.', '드디어 골드네요. 실버 탈출해서 너무 기쁩니다.', '0', 'https://static.solved.ac/tier_small/8.svg');
 
 -- 2. 일반 게시글 (45개)
 -- BOARD_ID: 11 ~ 55

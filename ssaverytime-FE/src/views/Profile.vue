@@ -37,13 +37,19 @@
         </CardHeader>
 
         <CardContent class="space-y-4">
-          <div class="flex items-center gap-3">
-            <div class="w-12 h-12 flex items-center justify-center">
-              <img v-if="tierSvgUrl" :src="tierSvgUrl" alt="Tier" class="w-10 h-10 object-contain" />
+          <div class="flex items-center gap-4 p-2">
+            <!-- 큰 아이콘 -->
+            <div class="w-16 h-16 flex items-center justify-center bg-accent/10 rounded-full shrink-0">
+              <img v-if="tierSvgUrl" :src="tierSvgUrl" alt="Tier" class="w-12 h-12 object-contain drop-shadow-md" />
+              <span v-else class="text-2xl">🏆</span>
             </div>
+            
+            <!-- 멋진 텍스트 -->
             <div>
-              <p class="font-semibold text-lg">{{ user.tier || 'Unrated' }}</p>
-              <p class="text-xs text-muted-foreground">{{ $t('profile.algorithm_rank') }}</p>
+              <p class="text-sm font-medium text-muted-foreground uppercase tracking-wider">Algorithm Tier</p>
+              <p class="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                {{ getTierName(user.tier) }}
+              </p>
             </div>
           </div>
 
@@ -249,7 +255,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getMyPage, refreshBojRank } from '@/api/mypage'
 import { getScrapList } from '@/api/board'
-import { getTierNumber } from '@/lib/utils'
+import { getTierNumber, getTierName } from '@/lib/utils'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'

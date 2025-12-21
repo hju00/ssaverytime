@@ -38,8 +38,8 @@
             <!-- 프로필 아이콘을 랭크 아이콘으로 대체함 -->
             <div class="w-10 h-10 flex items-center justify-center shrink-0">
                <img 
-                 v-if="post.tierNumber !== undefined" 
-                 :src="`https://static.solved.ac/tier_small/${post.tierNumber}.svg`" 
+                 v-if="post.userTierSrc" 
+                 :src="post.userTierSrc" 
                  alt="Profile" 
                  class="w-8 h-8 object-contain" 
                />
@@ -48,7 +48,7 @@
             <div class="flex-1">
               <div class="flex items-center gap-2">
                 <span class="font-semibold text-sm">{{ post.userName }}</span>
-                <!-- <img v-if="post.tierNumber !== undefined" :src="`https://static.solved.ac/tier_small/${post.tierNumber}.svg`" alt="Tier Icon" class="w-4 h-4 inline-block" /> -->
+                <!-- <img v-if="post.userTierSrc" :src="post.userTierSrc" alt="Tier Icon" class="w-4 h-4 inline-block" /> -->
               </div>
               <p class="text-xs text-muted-foreground">
                 {{ post.formattedDate }}
@@ -155,8 +155,8 @@
                 <!-- Avatar (프로필 아이콘을 랭크 아이콘으로 대체함) -->
                 <div class="w-8 h-8 flex items-center justify-center shrink-0">
                    <img 
-                     v-if="getTierNumber(comment.userTier) !== undefined" 
-                     :src="`https://static.solved.ac/tier_small/${getTierNumber(comment.userTier)}.svg`" 
+                     v-if="getTierImageSrc(comment.userTier)" 
+                     :src="getTierImageSrc(comment.userTier)" 
                      alt="Profile" 
                      class="w-6 h-6 object-contain" 
                    />
@@ -234,7 +234,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { getBoardDetail, toggleLike, toggleScrap, deleteBoard, getAiSummary } from '@/api/board'
 import { getCommentList, writeComment, updateComment, deleteComment } from '@/api/comment'
 import { reportBoard, reportComment } from '@/api/report'
-import { getTierNumber } from '@/lib/utils'
+import { getTierImageSrc } from '@/lib/utils'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -317,7 +317,7 @@ const fetchPost = async () => {
        const data = response.data;
        post.value = {
          ...data,
-         tierNumber: getTierNumber(data.userTier),
+         userTierSrc: getTierImageSrc(data.userTier),
          formattedDate: formatDate(data.createdAt)
        };
        fetchComments(boardId);
