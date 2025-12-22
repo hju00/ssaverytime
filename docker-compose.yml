@@ -15,6 +15,18 @@ services:
     networks:
       - ssavery-net
 
+  frontend:
+    build: ./ssaverytime-FE
+    container_name: ssaverytime-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=${VITE_API_URL}
+    networks:
+      - ssavery-net
+
   ai-service:
     build: ./ssaverytime-AI
     container_name: ssaverytime-ai
