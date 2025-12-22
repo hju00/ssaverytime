@@ -3,7 +3,15 @@
     <!-- Header Section -->
     <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-bold tracking-tight">환영합니다, 싸피인님!</h1>
+        <!-- ✅ 로그인: "환영합니다, OOO님!" / 로그아웃: "환영합니다." -->
+        <h1 class="text-3xl font-bold tracking-tight">
+          <template v-if="isLoggedIn">
+            환영합니다, {{ user.nickname || '싸피인' }}님!
+          </template>
+          <template v-else>
+            환영합니다.
+          </template>
+        </h1>
         <p class="text-muted-foreground">오늘의 싸피 소식을 확인해보세요.</p>
       </div>
       <div class="flex items-center gap-2">
@@ -13,49 +21,17 @@
       </div>
     </div>
 
-    <!-- Quick Stats / Overview Cards -->
-    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <!-- ✅ Big Total Calories Card ONLY -->
+    <div class="grid gap-4">
       <Card class="bg-primary text-primary-foreground">
         <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle class="text-sm font-medium">총 섭취 칼로리</CardTitle>
-          <UtensilsIcon class="h-4 w-4 opacity-70" />
+          <CardTitle class="text-base font-medium">총 섭취 칼로리</CardTitle>
+          <UtensilsIcon class="h-5 w-5 opacity-70" />
         </CardHeader>
-        <CardContent>
-          <div class="text-2xl font-bold">{{ totalCaloriesText }}</div>
-          <p class="text-xs opacity-70">어제보다 +15% 증가</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle class="text-sm font-medium">읽지 않은 공지</CardTitle>
-          <BellIcon class="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div class="text-2xl font-bold">3</div>
-          <p class="text-xs text-muted-foreground">캠퍼스 공지 2건, 일반 1건</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle class="text-sm font-medium">백준 스트릭</CardTitle>
-          <TrophyIcon class="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div class="text-2xl font-bold">12일째</div>
-          <p class="text-xs text-muted-foreground">꾸준함이 실력입니다!</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle class="text-sm font-medium">마일리지</CardTitle>
-          <StarIcon class="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div class="text-2xl font-bold">150 pts</div>
-          <p class="text-xs text-muted-foreground">등급: Gold III</p>
+        <CardContent class="py-10">
+          <div class="text-5xl md:text-6xl font-extrabold tracking-tight">
+            {{ totalCaloriesText }}
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -90,8 +66,6 @@
               오늘 섭취 기록이 없습니다.
             </div>
           </div>
-
-          <!-- ✅ 싸피 점심 불러오기 버튼 제거 (요구사항) -->
         </CardContent>
       </Card>
 
@@ -148,16 +122,15 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
   Utensils as UtensilsIcon,
-  Bell as BellIcon,
-  Trophy as TrophyIcon,
-  Star as StarIcon,
-  Coffee as CoffeeIcon,
   Heart as HeartIcon,
-  MessageSquare as MessageSquareIcon
+  MessageSquare as MessageSquareIcon,
 } from 'lucide-vue-next'
 
 // ✅ Diet API (이미 만든 파일 사용)
 import { getMyCaloriesByDate, getMyDietListByDate } from '@/api/diet'
+
+// ✅ Profile API (프로필에서 쓰는 것과 동일하게 이름 가져오기)
+import { getMyPage } from '@/api/mypage'
 
 /** 오늘 날짜 YYYY-MM-DD */
 const formatDateYYYYMMDD = (d = new Date()) => {
@@ -168,6 +141,28 @@ const formatDateYYYYMMDD = (d = new Date()) => {
 }
 
 const today = formatDateYYYYMMDD()
+
+/** ✅ 로그인 사용자 (이름 표시용) */
+const user = ref({
+  nickname: '',
+})
+
+/** ✅ 로그인 여부 */
+const isLoggedIn = ref(false)
+
+const fetchMe = async () => {
+  try {
+    const res = await getMyPage()
+    user.value.nickname = res?.data?.name ?? ''
+    // ✅ getMyPage 성공 = 로그인 상태로 간주
+    isLoggedIn.value = true
+  } catch (e) {
+    console.error(e)
+    user.value.nickname = ''
+    // ✅ 실패(401 등) = 로그아웃 상태로 간주
+    isLoggedIn.value = false
+  }
+}
 
 /** 총 섭취 칼로리 */
 const totalCalories = ref(null)
@@ -236,9 +231,8 @@ const loadTodayDietList = async () => {
 }
 
 onMounted(async () => {
-  await Promise.all([loadTodayCalories(), loadTodayDietList()])
+  await Promise.all([fetchMe(), loadTodayCalories(), loadTodayDietList()])
 })
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>
