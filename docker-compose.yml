@@ -12,6 +12,8 @@ services:
       - SPRING_DATASOURCE_USERNAME=${MYSQL_USER}
       - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+    networks:
+      - ssavery-net
 
   ai-service:
     build: ./ssaverytime-AI
@@ -20,6 +22,8 @@ services:
       - "8000:8000"
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+    networks:
+      - ssavery-net
 
   prometheus:
     image: prom/prometheus
@@ -30,6 +34,8 @@ services:
       - "9090:9090"
     depends_on:
       - backend
+    networks:
+      - ssavery-net
 
   grafana:
     image: grafana/grafana
@@ -44,6 +50,12 @@ services:
       - grafana-data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning
       - ./grafana/dashboards:/etc/grafana/dashboards
+    networks:
+      - ssavery-net
 
 volumes:
   grafana-data:
+
+networks:
+  ssavery-net:
+    driver: bridge
