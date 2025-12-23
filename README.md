@@ -45,8 +45,9 @@ docker exec -i ssaverytime-mysql mysql -u ssafy -pssafy --default-character-set=
 ## Database
 
 ### ERD (Entity-Relationship Diagram)
+<img width="1374" height="727" alt="image" src="https://github.com/user-attachments/assets/a8b29600-3534-4c05-a63f-8ce37b27472c" />
 
-![ERD](img/erd_diagram.png)
+<!-- ![ERD](img/erd_diagram.png) 이것은 구형 버전-->
 
 ## Database Schema..
 
