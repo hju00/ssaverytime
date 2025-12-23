@@ -77,24 +77,32 @@
         </CardHeader>
         <CardContent>
           <div class="space-y-4">
-            <!-- Mock Post Items -->
+            <div v-if="loadingHot" class="flex justify-center py-4">
+              <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+            </div>
+
             <div
-              v-for="i in 3"
-              :key="i"
+              v-else-if="hotPosts.length > 0"
+              v-for="post in hotPosts"
+              :key="post.boardId"
               class="flex flex-col gap-1 pb-4 border-b last:border-0 cursor-pointer hover:bg-muted/50 p-2 rounded-md transition-colors"
-              @click="$router.push('/board')"
+              @click="$router.push(`/post/${post.boardId}`)"
             >
               <div class="flex justify-between items-start">
-                <h4 class="font-medium text-sm">알고리즘 스터디원 모집합니다!</h4>
-                <Badge variant="secondary" class="text-xs">스터디</Badge>
+                <h4 class="font-medium text-sm line-clamp-1">{{ post.title }}</h4>
+                <!-- <Badge variant="secondary" class="text-xs">인기</Badge> -->
               </div>
               <p class="text-xs text-muted-foreground line-clamp-1">
-                오전 알고리즘 스터디 부원 2명 충원합니다. 백준 골드 이상...
+                {{ post.summary || post.body }}
               </p>
               <div class="flex gap-3 text-xs text-muted-foreground mt-1">
-                <span class="flex items-center gap-1"><HeartIcon class="w-3 h-3" /> 12</span>
-                <span class="flex items-center gap-1"><MessageSquareIcon class="w-3 h-3" /> 5</span>
+                <span class="flex items-center gap-1"><HeartIcon class="w-3 h-3" /> {{ post.likeCount || 0 }}</span>
+                <span class="flex items-center gap-1"><MessageSquareIcon class="w-3 h-3" /> {{ post.commentCount || 0 }}</span>
               </div>
+            </div>
+
+            <div v-else class="text-center text-sm text-muted-foreground py-4">
+              인기 게시글이 없습니다.
             </div>
           </div>
 
@@ -131,6 +139,7 @@ import { getMyCaloriesByDate, getMyDietListByDate } from '@/api/diet'
 
 // ✅ Profile API (프로필에서 쓰는 것과 동일하게 이름 가져오기)
 import { getMyPage } from '@/api/mypage'
+import { getBoardList } from '@/api/board'
 
 /** 오늘 날짜 YYYY-MM-DD */
 const formatDateYYYYMMDD = (d = new Date()) => {
@@ -171,6 +180,10 @@ const loadingCalories = ref(false)
 /** 오늘 섭취 음식 목록 */
 const dietList = ref([])
 const loadingDiet = ref(false)
+
+/** 인기 게시글 목록 */
+const hotPosts = ref([])
+const loadingHot = ref(false)
 
 /** 백엔드 응답 형태가 숫자/객체/배열 어떤 형태든 최대한 안전하게 합산 */
 const extractTotalCalories = (data) => {
@@ -230,8 +243,21 @@ const loadTodayDietList = async () => {
   }
 }
 
+const fetchHotPosts = async () => {
+  loadingHot.value = true
+  try {
+    const res = await getBoardList({ sort: 'likes', page: 1, size: 3 })
+    hotPosts.value = Array.isArray(res?.data) ? res.data : []
+  } catch (e) {
+    console.error(e)
+    hotPosts.value = []
+  } finally {
+    loadingHot.value = false
+  }
+}
+
 onMounted(async () => {
-  await Promise.all([fetchMe(), loadTodayCalories(), loadTodayDietList()])
+  await Promise.all([fetchMe(), loadTodayCalories(), loadTodayDietList(), fetchHotPosts()])
 })
 </script>
 
