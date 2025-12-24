@@ -12,5 +12,6 @@ public class ReportedCommentResponseDto {
     private String userName; // 작성자 이름
     private int warningCnt;  // 신고 횟수
     private String visible;  // 현재 상태
+    private String valid;    // 활성 여부
     private LocalDateTime createdAt;
 }
