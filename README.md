@@ -1,252 +1,78 @@
-# ssaveryTime
-
-SSAFY 관통 프로젝트
-
-## 🚀 Getting Started (Docker)
-
-이 프로젝트는 Docker Compose를 사용하여 프론트엔드, 백엔드, 데이터베이스를 통합 실행할 수 있습니다.
-
-### 1. 사전 요구사항
-- Docker
-- Docker Compose
-
-### 2. 프로젝트 실행 (전체)
-모든 서비스를 빌드하고 실행합니다.
-```bash
-docker-compose up -d --build
-```
-- Frontend: http://localhost:5173
-- Backend: http://localhost:8080
-- Database: localhost:3306
-
-### 3. 프로젝트 종료
-```bash
-docker-compose down
-```
-
-### 4. 개별 서비스 재빌드 (개발 중)
-코드 수정 후 특정 서비스만 빠르게 재시작할 때 사용합니다.
-```bash
-# 백엔드만 재빌드
-docker-compose up -d --build backend
-
-# 프론트엔드만 재빌드
-docker-compose up -d --build frontend
-```
-
-### 5. 데이터베이스 초기화 (테이블 생성 및 데이터 삽입)
-프로젝트 최초 실행 시 또는 DB를 초기화하고 싶을 때 실행합니다. (DB 컨테이너가 실행 중이어야 합니다.)
-```bash
-docker exec -i ssaverytime-mysql mysql -u ssafy -pssafy --default-character-set=utf8mb4 ssaverytime < ssaverytime-BE/src/main/resources/database_setup.sql
-```
+<div align="center">
+  <img src="img/logo.png" alt="SsaveryTime Logo" width="150" height="150" />
+  
+  # SsaveryTime (싸브리타임)
+  
+  **"싸피인들의 소중한 시간을 아껴드립니다."**
+  <br/>
+  삼성 청년 SW 아카데미(SSAFY) 교육생들을 위한 통합 정보 공유 및 커뮤니티 플랫폼
+  <br/>
+</div>
 
 ---
 
-## Database
+## Tech Stack
 
-### ERD (Entity-Relationship Diagram)
-<img width="1374" height="727" alt="image" src="https://github.com/user-attachments/assets/a8b29600-3534-4c05-a63f-8ce37b27472c" />
+### Frontend
+![Vue.js](https://img.shields.io/badge/Vue.js-3.5.13-4FC08D?logo=vue.js&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-6.0.5-646CFF?logo=vite&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.17-06B6D4?logo=tailwindcss&logoColor=white)
+![Shadcn Vue](https://img.shields.io/badge/Shadcn_Vue-Latest-000000?logo=shadcnui&logoColor=white)
 
-<!-- ![ERD](img/erd_diagram.png) 이것은 구형 버전-->
+### Backend
+![Java](https://img.shields.io/badge/Java-17-007396?logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5.8-6DB33F?logo=springboot&logoColor=white)
+![MyBatis](https://img.shields.io/badge/MyBatis-3.0.4-C4002B?logo=mybatis&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white)
 
-## Database Schema..
+### AI & Data
+![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-009688?logo=fastapi&logoColor=white)
+![LangChain](https://img.shields.io/badge/LangChain-0.1.0-1C3C3C?logo=langchain&logoColor=white)
+![OpenAI GPT-4o](https://img.shields.io/badge/GPT--4o-mini-412991?logo=openai&logoColor=white)
 
-### `USER`
+### DevOps & Monitoring
+![Docker](https://img.shields.io/badge/Docker-27.4.0-2496ED?logo=docker&logoColor=white)
+![AWS EC2](https://img.shields.io/badge/AWS_EC2-Orange?logo=amazon-aws&logoColor=white)
+![AWS RDS](https://img.shields.io/badge/AWS_RDS-527FFF?logo=amazon-rds&logoColor=white)
+![Prometheus](https://img.shields.io/badge/Prometheus-2.55.1-E6522C?logo=prometheus&logoColor=white)
+![Grafana](https://img.shields.io/badge/Grafana-11.3.0-F46800?logo=grafana&logoColor=white)
 
-사용자 정보를 저장하는 테이블
+---
 
-| Column | Type | Description |
-|---|---|---|
-| `USER_ID` | INT | 사용자 고유 ID (PK) |
-| `USERNAME` | VARCHAR(255) | 사용자 아이디 (UNIQUE) |
-| `PASSWORD` | VARCHAR(255) | 사용자 비밀번호 |
-| `NAME` | VARCHAR(100) | 사용자 이름 |
-| `ROLE` | ENUM('USER', 'ADMIN') | 사용자 역할 (기본값: 'USER') |
-| `SEASON` | INT | 사용자 기수 |
-| `BAEKJOON` | VARCHAR(100) | 백준 아이디 |
-| `VALID` | ENUM('1', '0') | 계정 활성화 여부 |
-| `CREATED_AT` | DATETIME | 계정 생성일 |
+## Architecture
 
-### `BOARD`
+<div align="center">
+  <img src="img/architecture/system_architecture.png" alt="System Architecture" width="800" />
+</div>
 
-게시글 정보를 저장하는 테이블
+*   **Frontend:** Vue 3 + Vite 기반의 SPA. EC2 내에서 Docker 컨테이너로 실행됩니다.
+*   **Backend:** Spring Boot API 서버. RESTful API를 제공하며 MySQL RDS와 통신합니다.
+*   **AI Service:** Python FastAPI로 구축된 마이크로서비스. 게시글 요약 기능을 담당합니다.
+*   **Infra:** AWS EC2 인스턴스 하나에 Docker Compose를 이용하여 모든 서비스(FE, BE, AI, Monitoring)를 오케스트레이션합니다.
+*   **Monitoring:** Prometheus가 Spring Boot Actuator 메트릭을 수집하고, Grafana를 통해 시각화합니다.
 
-| Column | Type | Description |
-|---|---|---|
-| `BOARD_ID` | INT | 게시글 고유 ID (PK) |
-| `USER_ID` | INT | 작성자 ID (FK) |
-| `TITLE` | VARCHAR(255) | 게시글 제목 |
-| `BODY` | TEXT | 게시글 내용 |
-| `SUMMARY` | TEXT | 게시글 AI 요약 내용 |
-| `VISIBLE` | ENUM('1', '0') | 게시글 공개 여부 (기본값: '1') |
-| `WARNING_CNT` | INT | 경고 횟수 (기본값: 0) |
-| `CREATED_AT` | DATETIME | 게시글 작성일 |
+---
 
-### `COMMENT`
+## Key Features
 
-댓글 정보를 저장하는 테이블
+1.  **게시판 & 커뮤니티:** 익명/실명 게시글 작성, 댓글, 좋아요, 스크랩 기능.
+2.  **알고리즘 랭크 연동:** Solved.ac와 연동하여 사용자의 백준 티어 정보를 실시간으로 프로필과 게시글에 표시합니다.
+3.  **AI 게시글 요약:** 긴 게시글 내용을 AI(GPT-4o mini)가 3줄로 요약해줍니다.
+4.  **식단 정보:** SSAFY 캠퍼스별 식단 정보를 제공합니다.
+5.  **반응형 UI:** 데스크탑과 모바일 환경 모두에 최적화된 사용자 경험을 제공합니다.
 
-| Column | Type | Description |
-|---|---|---|
-| `COMMENT_ID` | INT | 댓글 고유 ID (PK) |
-| `BOARD_ID` | INT | 게시글 ID (FK) |
-| `USER_ID` | INT | 작성자 ID (FK) |
-| `BODY` | VARCHAR(500) | 댓글 내용 |
-| `VISIBLE` | ENUM('1', '0') | 댓글 공개 여부 (기본값: '1') |
-| `WARNING_CNT` | INT | 경고 횟수 (기본값: 0) |
-| `CREATED_AT` | DATETIME | 댓글 작성일 |
+---
 
-### `LIKES`
+## Team
 
-게시글 좋아요 정보를 저장하는 테이블
+| 이름 | 학번 | 역할 |
+| :---: | :---: | :--- |
+| **박형주** | 1412288 | **Backend / DevOps**<br>- Spring Boot API 개발<br>- AWS EC2 & RDS 배포<br>- Docker & Monitoring 구축<br>- Solved.ac 연동 |
+| **심동근** | 1415822 | **Frontend / UI**<br>- Vue 3 화면 설계 및 구현<br>- Shadcn UI 디자인 시스템 적용<br>- 모바일 반응형 구현<br>- API 연동 |  |
 
-| Column | Type | Description |
-|---|---|---|
-| `LIKES_ID` | INT | 좋아요 고유 ID (PK) |
-| `BOARD_ID` | INT | 게시글 ID (FK) |
-| `USER_ID` | INT | 사용자 ID (FK) |
+---
 
-### `SCRAP`
+## License
 
-게시글 스크랩 정보를 저장하는 테이블
-
-| Column | Type | Description |
-|---|---|---|
-| `SCRAP_ID` | INT | 스크랩 고유 ID (PK) |
-| `USER_ID` | INT | 사용자 ID (FK) |
-| `BOARD_ID` | INT | 게시글 ID (FK) |
-
-### `AI_TOKEN`
-
-AI 토큰 정보를 저장하는 테이블
-
-| Column | Type | Description |
-|---|---|---|
-| `TOKEN_ID` | INT | 토큰 고유 ID (PK) |
-| `REST` | INT | 남은 토큰 수 (기본값: 0) |
-| `LAST_UPDATE` | DATETIME | 마지막 업데이트 시간 |
-
-### `RESTAURANT`
-
-식당 정보를 저장하는 테이블
-
-| Column | Type | Description |
-|---|---|---|
-| `RESTAURANT_ID` | INT | 식당 고유 ID (PK) |
-| `NAME` | VARCHAR(255) | 식당 이름 |
-
-### `MENU`
-
-메뉴 정보를 저장하는 테이블
-
-| Column | Type | Description |
-|---|---|---|
-| `MENU_ID` | INT | 메뉴 고유 ID (PK) |
-| `RESTAURANT_ID` | INT | 식당 ID (FK) |
-| `MENU` | VARCHAR(255) | 메뉴 이름 |
-| `DATE` | DATETIME | 날짜 |
-
-### `STAR`
-
-별점 정보를 저장하는 테이블
-
-| Column | Type | Description |
-|---|---|---|
-| `STAR_ID` | INT | 별점 고유 ID (PK) |
-| `USER_ID` | INT | 사용자 ID (FK) |
-| `RESTAURANT_ID` | INT | 식당 ID (FK) |
-| `CATEGORY` | ENUM('TASTE', 'AMOUNT') | 별점 카테고리 |
-| `SCORE` | INT | 점수 |
-| `DATE` | DATETIME | 별점 등록일 |
-
-## Dummy Data
-
-### `USER`
-
-| USERNAME | PASSWORD | NAME | ROLE | SEASON | BAEKJOON | VALID |
-|---|---|---|---|---|---|---|
-| kinguser | hashed_pw_01 | 유저왕 | USER | 14 | GOLD V | 1 |
-| admin_guy | hashed_pw_admin | 최고관리자 | ADMIN | NULL | NULL | 1 |
-| season_2_user | hashed_pw_03 | 계절이 | USER | 13 | SILVER III | 1 |
-| temp_disabled | hashed_pw_04 | 잠시휴식 | USER | 15 | PLATINUM V | 0 |
-| active_member | hashed_pw_05 | 활동회원 | USER | 15 | BRONZE I | 1 |
-
-### `RESTAURANT`
-
-| NAME |
-|---|
-| 육수고집 |
-| 소담상 |
-| 더고메 |
-| 차이나호 |
-| 속이찬새참 |
-
-### `BOARD`
-
-| USER_ID | TITLE | BODY | VISIBLE | WARNING_CNT |
-|---|---|---|---|---|
-| 1 | 백반집 점심 후기 | 오늘 백반집 가봤는데 가성비 최고예요. | 1 | 0 |
-| 5 | 이번 시즌 알고리즘 질문 | 다들 백준 문제 푸시나요? | 1 | 0 |
-| 3 | 솔직히 실버들은 발언 허락 받고 해야한다 생각합니다. | 광주캠퍼스 노트북 쓰기 좋은 카페 아시는 분? | 1 | 0 |
-| 2 | 운영 공지: 서비스 업데이트 안내 | 새로운 기능이 추가될 예정입니다. | 1 | 0 |
-| 1 | 숨김 테스트 게시글 | 이 글은 관리자가 숨길 수 있습니다. | 0 | 0 |
-
-### `COMMENT`
-
-| BOARD_ID | USER_ID | BODY | VISIBLE | WARNING_CNT |
-|---|---|---|---|---|
-| 1 | 3 | 메뉴가 궁금해요! | 1 | 0 |
-| 2 | 5 | 저는 요즘 DP 문제 풀고 있습니다. | 1 | 0 |
-| 3 | 1 | 프리미엄 로스터리 추천합니다. | 1 | 0 |
-| 4 | 5 | 업데이트 기대하겠습니다! | 1 | 0 |
-| 1 | 4 | 혼밥하기 괜찮은가요? | 1 | 0 |
-
-### `LIKES`
-
-| BOARD_ID | USER_ID |
-|---|---|
-| 1 | 5 |
-| 2 | 1 |
-| 2 | 3 |
-| 3 | 5 |
-| 4 | 1 |
-
-### `SCRAP`
-
-| USER_ID | BOARD_ID |
-|---|---|
-| 5 | 1 |
-| 1 | 3 |
-| 3 | 4 |
-| 5 | 4 |
-| 2 | 2 |
-
-### `AI_TOKEN`
-
-| REST | LAST_UPDATE |
-|---|---|
-| 10 | DATE_SUB(NOW(), INTERVAL 3 HOUR) |
-
-### `MENU`
-
-| RESTAURANT_ID | MENU | DATE |
-|---|---|---|
-| 1 | 제육볶음 정식 | 2025-11-07 12:00:00 |
-| 2 | 클래식 치즈 버거 | 2025-11-07 12:00:00 |
-| 3 | 탄탄멘 | 2025-11-07 12:00:00 |
-| 4 | 에티오피아 예가체프 | 2025-11-07 12:00:00 |
-| 5 | 슈퍼 디럭스 피자 | 2025-11-06 18:30:00 |
-
-### `STAR`
-
-| USER_ID | RESTAURANT_ID | CATEGORY | SCORE |
-|---|---|---|---|
-| 1 | 1 | TASTE | 5 |
-| 5 | 1 | AMOUNT | 4 |
-| 3 | 2 | TASTE | 3 |
-| 1 | 3 | TASTE | 5 |
-| 5 | 5 | AMOUNT | 4 |
-=======
-# ssaverytime
-ssafy 관통 프로젝트
->>>>>>> 2d8dfec691640d329fda078e9b2515b2171a2420
+This project is licensed under the MIT License.

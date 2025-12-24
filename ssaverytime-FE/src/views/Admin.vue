@@ -42,8 +42,8 @@
                       <Badge variant="destructive">{{ board.warningCnt }}</Badge>
                     </td>
                     <td class="p-4 align-middle">
-                      <Badge :variant="board.visible === '1' ? 'outline' : 'secondary'">
-                        {{ board.visible === '1' ? '공개' : '숨김' }}
+                      <Badge :variant="board.valid === '1' ? 'outline' : 'secondary'">
+                        {{ board.valid === '1' ? '활성' : '비활성' }}
                       </Badge>
                     </td>
                     <td class="p-4 align-middle text-right space-x-2">
@@ -51,7 +51,7 @@
                         variant="ghost"
                         size="sm"
                         @click="handleDeactivateBoard(board.boardId)"
-                        :disabled="board.visible === '0'"
+                        :disabled="board.valid === '0'"
                       >
                         비활성화
                       </Button>
@@ -111,8 +111,8 @@
                       <Badge variant="destructive">{{ comment.warningCnt }}</Badge>
                     </td>
                     <td class="p-4 align-middle">
-                      <Badge :variant="comment.visible === '1' ? 'outline' : 'secondary'">
-                        {{ comment.visible === '1' ? '공개' : '숨김' }}
+                      <Badge :variant="comment.valid === '1' ? 'outline' : 'secondary'">
+                        {{ comment.valid === '1' ? '활성' : '비활성' }}
                       </Badge>
                     </td>
                     <td class="p-4 align-middle text-right space-x-2">
@@ -120,7 +120,7 @@
                         variant="ghost"
                         size="sm"
                         @click="handleDeactivateComment(comment.commentId)"
-                        :disabled="comment.visible === '0'"
+                        :disabled="comment.valid === '0'"
                       >
                         비활성화
                       </Button>
