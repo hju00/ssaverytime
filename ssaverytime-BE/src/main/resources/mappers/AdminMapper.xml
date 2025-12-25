@@ -10,6 +10,7 @@
             b.TITLE,
             b.WARNING_CNT,
             b.VISIBLE,
+            b.VALID,
             b.CREATED_AT,
             u.BOJ_ID,
             u.NAME AS userName
@@ -26,6 +27,7 @@
             c.BODY,
             c.WARNING_CNT,
             c.VISIBLE,
+            c.VALID,
             c.CREATED_AT,
             u.BOJ_ID,
             u.NAME AS userName
